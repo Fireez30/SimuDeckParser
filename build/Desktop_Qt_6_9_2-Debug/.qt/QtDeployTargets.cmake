@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_SimuDeckParser_FILE /home/ben/SimuDeckParser/build/Desktop_Qt_6_9_2-Debug/SimuDeckParser)
+set(__QT_DEPLOY_TARGET_SimuDeckParser_TYPE EXECUTABLE)
