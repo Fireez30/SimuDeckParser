@@ -36,12 +36,13 @@ std::string GetLastName(const std::string phrase){
     size_t prev_pos = 0;
     while ((pos == std::string::npos && !break_loop) || (pos != std::string::npos))  {
         if (pos == std::string::npos){
+            // if we reached the end, only take the last part with the previous stored position
             break_loop = true;
             token = s.substr(prev_pos, s.size());
             last_name = token;
         }
         else {
-
+            // If we're in the middle of the path, use current position
             token = s.substr(0, pos);
             last_name = token;
             s.erase(0, pos + sizeof(delimiter));
