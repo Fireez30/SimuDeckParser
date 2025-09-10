@@ -14,7 +14,7 @@ std::string Serie::getName(){
     return this->name;
 }
 
-std::vector<Set> Serie::getAllSets(){
+std::vector<Set>& Serie::getAllSets(){
     return this->sets;
 }
 
@@ -26,5 +26,12 @@ Set Serie::getSetAtIndex(int index){
 }
 
 void Serie::setSets(std::vector<Set> sets){
-    this->sets = sets;
+    this->sets = {};
+    for (Set set : sets){
+        this->sets.push_back(Set(set.getKey(),set.getName(),set.getPath()));
+    }
+}
+
+void Serie::AddSet(std::string name,std::string key, std::string path){
+    this->sets.push_back(Set(key,name,path));
 }
