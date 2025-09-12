@@ -11,20 +11,31 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    //data
     this->series = {};
+
+    //display state
     this->display_load_series = true;
-    if (this->display_load_series){
-        this->m_simu_path_field = new QLineEdit(this);
-        this->m_simu_path_field->setGeometry(10,10,600,30);
-        this->m_button_loadseries = new QPushButton("Load series",this);
-        this->m_button_loadseries->setGeometry(620,10,80,30);
-    }
+
+    // layouts setup
+    this->m_simu_path_field = new QLineEdit(this);
+    this->m_simu_path_field->setGeometry(10,10,600,30);
+    this->m_button_loadseries = new QPushButton("Load series",this);
+    this->m_button_loadseries->setGeometry(620,10,80,30);
+
+    //binding signals
     connect(this->m_button_loadseries, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::UpdateUi(){
+    this->m_button_loadseries->setVisible(this->display_load_series);
+    this->m_simu_path_field->setVisible(this->display_load_series);
 }
 
 std::vector<Serie> MainWindow::getAllSeries(){
@@ -55,12 +66,11 @@ void MainWindow::LoadButtonClicked(){
                 std::cout << set_obj.getName() << " , " << set_obj.getKey() << " : " << set_obj.getCards().size() << std::endl;
             }
         }
-        this->m_button_loadseries->hide();
-        this->m_simu_path_field->hide();
         this->display_load_series = false;
+        this->UpdateUi();
     }
     else
     {
-        std::cout << "Simulator path is incorrect, verify and fills again" << std::endl;
+        std::cout << "Simulator path is incorrect, verify and try again" << std::endl;
     }
 }

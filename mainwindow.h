@@ -20,6 +20,7 @@ public:
     ~MainWindow();
     std::vector<Serie> getAllSeries();
     Serie getSerieByName(std::string name);
+    void UpdateUi();
 
 private:
     Ui::MainWindow *ui;
