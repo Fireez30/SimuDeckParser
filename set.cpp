@@ -34,4 +34,11 @@ std::vector<Card> &Set::getCards(){
     return this->cards;
 }
 
+Card Set::getCardAt(int index){
+    if (index < 0 || index < this->cards.size()){
+        return Card(); // This sucks, should use something else
+        }
+    return this->cards.at(index);
+}
+
 

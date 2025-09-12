@@ -15,6 +15,7 @@ public:
     void setKey(std::string key);
     void setName(std::string name);
     std::vector<Card> &getCards();
+    Card getCardAt(int index);
     void setPath(std::string path);
 private:
     std::string key;
