@@ -182,7 +182,7 @@ void ParseSets(Serie& serie,std::string card_path){
 
                     //std::cout << "found serie" << std::endl;
                     if (set_name != ""){
-                        Set found = Set(set_name,set_key,set_folder);
+                        Set found = Set(set_key,set_name,set_folder);
                         ParseCards(found);
                         sets.push_back(found);
                     }

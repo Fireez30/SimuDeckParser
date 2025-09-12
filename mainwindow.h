@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLineEdit>
-
+#include <QComboBox>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -24,12 +24,21 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    Serie* choosen_serie;
+    Set* choosen_set;
     std::vector<Serie> series;
     bool display_load_series;
+    bool display_pick_set;
+    bool display_cards;
     QLineEdit *m_simu_path_field;
+    QComboBox *m_series_dropdown;
     QPushButton *m_button_loadseries;
-
+    QPushButton *m_series_pick_button;
+    QPushButton *m_set_pick_button;
+    QComboBox *m_set_dropdown;
 private slots:
     void LoadButtonClicked();
+    void OnSeriePick();
+    void OnSetPick();
 };
 #endif // MAINWINDOW_H
