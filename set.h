@@ -2,7 +2,8 @@
 #define SET_H
 
 #include <string>
-
+#include "card.h"
+#include <vector>
 class Set
 {
 public:
@@ -13,11 +14,13 @@ public:
     std::string getPath();
     void setKey(std::string key);
     void setName(std::string name);
+    std::vector<Card> &getCards();
     void setPath(std::string path);
 private:
     std::string key;
     std::string name;
     std::string path;
+    std::vector<Card> cards;
 };
 
 #endif // SET_H

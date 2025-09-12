@@ -3,6 +3,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+
+
 bool endsWith(const std::string& s, const std::string& suffix)
 {
     return s.rfind(suffix) == (s.size() - suffix.size());

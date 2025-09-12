@@ -3,6 +3,31 @@
 #include<vector>
 #include<string>
 
+enum class Color {
+    YELLOW,
+    BLUE,
+    RED,
+    GREEN,
+    PURPLE,
+    ALL,
+    NONE
+};
+
+enum class Trigger {
+    SOUL,
+    CHOICE,
+    BURN,
+    WIND,
+    STANDBY,
+    SALVAGE,
+    BOOK,
+    PANT,
+    BAR,
+    BAG,
+    NONE
+
+};
+
 // Parse folders inside current folder
 std::vector<std::string> ListFoldersInFolder(const std::string_view folder);
 

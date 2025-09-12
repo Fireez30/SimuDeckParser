@@ -3,9 +3,12 @@ Set::Set(std::string key,std::string name,std::string path){
     this->key = key;
     this->name = name;
     this->path = path;
+    this->cards = {};
 }
 
-Set::Set(){}
+Set::Set(){
+    this->cards = {};
+}
 
 std::string Set::getKey(){
     return this->key;
@@ -25,6 +28,10 @@ void Set::setName(std::string name){
 }
 void Set::setPath(std::string path){
     this->path = path;
+}
+
+std::vector<Card> &Set::getCards(){
+    return this->cards;
 }
 
 
