@@ -1,7 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include "serie.h"
 #include <QMainWindow>
+#include <QPushButton>
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -16,8 +18,17 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    std::vector<Serie> getAllSeries();
+    Serie getSerieByName(std::string name);
 
 private:
     Ui::MainWindow *ui;
+    std::vector<Serie> series;
+    bool display_load_series;
+    QLineEdit *m_simu_path_field;
+    QPushButton *m_button_loadseries;
+
+private slots:
+    void LoadButtonClicked();
 };
 #endif // MAINWINDOW_H

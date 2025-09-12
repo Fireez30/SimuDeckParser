@@ -3,6 +3,8 @@
 #include<vector>
 #include<string>
 
+class Serie;
+
 enum class Color {
     YELLOW,
     BLUE,
@@ -37,4 +39,5 @@ char separator();
 // split a path, and retrieve the last part of it, split by a separator
 std::string GetLastName(const std::string phrase);
 
+std::vector<Serie> ParseSeries(std::string cards_path);
 #endif // UTILS_H
