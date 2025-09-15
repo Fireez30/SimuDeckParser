@@ -9,7 +9,7 @@ class Card
 {
 public:
     Card();
-    Card(std::string key,std::string name,std::string path,Color color,uint level,uint cost, int power,Trigger trigger1, Trigger trigger2,uint soul_count,std::string code, std::string text,std::string trait1="",std::string trait2="",std::string trait3="");
+    Card(std::string key,CardType type,std::string name,std::string path,Color color,uint level,uint cost, int power,Trigger trigger1, Trigger trigger2,uint soul_count,std::string code, std::string text,std::string trait1="",std::string trait2="",std::string trait3="");
     std::string getKey();
     std::string getName();
     std::string getImagePath();
@@ -21,8 +21,11 @@ public:
     uint getSoulCount();
     std::vector<std::string> getTraits();
     std::string getSimulatorCode();
+    CardType getCardType();
     std::string getText();
+    void print();
 protected:
+    CardType type;
     std::string key;
     std::string name;
     std::string image_path;

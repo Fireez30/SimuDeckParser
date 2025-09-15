@@ -1,14 +1,14 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "utils.h"
 #include<iostream>
 #include<QLineEdit>
+#include "utils.h"
 #include <QComboBox>
 #include <QMessageBox>
 #include <filesystem>
 namespace fs = std::filesystem;
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -18,7 +18,21 @@ MainWindow::MainWindow(QWidget *parent)
     this->series = {};
     this->choosen_serie = nullptr;
     this->choosen_set = nullptr;
+    this->grid_height = grid_height;
+    this->grid_width = grid_width;
+    this->current_cards_index = 0;
 
+    //orders and filters
+    this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
+
+    this->available_level_filters = {}; // This will be loaded when laoding a set cards
+    this->available_cost_filters = {};
+    this->available_color_filters = {};
+    this->current_level_filters = {};
+    this->current_cost_filters = {};
+    this->current_color_filters = {};
+    this->available_type_filters = {};
+    this->current_type_filters = {};
     //display state
     this->display_load_series = true;
     this->display_pick_set = false;
@@ -52,6 +66,90 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::FillFiltersUsingSet(){
+    if (this->choosen_set == nullptr){
+        return;
+    }
+
+    this->available_level_filters = {}; // This will be loaded when laoding a set cards
+    this->available_cost_filters = {};
+    this->available_color_filters = {};
+    this->current_level_filters = {};
+    this->current_cost_filters = {};
+    this->current_color_filters = {};
+    this->available_type_filters = {};
+    this->current_type_filters = {};
+
+    std::vector<Card>& cards = this->choosen_set->getCards();
+    for (Card c : cards){
+        if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c.getLevel()) == this->available_level_filters.end()) {
+            this->available_level_filters.push_back(c.getLevel());
+            this->current_level_filters.push_back(c.getLevel());
+        }
+
+        if(std::find(this->available_color_filters.begin(), this->available_color_filters.end(), c.getColor()) == this->available_color_filters.end()) {
+            this->available_color_filters.push_back(c.getColor());
+            this->current_color_filters.push_back(c.getColor());
+        }
+
+        if(std::find(this->available_cost_filters.begin(), this->available_cost_filters.end(), c.getCost()) == this->available_cost_filters.end()) {
+            this->available_cost_filters.push_back(c.getCost());
+            this->current_cost_filters.push_back(c.getCost());
+        }
+
+        if(std::find(this->available_type_filters.begin(), this->available_type_filters.end(), c.getCardType()) == this->available_type_filters.end()) {
+            this->available_type_filters.push_back(c.getCardType());
+            this->current_type_filters.push_back(c.getCardType());
+        }
+        if (c.getColor() == Color::NONE){
+            std::cout << c.getName() << " " << std::endl;
+            return;
+        }
+    }
+    std::cout << "Available level filters"  << std::endl;
+    for (int l : this->available_level_filters){
+        std::cout << l << " , ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Current level filters"  << std::endl;
+    for (int l : this->current_level_filters){
+        std::cout << l << " , ";
+    }
+    std::cout << std::endl;
+
+
+    std::cout << "Available color filters"  << std::endl;
+    for (Color l : this->available_color_filters){
+        std::cout << GetColorString(l) << " , ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Current color filters"  << std::endl;
+    for (Color l : this->current_color_filters){
+        std::cout <<  GetColorString(l) << " , ";
+    }
+    std::cout << std::endl;
+
+
+    std::cout << "Available cost filters"  << std::endl;
+    for (int l : this->available_cost_filters){
+        std::cout << l << " , ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Current cost filters"  << std::endl;
+    for (int l : this->current_cost_filters){
+        std::cout << l << " , ";
+    }
+    std::cout << std::endl;
+
+
+}
+
+int MainWindow::getGridCount(){
+    return this->grid_height*this->grid_width;
+}
 void MainWindow::UpdateUi(){
     this->m_button_loadseries->setVisible(this->display_load_series);
     this->m_simu_path_field->setVisible(this->display_load_series);
@@ -111,6 +209,7 @@ void MainWindow::OnSetPick(){
 
         }
     }
+    this->FillFiltersUsingSet();
 }
 
 void MainWindow::LoadButtonClicked(){

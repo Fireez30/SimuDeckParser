@@ -2,7 +2,6 @@
 #define UTILS_H
 #include<vector>
 #include<string>
-
 class Serie;
 
 enum class Color {
@@ -14,6 +13,16 @@ enum class Color {
     ALL,
     NONE
 };
+
+enum class CardType {
+    CHARACTER,
+    EVENT,
+    CLIMAX
+};
+
+std::string GetColorString(Color c);
+std::string GetCardTypeString(CardType t);
+
 
 enum class Trigger {
     SOUL,
@@ -27,6 +36,21 @@ enum class Trigger {
     BAR,
     BAG,
     NONE
+
+};
+
+enum class Orders {
+    LEVEL_ASCENDING,
+    LEVEL_DESCENDING,
+    COST_ASCENDING,
+    COST_DESCENDING,
+    POWER_ASCENDING,
+    POWER_DESCENDING
+};
+
+
+
+enum class Color_Filter {
 
 };
 

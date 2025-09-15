@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "set.h"
 #include <fstream>
+#include <regex>
 #include <filesystem>
 #include "serie.h"
 #include <algorithm>
@@ -16,6 +17,35 @@ inline std::string trim(const std::string &s)
     return (wsback<=wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
+std::string GetColorString(Color c){
+    switch (c){
+    case Color::YELLOW:
+        return "Yellow";
+    case Color::BLUE:
+        return "Blue";
+    case Color::RED:
+        return "Red";
+    case Color::GREEN:
+        return "Green";
+    case Color::PURPLE:
+        return "Purple";
+    case Color::ALL:
+        return "All";
+    default:
+        return "None";
+    }
+}
+
+std::string GetCardTypeString(CardType t){
+    switch (t){
+    case CardType::CHARACTER:
+        return "Character";
+    case CardType::EVENT:
+        return "Event";
+    default:
+        return "Climax";
+    }
+}
 void ParseCards(Set& set){
     std::vector<Card>& cards = set.getCards();
     std::string set_path = set.getPath();
@@ -23,6 +53,7 @@ void ParseCards(Set& set){
     if (fs::exists(card_data)){
         std::ifstream file(card_data);
         std::string str;
+        CardType type = CardType::CHARACTER;
         std::string key = "";
         std::string name = "";
         std::string path = "";
@@ -47,6 +78,15 @@ void ParseCards(Set& set){
             if (str != ""){
                 if (str.substr(0,10) == "Character:"){
                     key=trim(str.substr(10,std::string::npos));
+                    type = CardType::CHARACTER;
+                }
+                else if (str.substr(0,6) == "Event:"){
+                    key=trim(str.substr(6,std::string::npos));
+                    type = CardType::EVENT;
+                }
+                else if (str.substr(0,7) == "Climax:"){
+                    key=trim(str.substr(7,std::string::npos));
+                    type = CardType::CLIMAX;
                 }
 
                 else if (str.substr(0,6) == "Image "){
@@ -106,8 +146,9 @@ void ParseCards(Set& set){
                         trait3 = found_trait;
                     }
                 }
-                else if (is_previous_line_trait && str.substr(0,5) != "Trait" && !found_text && str.substr(0,5)!= "Text " && !found_text){
+                else if ((is_previous_line_trait && str.substr(0,5) != "Trait" && !found_text && str.substr(0,5)!= "Text ") || str.substr(0,7) == "Effect:"){
                     // we finished, now everything that is after this is card code, unless found a line that begins with "Text"
+                    is_previous_line_trait = true;
                     code += str;
                 }
                 else if (((is_previous_line_trait && str.substr(0,5) == "Text ") || (found_text)) && str.substr(0,7) != "EndCard"){
@@ -120,9 +161,148 @@ void ParseCards(Set& set){
                     }
                     // here, we finished going through the card code, it's time to parse text
                 }
+                else if (type == CardType::CLIMAX && str.substr(0,1) == "*"){ // THIS IS ONLY FOR DETERMINING CLIMAX TRIGGERS AND COLORS. MANDATORY
+                    //todo
+                    std::string trigger_found = str.substr(0,1);
+                    if (trigger_found == "DoorClimax"){
+                        trigger1 = Trigger::SALVAGE;
+                        trigger2 = Trigger::NONE;
+                        color = Color::RED;
+                    }
+
+                    if (trigger_found == "StandbyClimax"){
+                        trigger1 = Trigger::STANDBY;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::RED;
+                    }
+
+                    if (trigger_found == "BookClimax"){
+                        trigger1 = Trigger::BOOK;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::BLUE;
+                    }
+
+
+                    if (trigger_found == "GateClimax"){
+                        trigger1 = Trigger::PANT;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::BLUE;
+                    }
+
+                    if (trigger_found == "BarClimax"){
+                        trigger1 = Trigger::BAR;
+                        trigger2 = Trigger::NONE;
+                        color = Color::GREEN;
+
+                    }
+
+                    if (trigger_found == "BagClimax"){
+                        trigger1 = Trigger::BAG;
+                        trigger2 = Trigger::NONE;
+                        color = Color::GREEN;
+
+                    }
+
+                    if (trigger_found == "WindClimax"){
+                        trigger1 = Trigger::WIND;
+                        trigger2 = Trigger::NONE;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "ChoiceClimax"){
+                        trigger1 = Trigger::CHOICE;
+                        trigger2 = Trigger::NONE;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "BlueStockSoul"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::BLUE;
+                    }
+
+                    if (trigger_found == "YellowStockSoul"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "RedStockSoul"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::RED;
+                    }
+
+                    if (trigger_found == "GreenStockSoul"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::GREEN;
+                    }
+
+                    if (trigger_found == "2K2Climax(Yellow)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "2K2Climax(Red)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::RED;
+                    }
+
+                    if (trigger_found == "2K2Climax(Green)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::GREEN;
+                    }
+
+                    if (trigger_found == "2K2Climax(Blue)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::BLUE;
+                    }
+
+                    if (trigger_found == "3K1Climax(Red)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::RED;
+                    }
+
+                    if (trigger_found == "3K1Climax(Yellow)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "3K1Climax(Green)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::GREEN;
+                    }
+
+                    if (trigger_found == "3K1Climax(Blue)"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+                        color = Color::BLUE;
+                    }
+
+
+
+                    if (trigger_found == "2SoulClimax"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::SOUL;
+
+                    }
+
+
+
+
+                }
                 else if (str.substr(0,7) == "EndCard"){
-                    cards.push_back(Card(key,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
+                    cards.push_back(Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
                     key = "";
+                    type=CardType::CHARACTER;
                     name = "";
                     path = "";
                     color = Color::NONE;
@@ -143,8 +323,8 @@ void ParseCards(Set& set){
                 }
             }
         }
-
     }
+
 }
 void ParseSets(Serie& serie,std::string card_path){
     std::string serie_path = serie.getPath();

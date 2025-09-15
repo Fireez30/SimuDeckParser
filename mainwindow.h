@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "serie.h"
+#include "utils.h"
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLineEdit>
@@ -16,11 +17,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr,int grid_width=3,int grid_height=4);
     ~MainWindow();
     std::vector<Serie> getAllSeries();
     Serie getSerieByName(std::string name);
     void UpdateUi();
+    int getGridCount();
+    int current_cards_index;
+    void FillFiltersUsingSet();
 
 private:
     Ui::MainWindow *ui;
@@ -30,6 +34,17 @@ private:
     bool display_load_series;
     bool display_pick_set;
     bool display_cards;
+    std::vector<int> available_level_filters;
+    std::vector<int> available_cost_filters;
+    std::vector<Color> available_color_filters;
+    std::vector<int> current_level_filters;
+    std::vector<int> current_cost_filters;
+    std::vector<Color> current_color_filters;
+    std::vector<CardType> available_type_filters;
+    std::vector<CardType> current_type_filters;
+    int grid_width;
+    std::vector<Orders> current_orders;
+    int grid_height;
     QLineEdit *m_simu_path_field;
     QComboBox *m_series_dropdown;
     QPushButton *m_button_loadseries;

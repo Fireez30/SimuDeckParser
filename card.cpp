@@ -6,8 +6,9 @@ Card::Card() {
     this->traits = {};
 }
 
-Card::Card(std::string key,std::string name,std::string path,Color color,uint level,uint cost, int power,Trigger trigger1, Trigger trigger2,uint soul_count,std::string code, std::string text,std::string trait1,std::string trait2,std::string trait3){
+Card::Card(std::string key,CardType type,std::string name,std::string path,Color color,uint level,uint cost, int power,Trigger trigger1, Trigger trigger2,uint soul_count,std::string code, std::string text,std::string trait1,std::string trait2,std::string trait3){
     this->key = key;
+    this->type = type;
     this->name = name;
     this->image_path=path;
     this->color = color;
@@ -37,6 +38,12 @@ Card::Card(std::string key,std::string name,std::string path,Color color,uint le
     }
 }
 
+void Card::print(){
+
+}
+CardType Card::getCardType(){
+    return this->type;
+}
 std::string Card::getKey(){
     return this->key;
 }
