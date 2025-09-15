@@ -20,10 +20,6 @@ enum class CardType {
     CLIMAX
 };
 
-std::string GetColorString(Color c);
-std::string GetCardTypeString(CardType t);
-
-
 enum class Trigger {
     SOUL,
     CHOICE,
@@ -49,10 +45,13 @@ enum class Orders {
 };
 
 
+std::string GetColorString(Color c);
+std::string GetCardTypeString(CardType t);
+std::string GetTriggerString(Trigger t);
 
-enum class Color_Filter {
 
-};
+
+
 
 // Parse folders inside current folder
 std::vector<std::string> ListFoldersInFolder(const std::string_view folder);

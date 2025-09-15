@@ -1,6 +1,6 @@
 #include "card.h"
 #include "utils.h"
-
+#include <iostream>
 Card::Card() {
     this->triggers = {};
     this->traits = {};
@@ -39,8 +39,32 @@ Card::Card(std::string key,CardType type,std::string name,std::string path,Color
 }
 
 void Card::print(){
+    std::cout << " ------------------ " << std::endl;
+    std::cout << " Card : " << this->getKey() << " (" << GetCardTypeString(this->type) << ")" << std::endl;
+    std::cout << "    name : " << this->getName() << std::endl;
+    std::cout << "    level "<< this->getLevel() << " / cost " << this->getCost() << std::endl;
+    std::cout << "    power : " << this->getPower() << std::endl;
+    std::cout << "    color : " << GetColorString(this->getColor()) << std::endl;
+    if (this->triggers.size() > 0){
+        std::cout << "    triggers : ";
+        for (Trigger t : this->triggers){
+            std::cout << GetTriggerString(t) << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "    souls : " << this->getSoulCount() << std::endl;
+    if (this->triggers.size() > 0){
+        for (int i {0}; i < this->getTraits().size() ; ++i){
+            std::cout << "trait " << i << " : " << this->getTraits()[i] << std::endl;
+        }
+    }
+    std::cout << "    text : " << this->getText() << std::endl;
+    std::cout << "    code : " << this->getSimulatorCode() << std::endl;
+    std::cout << "    image : " << this->getImagePath() << std::endl;
+    std::cout << " ------------------ " << std::endl;
 
 }
+
 CardType Card::getCardType(){
     return this->type;
 }

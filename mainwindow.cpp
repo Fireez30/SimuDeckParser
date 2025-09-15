@@ -102,7 +102,7 @@ void MainWindow::FillFiltersUsingSet(){
             this->current_type_filters.push_back(c.getCardType());
         }
         if (c.getColor() == Color::NONE){
-            std::cout << c.getName() << " " << std::endl;
+            c.print();
             return;
         }
     }
@@ -217,16 +217,16 @@ void MainWindow::LoadButtonClicked(){
     std::string simulator_path { this->m_simu_path_field->text().toStdString() };
     if (fs::exists(simulator_path)){
         // internal subfolders
-        std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards"+separator();
+        std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
         // parsing all series
         this->series = ParseSeries(cards_folder);
 
 
         for (Serie sa : this->series){
-            std::cout << sa.getName() << " : " << sa.getAllSets().size() << std::endl;
+            /*std::cout << sa.getName() << " : " << sa.getAllSets().size() << std::endl;
             for (Set set_obj : sa.getAllSets()){
                 std::cout << set_obj.getName() << " , " << set_obj.getKey() << " : " << set_obj.getCards().size() << std::endl;
-            }
+            }*/
             this->m_series_dropdown->addItem(QString::fromStdString(sa.getName()));
         }
         this->display_load_series = false;

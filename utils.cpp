@@ -1,10 +1,10 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <iostream>
 #include "utils.h"
 #include "set.h"
 #include <fstream>
-#include <regex>
 #include <filesystem>
 #include "serie.h"
 #include <algorithm>
@@ -35,6 +35,34 @@ std::string GetColorString(Color c){
         return "None";
     }
 }
+
+std::string GetTriggerString(Trigger t){
+    switch (t){
+        case Trigger::BAG:
+            return "Goldbag";
+        case Trigger::BAR:
+            return "Goldbar";
+        case Trigger::BOOK:
+            return "Book";
+        case Trigger::BURN:
+            return "Burn";
+        case Trigger::CHOICE:
+            return "Choice";
+        case Trigger::PANT:
+            return "Pant";
+        case Trigger::SALVAGE:
+            return "Salvage";
+        case Trigger::SOUL:
+            return "Soul";
+        case Trigger::STANDBY:
+            return "Standby";
+        case Trigger::WIND:
+            return "Wind";
+        default:
+            return "None";
+    }
+}
+
 
 std::string GetCardTypeString(CardType t){
     switch (t){
@@ -75,7 +103,7 @@ void ParseCards(Set& set){
         while (std::getline(file, str))
         {
             // std::cout << "reading line : " << str << std::endl;
-            if (str != ""){
+            if (str != "" && str.substr(0,5) != "Combo"){
                 if (str.substr(0,10) == "Character:"){
                     key=trim(str.substr(10,std::string::npos));
                     type = CardType::CHARACTER;
@@ -100,6 +128,9 @@ void ParseCards(Set& set){
                 else if (str.substr(0,6) == "Color "){
 
                     std::string temp_color = trim(str.substr(6,std::string::npos));
+                    if (key == "KS/W49-T10"){
+                        std::cout << "temp color : " << temp_color << std::endl;
+                    }
                     if (temp_color == "Y"){
                         color = Color::YELLOW;
                     }
@@ -146,24 +177,11 @@ void ParseCards(Set& set){
                         trait3 = found_trait;
                     }
                 }
-                else if ((is_previous_line_trait && str.substr(0,5) != "Trait" && !found_text && str.substr(0,5)!= "Text ") || str.substr(0,7) == "Effect:"){
-                    // we finished, now everything that is after this is card code, unless found a line that begins with "Text"
-                    is_previous_line_trait = true;
-                    code += str;
-                }
-                else if (((is_previous_line_trait && str.substr(0,5) == "Text ") || (found_text)) && str.substr(0,7) != "EndCard"){
-                    found_text = true;
-                    if (str.substr(0,5) == "Text "){
-                        text += str.substr(5,std::string::npos);
-                    }
-                    else {
-                        text += str;
-                    }
-                    // here, we finished going through the card code, it's time to parse text
-                }
                 else if (type == CardType::CLIMAX && str.substr(0,1) == "*"){ // THIS IS ONLY FOR DETERMINING CLIMAX TRIGGERS AND COLORS. MANDATORY
                     //todo
-                    std::string trigger_found = str.substr(0,1);
+
+
+                    std::string trigger_found = trim(str.substr(1,std::string::npos));
                     if (trigger_found == "DoorClimax"){
                         trigger1 = Trigger::SALVAGE;
                         trigger2 = Trigger::NONE;
@@ -212,6 +230,12 @@ void ParseCards(Set& set){
                     if (trigger_found == "ChoiceClimax"){
                         trigger1 = Trigger::CHOICE;
                         trigger2 = Trigger::NONE;
+                        color = Color::YELLOW;
+                    }
+
+                    if (trigger_found == "ShotClimax"){
+                        trigger1 = Trigger::BURN;
+                        trigger2 = Trigger::SOUL;
                         color = Color::YELLOW;
                     }
 
@@ -294,11 +318,23 @@ void ParseCards(Set& set){
                         trigger2 = Trigger::SOUL;
 
                     }
-
-
-
-
                 }
+                else if ((is_previous_line_trait && str.substr(0,5) != "Trait" && !found_text && str.substr(0,5)!= "Text ") || str.substr(0,7) == "Effect:"){
+                    // we finished, now everything that is after this is card code, unless found a line that begins with "Text"
+                    is_previous_line_trait = true;
+                    code += trim(str);
+                }
+                else if (((is_previous_line_trait && str.substr(0,5) == "Text ") || (found_text)) && str.substr(0,7) != "EndCard"){
+                    found_text = true;
+                    if (str.substr(0,5) == "Text "){
+                        text += trim(str.substr(5,std::string::npos));
+                    }
+                    else {
+                        text += trim(str);
+                    }
+                    // here, we finished going through the card code, it's time to parse text
+                }
+
                 else if (str.substr(0,7) == "EndCard"){
                     cards.push_back(Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
                     key = "";
@@ -375,6 +411,7 @@ void ParseSets(Serie& serie,std::string card_path){
 std::vector<Serie> ParseSeries(std::string cards_path){
     // list all subfolders
     std::vector<std::string> series_found = ListFoldersInFolder(std::string_view {cards_path});
+    std::sort(series_found.begin(), series_found.end());
     std::vector<Serie> series {};
     for (std::string serie_path : series_found){
         // retrieve name of the subfolder as serie name
