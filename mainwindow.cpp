@@ -38,27 +38,15 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->display_pick_set = false;
     this->display_cards = false;
     // layouts setup
-    this->m_simu_path_field = new QLineEdit(this);
-    this->m_simu_path_field->setGeometry(10,10,600,30);
-    this->m_button_loadseries = new QPushButton("Load series",this);
-    this->m_button_loadseries->setGeometry(620,10,80,30);
-    this->m_series_dropdown = new QComboBox(this);
-    this->m_series_dropdown->setPlaceholderText(QString::fromStdString("Pick a serie"));
-    this->m_series_dropdown->setGeometry(10,10,400,30);
-    this->m_series_pick_button = new QPushButton("Validate",this);
-    this->m_series_pick_button->setGeometry(420,10,80,30);
 
-    this->m_set_dropdown = new QComboBox(this);
-    this->m_set_dropdown->setPlaceholderText(QString::fromStdString("Pick a set"));
-    this->m_set_dropdown->setGeometry(10,50,500,30);
-    this->m_set_pick_button = new QPushButton("Validate",this);
-    this->m_set_pick_button->setGeometry(520,50,80,30);
 
     this->UpdateUi();
     //binding signals
-    connect(this->m_button_loadseries, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
-    connect(this->m_series_pick_button, SIGNAL (clicked(bool)), this, SLOT (OnSeriePick()));
-    connect(this->m_set_pick_button, SIGNAL (clicked(bool)), this, SLOT (OnSetPick()));
+    connect(this->ui->loadSimulatorButton, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
+    connect(this->ui->serieLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSeriePick()));
+    connect(this->ui->setLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSetPick()));
+    connect(this->ui->actionExit, SIGNAL (triggered()), this, SLOT (OnExit()));
+    connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
 }
 
 MainWindow::~MainWindow()
@@ -106,6 +94,16 @@ void MainWindow::FillFiltersUsingSet(){
             return;
         }
     }
+
+    std::sort(this->available_level_filters.begin(),this->available_level_filters.end());
+    std::sort(this->available_cost_filters.begin(),this->available_cost_filters.end());
+    std::sort(this->available_color_filters.begin(),this->available_color_filters.end());
+    std::sort(this->current_level_filters.begin(),this->current_level_filters.end());
+    std::sort(this->current_cost_filters.begin(),this->current_cost_filters.end());
+    std::sort(this->current_color_filters.begin(),this->current_color_filters.end());
+    std::sort(this->available_type_filters.begin(),this->available_type_filters.end());
+    std::sort(this->current_type_filters.begin(),this->current_type_filters.end());
+
     std::cout << "Available level filters"  << std::endl;
     for (int l : this->available_level_filters){
         std::cout << l << " , ";
@@ -151,13 +149,13 @@ int MainWindow::getGridCount(){
     return this->grid_height*this->grid_width;
 }
 void MainWindow::UpdateUi(){
-    this->m_button_loadseries->setVisible(this->display_load_series);
-    this->m_simu_path_field->setVisible(this->display_load_series);
-    this->m_series_dropdown->setVisible(!this->display_load_series);
-    this->m_series_pick_button->setVisible(!this->display_load_series);
-    this->m_set_pick_button->setVisible(this->display_pick_set);
-    this->m_set_dropdown->setVisible(this->display_pick_set);
-
+    //this->display_load_series = true;
+    //this->display_pick_set = false;
+    //this->display_cards = false;
+    this->ui->simulatorWidget->setVisible(this->display_load_series);
+    this->ui->serieAndSetWidget->setVisible(!this->display_load_series);
+    this->ui->serieWidget_2->setVisible(!this->display_load_series);
+    this->ui->setWidget_2->setVisible(display_pick_set);
 }
 
 std::vector<Serie> MainWindow::getAllSeries(){
@@ -173,12 +171,12 @@ Serie MainWindow::getSerieByName(std::string name){
 }
 
 void MainWindow::OnSeriePick(){
-    std::string choosen_serie_name = this->m_series_dropdown->currentText().toStdString();
+    std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
     //QMessageBox::information(this, "Item Selection",
     //                         this->m_series_dropdown->currentText());
     this->display_pick_set = true;
     this->UpdateUi();
-    this->m_set_dropdown->clear();
+    this->ui->setPickBox->clear();
     for (int i {0}; i < this->series.size(); ++i){
         if (this->series.at(i).getName() ==  choosen_serie_name){
             this->choosen_serie = &this->series.at(i);
@@ -188,17 +186,17 @@ void MainWindow::OnSeriePick(){
 
     if (this->choosen_serie != nullptr){
         for (Set se : this->choosen_serie->getAllSets()){
-            this->m_set_dropdown->addItem(QString::fromStdString(se.getName()));
+            this->ui->setPickBox->addItem(QString::fromStdString(se.getName()));
         }
     }
     else{
-        std::cout << "Error, serie not found among the list : " << this->m_series_dropdown->currentText().toStdString() << std::endl;
+        std::cout << "Error, serie not found among the list : " << this->ui->seriePickBox->currentText().toStdString() << std::endl;
     }
 
 }
 
 void MainWindow::OnSetPick(){
-    std::string choosen_set_name = this->m_set_dropdown->currentText().toStdString();
+    std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
     this->UpdateUi();
     if (this->choosen_serie != nullptr){
@@ -212,9 +210,58 @@ void MainWindow::OnSetPick(){
     this->FillFiltersUsingSet();
 }
 
+void MainWindow::OnExit(){
+    QApplication::quit();
+}
+
+void MainWindow::OnUnloadSimulator(){
+    this->UnloadData();
+}
+
+void MainWindow::UnloadData(){
+    this->available_level_filters.clear(); // Clear memory of objects in the vector
+    this->available_level_filters = {}; // completely reset the size of the vector itself
+    this->available_cost_filters.clear(); // Clear memory of objects in the vector
+    this->available_cost_filters = {}; // completely reset the size of the vector itself
+    this->available_color_filters.clear(); // Clear memory of objects in the vector
+    this->available_color_filters = {}; // completely reset the size of the vector itself
+    this->available_type_filters.clear(); // Clear memory of objects in the vector
+    this->available_type_filters = {}; // completely reset the size of the vector itself
+
+
+    this->current_level_filters.clear(); // Clear memory of objects in the vector
+    this->current_level_filters = {}; // completely reset the size of the vector itself
+    this->current_cost_filters.clear(); // Clear memory of objects in the vector
+    this->current_cost_filters = {}; // completely reset the size of the vector itself
+    this->current_type_filters.clear(); // Clear memory of objects in the vector
+    this->current_type_filters = {}; // completely reset the size of the vector itself
+    this->current_color_filters.clear(); // Clear memory of objects in the vector
+    this->current_color_filters = {}; // completely reset the size of the vector itself
+
+    this->current_orders.clear();
+    this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING};
+
+    this->series.clear();
+    this->series = {};
+
+    this->choosen_serie = nullptr;
+    this->choosen_set = nullptr;
+
+    this->display_load_series = true;
+    this->display_pick_set = false;
+    this->display_cards = false;
+
+    this->ui->simulatorPathBox->clear();
+    this->ui->seriePickBox->clear();
+    this->ui->setPickBox->clear();
+
+    this->UpdateUi();
+
+}
+
 void MainWindow::LoadButtonClicked(){
     //"/home/ben/Games/Weiss Schwarz 0.6.3.2 Linux/Weiss Schwarz 0.6.3.2 Linux_Data/"
-    std::string simulator_path { this->m_simu_path_field->text().toStdString() };
+    std::string simulator_path { this->ui->simulatorPathBox->text().toStdString() };
     if (fs::exists(simulator_path)){
         // internal subfolders
         std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
@@ -227,7 +274,7 @@ void MainWindow::LoadButtonClicked(){
             for (Set set_obj : sa.getAllSets()){
                 std::cout << set_obj.getName() << " , " << set_obj.getKey() << " : " << set_obj.getCards().size() << std::endl;
             }*/
-            this->m_series_dropdown->addItem(QString::fromStdString(sa.getName()));
+            this->ui->seriePickBox->addItem(QString::fromStdString(sa.getName()));
         }
         this->display_load_series = false;
         this->UpdateUi();

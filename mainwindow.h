@@ -25,7 +25,7 @@ public:
     int getGridCount();
     int current_cards_index;
     void FillFiltersUsingSet();
-
+    void UnloadData();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
@@ -45,15 +45,11 @@ private:
     int grid_width;
     std::vector<Orders> current_orders;
     int grid_height;
-    QLineEdit *m_simu_path_field;
-    QComboBox *m_series_dropdown;
-    QPushButton *m_button_loadseries;
-    QPushButton *m_series_pick_button;
-    QPushButton *m_set_pick_button;
-    QComboBox *m_set_dropdown;
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();
     void OnSetPick();
+    void OnExit();
+    void OnUnloadSimulator();
 };
 #endif // MAINWINDOW_H
