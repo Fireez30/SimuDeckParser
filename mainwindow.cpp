@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
     //data
     this->series = {};
+    this->current_cards_to_display = {};
     this->choosen_serie = nullptr;
     this->choosen_set = nullptr;
     this->grid_height = grid_height;
@@ -195,6 +196,66 @@ void MainWindow::OnSeriePick(){
 
 }
 
+void MainWindow::FillCardsUsingFilters(){
+    this->current_cards_to_display = {};
+    std::vector<Card>& cards = this->choosen_set->getCards();
+    for (Card c : cards){
+        // apply filter by not adding filtered cards
+        if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
+            std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
+            std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end() &&
+            std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
+        {
+            this->current_cards_to_display.push_back(&c);
+        }
+    }
+}
+void MainWindow::SortFilteredCards(){
+    std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card* a, Card* b) { // lambda func
+        if (this->current_orders.size()){
+            for (Orders o : this->current_orders){
+                if (o == Orders::LEVEL_ASCENDING){
+                    if (a->getLevel() != b->getLevel()){
+                        return a->getLevel() < b->getLevel();
+                    }
+                }
+                else if (o == Orders::LEVEL_DESCENDING){
+                    if (a->getLevel() != b->getLevel()){
+                        return a->getLevel() > b->getLevel();
+                    }
+                }
+
+                else if (o == Orders::COST_ASCENDING){
+                    if (a->getCost() != b->getCost()){
+                        return a->getCost() < b->getCost();
+                    }
+                }
+                else if (o == Orders::COST_DESCENDING){
+                    if (a->getCost() != b->getCost()){
+                        return a->getCost() > b->getCost();
+                    }
+                }
+
+                else if (o == Orders::POWER_ASCENDING){
+                    if (a->getPower() != b->getPower()){
+                        return a->getPower() < b->getPower();
+                    }
+                }
+                else if (o == Orders::POWER_DESCENDING){
+                    if (a->getPower() != b->getPower()){
+                        return a->getPower() > b->getPower();
+                    }
+                }
+            }
+        }
+        if (a->getLevel() != b->getLevel()){ // default is level > power
+            return a->getLevel() < b->getLevel();
+        }
+        else {
+            return a->getPower() > b->getPower(); // default is power but should not happen
+        }
+    });
+}
 void MainWindow::OnSetPick(){
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
@@ -208,6 +269,9 @@ void MainWindow::OnSetPick(){
         }
     }
     this->FillFiltersUsingSet();
+    this->FillCardsUsingFilters();
+    this->SortFilteredCards();
+
 }
 
 void MainWindow::OnExit(){

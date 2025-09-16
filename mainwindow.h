@@ -26,6 +26,8 @@ public:
     int current_cards_index;
     void FillFiltersUsingSet();
     void UnloadData();
+    void FillCardsUsingFilters();
+    void SortFilteredCards();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
@@ -45,6 +47,7 @@ private:
     int grid_width;
     std::vector<Orders> current_orders;
     int grid_height;
+    std::vector<Card*> current_cards_to_display;
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();

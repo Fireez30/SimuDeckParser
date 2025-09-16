@@ -155,6 +155,46 @@ void ParseCards(Set& set){
                     if (result != lresult) throw std::out_of_range("Error parsing level ! ");
                     level = result;
                 }
+                else if (str.substr(0,6) ==  "Clone "){
+                    std::string cloned_card_name = trim(str.substr(6,std::string::npos));
+                    //std::cout << key << " cloned from " << cloned_card_name << std::endl;
+                    for (Card c : cards){
+
+                        if (c.getKey() == cloned_card_name){
+                            //std::cout << "found cloned card" << c.getKey() << std::endl;
+                            type=c.getCardType();
+                            name = c.getName();
+                            path = c.getImagePath();
+                            color = c.getColor();
+                            level = c.getLevel();
+                            cost = c.getCost();
+                            power = c.getPower();
+                            trigger1 = Trigger::NONE;
+                            if (c.getTriggers().size()>0){
+                                trigger1 = c.getTriggers().at(0);
+                            }
+                            trigger2 = Trigger::NONE;
+                            if (c.getTriggers().size()>1){
+                                trigger2 = c.getTriggers().at(1);
+                            }
+
+                            soul_count = c.getSoulCount();
+                            code = c.getSimulatorCode();
+                            text = c.getText();
+                            for (std::string trait : c.getTraits()){
+                                if (trait1 == ""){
+                                    trait1 = trait;
+                                }
+                                else if (trait2 == ""){
+                                    trait2 = trait;
+                                }
+                                else if (trait3 == ""){
+                                    trait3 = trait;
+                                }
+                            }
+                        }
+                    }
+                }
                 else if (str.substr(0,5) == "Cost "){
                     unsigned long lresult = stoul(trim(str.substr(5,std::string::npos)), 0, 10);
                     unsigned int result = lresult;
