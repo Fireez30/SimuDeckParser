@@ -54,5 +54,6 @@ private slots:
     void OnSetPick();
     void OnExit();
     void OnUnloadSimulator();
+    void TestFiltersAndSorts();
 };
 #endif // MAINWINDOW_H

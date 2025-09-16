@@ -228,6 +228,13 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="testFiltersButton">
+          <property name="text">
+           <string>Test filters sorts</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

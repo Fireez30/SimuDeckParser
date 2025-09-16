@@ -48,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->setLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSetPick()));
     connect(this->ui->actionExit, SIGNAL (triggered()), this, SLOT (OnExit()));
     connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
+    connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +56,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::TestFiltersAndSorts(){
+    this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::YELLOW), this->current_color_filters.end());
+    this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::BLUE), this->current_color_filters.end());
+    std::cout << "Current color filters : " << std::endl;
+    for (Color c : this->current_color_filters){
+        std::cout << GetColorString(c) << std::endl;
+    }
+    this->FillCardsUsingFilters();
+    this->SortFilteredCards();
+
+    std::cout << "Found " << this->current_cards_to_display.size() << " red only card cards " << std::endl;
+}
 void MainWindow::FillFiltersUsingSet(){
     if (this->choosen_set == nullptr){
         return;
@@ -203,7 +216,7 @@ void MainWindow::FillCardsUsingFilters(){
         // apply filter by not adding filtered cards
         if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
             std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
-            std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end() &&
+            std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
             std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
         {
             this->current_cards_to_display.push_back(&c);
@@ -268,9 +281,12 @@ void MainWindow::OnSetPick(){
 
         }
     }
+
     this->FillFiltersUsingSet();
     this->FillCardsUsingFilters();
     this->SortFilteredCards();
+    std::cout << "Found " << this->current_cards_to_display.size() << " cards " << std::endl;
+
 
 }
 
