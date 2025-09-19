@@ -2,6 +2,7 @@
 #define UTILS_H
 #include<vector>
 #include<string>
+class Card;
 class Serie;
 
 enum class Color {
@@ -50,7 +51,8 @@ std::string GetCardTypeString(CardType t);
 std::string GetTriggerString(Trigger t);
 
 
-
+void WriteTextToFile(std::string text, std::string file_path);
+void WriteCardsToFile(std::vector<Card> cards,std::string file_path);
 
 
 // Parse folders inside current folder

@@ -39,30 +39,36 @@ Card::Card(std::string key,CardType type,std::string name,std::string path,Color
 }
 
 void Card::print(){
+    std::string card_text = this->getWholeCardText();
+
     std::cout << " ------------------ " << std::endl;
-    std::cout << " Card : " << this->getKey() << " (" << GetCardTypeString(this->type) << ")" << std::endl;
-    std::cout << "    name : " << this->getName() << std::endl;
-    std::cout << "    level "<< this->getLevel() << " / cost " << this->getCost() << std::endl;
-    std::cout << "    power : " << this->getPower() << std::endl;
-    std::cout << "    color : " << GetColorString(this->getColor()) << std::endl;
+    std::cout << card_text << std::endl;
+}
+
+std::string Card::getWholeCardText(){
+    std::string whole_text;
+    whole_text += " Card : " + this->getKey() + " (" + GetCardTypeString(this->type) + ") \n";
+    whole_text += "    name : " + this->getName() + "\n";
+    whole_text += "    level "+ std::to_string(this->getLevel()) + " / cost " + std::to_string(this->getCost()) + "\n";
+    whole_text += "    power : " + std::to_string(this->getPower()) + "\n";
+    whole_text += "    color : " + GetColorString(this->getColor()) + "\n";
     if (this->triggers.size() > 0){
-        std::cout << "    triggers : ";
+        whole_text += "    triggers : ";
         for (Trigger t : this->triggers){
-            std::cout << GetTriggerString(t) << " ";
+            whole_text += GetTriggerString(t) + " ";
         }
-        std::cout << std::endl;
+        whole_text += "\n";
     }
-    std::cout << "    souls : " << this->getSoulCount() << std::endl;
+    whole_text += "    souls : " + std::to_string(this->getSoulCount()) + "\n";
     if (this->triggers.size() > 0){
         for (int i {0}; i < this->getTraits().size() ; ++i){
-            std::cout << "trait " << i << " : " << this->getTraits()[i] << std::endl;
+            whole_text += "trait " + std::to_string(i) + " : " + this->getTraits()[i] + "\n";
         }
     }
-    std::cout << "    text : " << this->getText() << std::endl;
-    std::cout << "    code : " << this->getSimulatorCode() << std::endl;
-    std::cout << "    image : " << this->getImagePath() << std::endl;
-    std::cout << " ------------------ " << std::endl;
-
+    whole_text += "    text : " + this->getText() + "\n";
+    whole_text +="    code : " + this->getSimulatorCode() + "\n";
+    whole_text += "    image : " + this->getImagePath() + "\n";
+    return whole_text;
 }
 
 CardType Card::getCardType(){

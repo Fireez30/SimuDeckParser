@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QLabel>
 #include <QComboBox>
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,6 +29,13 @@ public:
     void UnloadData();
     void FillCardsUsingFilters();
     void SortFilteredCards();
+    void RemoveFilter(std::string filter);
+    void AddFilter(std::string filter);
+    void RemoveOrder(std::string order);
+    void AddOrder(std::string order);
+    void DisplayFilteredCards();
+    std::vector<QLabel*> currentCardsImages;
+    void DestroyDisplayedCards();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
@@ -47,7 +55,7 @@ private:
     int grid_width;
     std::vector<Orders> current_orders;
     int grid_height;
-    std::vector<Card*> current_cards_to_display;
+    std::vector<Card> current_cards_to_display;
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();

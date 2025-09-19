@@ -4,6 +4,9 @@
 #include<QLineEdit>
 #include "utils.h"
 #include <QComboBox>
+#include <QFile>
+#include <QLabel>
+#include <QScrollArea>
 #include <QMessageBox>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -16,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
     //data
     this->series = {};
+    this->currentCardsImages={};
     this->current_cards_to_display = {};
     this->choosen_serie = nullptr;
     this->choosen_set = nullptr;
@@ -23,6 +27,10 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->grid_width = grid_width;
     this->current_cards_index = 0;
 
+
+    this->ui->cardGridWidget_2->setViewMode(QListView::IconMode);
+    this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
+    this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
     //orders and filters
     this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
 
@@ -56,9 +64,31 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void RemoveFilter(std::string filter){
+    // parser to determine what filter will be used
+
+
+}
+void AddFilter(std::string filter);
+void RemoveOrder(std::string order);
+void AddOrder(std::string order);
+
 void MainWindow::TestFiltersAndSorts(){
+    std::cout << "test filter and sorts" << std::endl;
+    WriteCardsToFile(this->current_cards_to_display,"/home/ben/cards_to_display_before.txt");
+     std::cout << "after first save" << std::endl;
+    // Try to filter each possibility to only get level 3 red character, than sort on reverse power
     this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::YELLOW), this->current_color_filters.end());
     this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::BLUE), this->current_color_filters.end());
+    this->current_type_filters.erase(std::remove(this->current_type_filters.begin(), this->current_type_filters.end(), CardType::EVENT), this->current_type_filters.end());
+    this->current_type_filters.erase(std::remove(this->current_type_filters.begin(), this->current_type_filters.end(), CardType::CLIMAX), this->current_type_filters.end());
+    this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), 0), this->current_level_filters.end());
+    this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), 1), this->current_level_filters.end());
+    this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), 2), this->current_level_filters.end());
+
+    this->current_orders.erase(std::remove(this->current_orders.begin(), this->current_orders.end(), Orders::POWER_ASCENDING), this->current_orders.end());
+    this->current_orders.push_back(Orders::POWER_DESCENDING);
+
     std::cout << "Current color filters : " << std::endl;
     for (Color c : this->current_color_filters){
         std::cout << GetColorString(c) << std::endl;
@@ -67,6 +97,11 @@ void MainWindow::TestFiltersAndSorts(){
     this->SortFilteredCards();
 
     std::cout << "Found " << this->current_cards_to_display.size() << " red only card cards " << std::endl;
+    for (Card c2 : this->current_cards_to_display){
+        std::cout << c2.getName() << std::endl;
+        std::cout << "Card level " << c2.getLevel() << " color " << GetColorString(c2.getColor()) << std::endl;
+    }
+    WriteCardsToFile(this->current_cards_to_display,"/home/ben/cards_to_display_after.txt");
 }
 void MainWindow::FillFiltersUsingSet(){
     if (this->choosen_set == nullptr){
@@ -169,7 +204,8 @@ void MainWindow::UpdateUi(){
     this->ui->simulatorWidget->setVisible(this->display_load_series);
     this->ui->serieAndSetWidget->setVisible(!this->display_load_series);
     this->ui->serieWidget_2->setVisible(!this->display_load_series);
-    this->ui->setWidget_2->setVisible(display_pick_set);
+    this->ui->setWidget_2->setVisible(this->display_pick_set);
+    this->ui->CardWholeAreaWidget_2->setVisible(this->display_pick_set);
 }
 
 std::vector<Serie> MainWindow::getAllSeries(){
@@ -219,53 +255,62 @@ void MainWindow::FillCardsUsingFilters(){
             std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
             std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
         {
-            this->current_cards_to_display.push_back(&c);
+            this->current_cards_to_display.push_back(c);
         }
     }
 }
 void MainWindow::SortFilteredCards(){
-    std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card* a, Card* b) { // lambda func
+    std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card a, Card b) { // lambda func
         if (this->current_orders.size()){
             for (Orders o : this->current_orders){
+                if (a.getColor() != b.getColor()){
+                    return a.getColor() < b.getColor();
+                }
+                else
+                {
+                    if (a.getCardType() != b.getCardType()){
+                        return a.getCardType() < b.getCardType();
+                    }
+                }
                 if (o == Orders::LEVEL_ASCENDING){
-                    if (a->getLevel() != b->getLevel()){
-                        return a->getLevel() < b->getLevel();
+                    if (a.getLevel() != b.getLevel()){
+                        return a.getLevel() < b.getLevel();
                     }
                 }
                 else if (o == Orders::LEVEL_DESCENDING){
-                    if (a->getLevel() != b->getLevel()){
-                        return a->getLevel() > b->getLevel();
+                    if (a.getLevel() != b.getLevel()){
+                        return a.getLevel() > b.getLevel();
                     }
                 }
 
                 else if (o == Orders::COST_ASCENDING){
-                    if (a->getCost() != b->getCost()){
-                        return a->getCost() < b->getCost();
+                    if (a.getCost() != b.getCost()){
+                        return a.getCost() < b.getCost();
                     }
                 }
                 else if (o == Orders::COST_DESCENDING){
-                    if (a->getCost() != b->getCost()){
-                        return a->getCost() > b->getCost();
+                    if (a.getCost() != b.getCost()){
+                        return a.getCost() > b.getCost();
                     }
                 }
 
                 else if (o == Orders::POWER_ASCENDING){
-                    if (a->getPower() != b->getPower()){
-                        return a->getPower() < b->getPower();
+                    if (a.getPower() != b.getPower()){
+                        return a.getPower() < b.getPower();
                     }
                 }
                 else if (o == Orders::POWER_DESCENDING){
-                    if (a->getPower() != b->getPower()){
-                        return a->getPower() > b->getPower();
+                    if (a.getPower() != b.getPower()){
+                        return a.getPower() > b.getPower();
                     }
                 }
             }
         }
-        if (a->getLevel() != b->getLevel()){ // default is level > power
-            return a->getLevel() < b->getLevel();
+        if (a.getLevel() != b.getLevel()){ // default is level > power
+            return a.getLevel() < b.getLevel();
         }
         else {
-            return a->getPower() > b->getPower(); // default is power but should not happen
+            return a.getPower() > b.getPower(); // default is power but should not happen
         }
     });
 }
@@ -285,11 +330,65 @@ void MainWindow::OnSetPick(){
     this->FillFiltersUsingSet();
     this->FillCardsUsingFilters();
     this->SortFilteredCards();
+    this->DisplayFilteredCards();
     std::cout << "Found " << this->current_cards_to_display.size() << " cards " << std::endl;
 
 
 }
 
+void MainWindow::DisplayFilteredCards(){
+    int row = 0, col = 0;
+    const int columns = 4; // adjust grid width
+
+    for (Card c : this->current_cards_to_display){
+        /*
+
+        QLabel label = QLabel(this->ui->cardGridWidget_2);
+        QPixmap pixmap(QString::fromStdString(c.getImagePath()));
+        label.setPixmap(pixmap);
+        label.setMask(pixmap.mask());
+        label.setFixedWidth(30);
+        label.setFixedHeight(40);
+        label.setVisible(true);
+        this->currentCardsImages.push_back(&label);
+        std::cout << "added label" << std::endl;
+*/
+        std::cout << c.getImagePath() << std::endl;
+        if (c.getImagePath() != "" ){
+            std::string path_str = c.getImagePath();
+            //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
+            QString path_image = QString::fromStdString(path_str);
+            if (QFile::exists(path_image)) {
+                /*QPixmap pix(path_image);
+                QLabel *imgLabel = new QLabel;
+                imgLabel->setPixmap(pix);
+                imgLabel->setToolTip(QString("Path: %1\nSize: %2x%3")
+                                         .arg(c.getImagePath())
+                                         .arg(pix.width())
+                                         .arg(pix.height()));
+                imgLabel->setFixedSize(60, 50); // add padding around thumbnail
+                //imgLabel->setAlignment(Qt::AlignCenter);*/
+
+                QListWidgetItem *item = new QListWidgetItem(QIcon(path_image), "");
+                this->ui->cardGridWidget_2->addItem(item);
+                //this->ui->cardGridWidget_2->addWidget(imgLabel);
+
+                if (++col >= columns) {
+                    col = 0;
+                    ++row;
+                }
+            } else {
+                qWarning() << "Image not found:" << path_image;
+            }
+
+        }
+
+    }
+}
+
+void MainWindow::DestroyDisplayedCards(){
+
+}
 void MainWindow::OnExit(){
     QApplication::quit();
 }

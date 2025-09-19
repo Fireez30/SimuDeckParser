@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "set.h"
 #include <fstream>
+#include <QFile>
 #include <filesystem>
 #include "serie.h"
 #include <algorithm>
@@ -36,6 +37,24 @@ std::string GetColorString(Color c){
     }
 }
 
+void WriteTextToFile(std::string text, std::string file_path){
+    std::ofstream outputFile(file_path);  // Open/create a file named "test.txt" for writing
+
+    if (outputFile.is_open()) {  // Check if the file was successfully opened
+        // Write some text into the file
+        outputFile << text;  // Write a line of text to the file
+        // Close the file
+        outputFile.close();  // Close the file after writing
+    }
+}
+void WriteCardsToFile(std::vector<Card> cards,std::string file_path){
+    std::string text;
+    for (Card card : cards){
+        text += " ------------------ ";
+        text += card.getWholeCardText();
+    }
+    WriteTextToFile(text,file_path);
+}
 std::string GetTriggerString(Trigger t){
     switch (t){
         case Trigger::BAG:
@@ -118,7 +137,15 @@ void ParseCards(Set& set){
                 }
 
                 else if (str.substr(0,6) == "Image "){
-                    path=set_path+separator()+trim(str.substr(6,std::string::npos))+".jpg";
+
+                    std::string sub_str = str.substr(6,std::string::npos);
+                    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+                    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+                    path=set_path+separator()+trim(sub_str)+".jpg";
+                     if (!QFile::exists(QString::fromStdString(path))) {
+                        path = "empty_card.jpg";
+                    }
+
                 }
 
                 else if (str.substr(0,5) == "Name "){
@@ -376,6 +403,13 @@ void ParseCards(Set& set){
                 }
 
                 else if (str.substr(0,7) == "EndCard"){
+                    std::string sub_str = key;
+                    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+                    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+                    path=set_path+separator()+trim(sub_str)+".jpg";
+                    if (!QFile::exists(QString::fromStdString(path))) {
+                        path = "empty_card.jpg";
+                    }
                     cards.push_back(Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
                     key = "";
                     type=CardType::CHARACTER;

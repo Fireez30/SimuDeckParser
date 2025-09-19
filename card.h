@@ -24,6 +24,7 @@ public:
     CardType getCardType();
     std::string getText();
     void print();
+    std::string getWholeCardText();
 protected:
     CardType type;
     std::string key;
