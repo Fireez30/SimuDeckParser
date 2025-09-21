@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->current_cards_index = 0;
 
 
-    this->ui->cardGridWidget_2->setViewMode(QListView::IconMode);
+    this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
     //orders and filters
@@ -358,19 +358,31 @@ void MainWindow::DisplayFilteredCards(){
             std::string path_str = c.getImagePath();
             //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
             QString path_image = QString::fromStdString(path_str);
+            QWidget* final_widget = new QWidget();
+            QHBoxLayout* qblayout = new QHBoxLayout(final_widget);
             if (QFile::exists(path_image)) {
-                /*QPixmap pix(path_image);
-                QLabel *imgLabel = new QLabel;
+                QPixmap pix(path_image);
+                QLabel* textLabel = new QLabel("<p><b>This text is bold</b></p>"
+"<p><i>This text is italic</i></p>"
+"<p>This is<sub> subscript</sub> and <sup>superscript</sup></p>");
+                QLabel* imgLabel = new QLabel();
+                textLabel->setTextFormat(Qt::RichText);
+                imgLabel->setScaledContents( true );
+                imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
                 imgLabel->setPixmap(pix);
-                imgLabel->setToolTip(QString("Path: %1\nSize: %2x%3")
-                                         .arg(c.getImagePath())
-                                         .arg(pix.width())
-                                         .arg(pix.height()));
-                imgLabel->setFixedSize(60, 50); // add padding around thumbnail
+                imgLabel->setFixedSize(280, 391); // add padding around thumbnail
+                textLabel->setMinimumHeight(391);
+                textLabel->setAlignment(Qt::AlignLeft);
+                qblayout->addWidget(imgLabel);
+                qblayout->addWidget(textLabel);
+                //qblayout->addStretch(1);
+                //qblayout->setSpacing(0);
                 //imgLabel->setAlignment(Qt::AlignCenter);*/
-
-                QListWidgetItem *item = new QListWidgetItem(QIcon(path_image), "");
+                final_widget->setFixedHeight(391);
+                QListWidgetItem *item = new QListWidgetItem();
                 this->ui->cardGridWidget_2->addItem(item);
+                this->ui->cardGridWidget_2->setItemWidget(item,final_widget);
+                item->setSizeHint( final_widget->sizeHint() );
                 //this->ui->cardGridWidget_2->addWidget(imgLabel);
 
                 if (++col >= columns) {
@@ -384,6 +396,9 @@ void MainWindow::DisplayFilteredCards(){
         }
 
     }
+    //this->ui->cardGridWidget_2->setFixedSize(ui->cardGridWidget_2->sizeHintForColumn(0) + ui->cardGridWidget_2->frameWidth() * 2,
+    //                             ui->cardGridWidget_2->sizeHintForRow(0) * ui->cardGridWidget_2->count() + 2 * ui->cardGridWidget_2->frameWidth());
+
 }
 
 void MainWindow::DestroyDisplayedCards(){
