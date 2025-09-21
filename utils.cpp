@@ -18,6 +18,8 @@ inline std::string trim(const std::string &s)
     return (wsback<=wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
+std::string settings_file = "settings.txt";
+
 std::string GetColorString(Color c){
     switch (c){
     case Color::YELLOW:
@@ -37,6 +39,84 @@ std::string GetColorString(Color c){
     }
 }
 
+std::map<std::string,std::string> get_settings(){
+    std::string setting_path = settings_file;
+    std::map<std::string,std::string> current_settings = {};
+    if (fs::exists(setting_path)){
+        std::ifstream file(setting_path);
+        std::string str;
+        bool parsing_set = false;
+        std::string set_key;
+        std::string set_val;
+        std::string del = "'";
+
+        //std::cout << "Serie : " << serie.getName() << std::endl;
+        while (std::getline(file, str))
+        {
+            if (str != ""){
+                auto pos = str.find(del); // ALL OF THIS BECAUSE C++ DOESNT HAVE A STRING SPLIT FUNCTION OzjQDIQZJIDJQZOP
+                while (pos != std::string::npos) {
+                    if (set_key == ""){
+                        set_key = str.substr(0,pos);
+                    }
+                    else if (set_val == ""){
+                        set_val = str.substr(0,pos);
+                    }
+                    str.erase(0, pos + del.length());
+                    pos = str.find(del);
+                }
+                if (set_key != "" && set_val != ""){
+                    current_settings[set_key] = set_val;
+                }
+            }
+        }
+    }
+    return current_settings;
+
+}
+
+std::string GetSetting(std::string setting_key){
+    std::map<std::string,std::string>::iterator it;
+    std::map<std::string,std::string> current_settings = get_settings();
+    for (it = current_settings.begin(); it != current_settings.end(); it++){
+        if ((*it).first == setting_key){
+            return (*it).second;
+        }
+    }
+    return "";
+}
+
+void AddOrUpdateSetting(std::string setting_key,std::string setting_value){
+
+    std::map<std::string,std::string> current_settings = get_settings();
+    current_settings[setting_key] = setting_value;
+    WriteSettings(current_settings);
+
+}
+
+void DeleteSetting(std::string setting_key){
+    std::map<std::string,std::string> current_settings = get_settings();
+    std::map<std::string,std::string>::iterator it;
+    it = current_settings.find (setting_key);             // by iterator (b), leaves acdefghi.
+    current_settings.erase (it);
+    WriteSettings(current_settings);
+}
+
+void WriteSettings(std::map<std::string,std::string> setting_map){
+    std::string setting_path = settings_file;
+    std::ofstream outputFile(setting_path);  // Open/create a file named "test.txt" for writing
+    std::map<std::string, std::string>::iterator it;
+    if (outputFile.is_open()) {  // Check if the file was successfully opened
+        for (it = setting_map.begin(); it != setting_map.end(); it++)
+        {
+            outputFile << it->first+":"+it->second<< std::endl;  // Write a line of text to the file
+        }
+        // Write some text into the file
+
+        // Close the file
+        outputFile.close();  // Close the file after writing
+    }
+};
 void WriteTextToFile(std::string text, std::string file_path){
     std::ofstream outputFile(file_path);  // Open/create a file named "test.txt" for writing
 

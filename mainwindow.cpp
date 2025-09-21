@@ -57,6 +57,12 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->actionExit, SIGNAL (triggered()), this, SLOT (OnExit()));
     connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
     connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
+
+    std::string previous_path = GetSetting("simulator_data_path");
+    if (previous_path != ""){
+        LoadSimulator(GetSetting("simulator_data_path"));
+    }
+    //
 }
 
 MainWindow::~MainWindow()
@@ -409,6 +415,7 @@ void MainWindow::OnExit(){
 }
 
 void MainWindow::OnUnloadSimulator(){
+    DeleteSetting("simulator_data_path");
     this->UnloadData();
 }
 
@@ -453,9 +460,7 @@ void MainWindow::UnloadData(){
 
 }
 
-void MainWindow::LoadButtonClicked(){
-    //"/home/ben/Games/Weiss Schwarz 0.6.3.2 Linux/Weiss Schwarz 0.6.3.2 Linux_Data/"
-    std::string simulator_path { this->ui->simulatorPathBox->text().toStdString() };
+void MainWindow::LoadSimulator(std::string simulator_path){
     if (fs::exists(simulator_path)){
         // internal subfolders
         std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
@@ -478,4 +483,13 @@ void MainWindow::LoadButtonClicked(){
         QMessageBox::information(this, "Path chosen",
                                  "Simulator path is incorrect, verify and try again");
     }
+}
+void MainWindow::LoadButtonClicked(){
+    //"/home/ben/Games/Weiss Schwarz 0.6.3.2 Linux/Weiss Schwarz 0.6.3.2 Linux_Data/"
+    std::string simulator_path { this->ui->simulatorPathBox->text().toStdString() };
+    if (fs::exists(simulator_path)){
+        AddOrUpdateSetting("simulator_data_path",simulator_path);
+    }
+    this->LoadSimulator(simulator_path);
+
 }

@@ -28,6 +28,7 @@ public:
     void FillFiltersUsingSet();
     void UnloadData();
     void FillCardsUsingFilters();
+    void LoadSimulator(std::string simulator_path);
     void SortFilteredCards();
     void RemoveFilter(std::string filter);
     void AddFilter(std::string filter);
