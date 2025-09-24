@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "serie.h"
-#include "utils.h"
+#include "algorithms.h"
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLineEdit>

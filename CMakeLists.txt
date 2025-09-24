@@ -11,12 +11,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/cards)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/card.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/card.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/serie.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/serie.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/set.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/set.h
+        test.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.h
 )
 
 
@@ -25,14 +35,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(SimuDeckParser
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        deckparser.h deckparser.cpp
-        test.cpp
-        utils.cpp
-        utils.h
-        serie.h serie.cpp
-        set.h set.cpp
-        card.h card.cpp
         resources.qrc
+        utils/io.cpp
+        utils/io.h
+        utils/data.h utils/data.cpp
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SimuDeckParser APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -67,7 +74,8 @@ set_target_properties(SimuDeckParser PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
-
+include_directories("utils")
+include_directories("cards")
 include(GNUInstallDirs)
 install(TARGETS SimuDeckParser
     BUNDLE DESTINATION .

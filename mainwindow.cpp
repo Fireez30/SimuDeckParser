@@ -2,7 +2,9 @@
 #include "./ui_mainwindow.h"
 #include<iostream>
 #include<QLineEdit>
-#include "utils.h"
+#include "algorithms.h"
+#include "io.h"
+#include "data.h"
 #include <QComboBox>
 #include <QFile>
 #include <QLabel>
@@ -81,7 +83,7 @@ void AddOrder(std::string order);
 
 void MainWindow::TestFiltersAndSorts(){
     std::cout << "test filter and sorts" << std::endl;
-    WriteCardsToFile(this->current_cards_to_display,"/home/ben/cards_to_display_before.txt");
+    WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_before.txt");
      std::cout << "after first save" << std::endl;
     // Try to filter each possibility to only get level 3 red character, than sort on reverse power
     this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::YELLOW), this->current_color_filters.end());
@@ -107,7 +109,7 @@ void MainWindow::TestFiltersAndSorts(){
         std::cout << c2.getName() << std::endl;
         std::cout << "Card level " << c2.getLevel() << " color " << GetColorString(c2.getColor()) << std::endl;
     }
-    WriteCardsToFile(this->current_cards_to_display,"/home/ben/cards_to_display_after.txt");
+    WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_after.txt");
 }
 void MainWindow::FillFiltersUsingSet(){
     if (this->choosen_set == nullptr){
@@ -368,23 +370,22 @@ void MainWindow::DisplayFilteredCards(){
             QHBoxLayout* qblayout = new QHBoxLayout(final_widget);
             if (QFile::exists(path_image)) {
                 QPixmap pix(path_image);
-                QLabel* textLabel = new QLabel("<p><b>This text is bold</b></p>"
-"<p><i>This text is italic</i></p>"
-"<p>This is<sub> subscript</sub> and <sup>superscript</sup></p>");
+                QLabel* textLabel = new QLabel(QString::fromStdString(c.getCardHTML()));
                 QLabel* imgLabel = new QLabel();
                 textLabel->setTextFormat(Qt::RichText);
                 imgLabel->setScaledContents( true );
                 imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
                 imgLabel->setPixmap(pix);
-                imgLabel->setFixedSize(280, 391); // add padding around thumbnail
-                textLabel->setMinimumHeight(391);
+                imgLabel->setFixedSize(224, 313); // add padding around thumbnail
+                textLabel->setMinimumHeight(313);
+                //textLabel->setMaximumWidth(this->ui->cardGridWidget_2->width()-imgLabel->width());
                 textLabel->setAlignment(Qt::AlignLeft);
                 qblayout->addWidget(imgLabel);
                 qblayout->addWidget(textLabel);
                 //qblayout->addStretch(1);
                 //qblayout->setSpacing(0);
                 //imgLabel->setAlignment(Qt::AlignCenter);*/
-                final_widget->setFixedHeight(391);
+                final_widget->setFixedHeight(313);
                 QListWidgetItem *item = new QListWidgetItem();
                 this->ui->cardGridWidget_2->addItem(item);
                 this->ui->cardGridWidget_2->setItemWidget(item,final_widget);
@@ -462,6 +463,7 @@ void MainWindow::UnloadData(){
 
 void MainWindow::LoadSimulator(std::string simulator_path){
     if (fs::exists(simulator_path)){
+        ParseCommonEffects(simulator_path);
         // internal subfolders
         std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
         // parsing all series
