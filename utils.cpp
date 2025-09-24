@@ -223,7 +223,7 @@ void ParseCards(Set& set){
                     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
                     path=set_path+separator()+trim(sub_str)+".jpg";
                      if (!QFile::exists(QString::fromStdString(path))) {
-                        path = "empty_card.jpg";
+                        path = ":/images/emptycard.jpg";
                     }
 
                 }
@@ -488,7 +488,7 @@ void ParseCards(Set& set){
                     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
                     path=set_path+separator()+trim(sub_str)+".jpg";
                     if (!QFile::exists(QString::fromStdString(path))) {
-                        path = "empty_card.jpg";
+                        path = ":/images/emptycard.jpg";
                     }
                     cards.push_back(Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
                     key = "";

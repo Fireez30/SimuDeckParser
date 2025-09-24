@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>emptycard.jpg</file>
+    </qresource>
+</RCC>
