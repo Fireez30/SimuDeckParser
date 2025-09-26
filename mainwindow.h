@@ -3,6 +3,7 @@
 #include "serie.h"
 #include "algorithms.h"
 #include <QMainWindow>
+#include <QListWidgetItem>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QLabel>
@@ -26,7 +27,7 @@ public:
     int getGridCount();
     int current_cards_index;
     void FillFiltersUsingSet();
-    void UnloadData();
+    void UnloadData(bool unload_set_wiget=true);
     void FillCardsUsingFilters();
     void LoadSimulator(std::string simulator_path);
     void SortFilteredCards();
@@ -37,10 +38,12 @@ public:
     void DisplayFilteredCards();
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
+
+    void ClearCardsWidget();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
-    Set* choosen_set;
+    std::vector<Set*> choosen_sets;
     std::vector<Serie> series;
     bool display_load_series;
     bool display_pick_set;
@@ -53,6 +56,7 @@ private:
     std::vector<Color> current_color_filters;
     std::vector<CardType> available_type_filters;
     std::vector<CardType> current_type_filters;
+    std::vector<QListWidgetItem*> cards_items;
     int grid_width;
     std::vector<Orders> current_orders;
     int grid_height;
@@ -60,6 +64,7 @@ private:
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();
+    void OnSerieCardsPick();
     void OnSetPick();
     void OnExit();
     void OnUnloadSimulator();

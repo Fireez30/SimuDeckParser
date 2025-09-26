@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include<iostream>
+#include <QScrollBar>
 #include<QLineEdit>
 #include "algorithms.h"
 #include "io.h"
@@ -24,11 +25,11 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->currentCardsImages={};
     this->current_cards_to_display = {};
     this->choosen_serie = nullptr;
-    this->choosen_set = nullptr;
+    this->choosen_sets = {};
     this->grid_height = grid_height;
     this->grid_width = grid_width;
     this->current_cards_index = 0;
-
+    this->cards_items = {};
 
     this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
@@ -59,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->actionExit, SIGNAL (triggered()), this, SLOT (OnExit()));
     connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
     connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
+    connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
 
     std::string previous_path = GetSetting("simulator_data_path");
     if (previous_path != ""){
@@ -112,9 +114,11 @@ void MainWindow::TestFiltersAndSorts(){
     WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_after.txt");
 }
 void MainWindow::FillFiltersUsingSet(){
-    if (this->choosen_set == nullptr){
+    if (this->choosen_sets.size() == 0){
         return;
     }
+
+
 
     this->available_level_filters = {}; // This will be loaded when laoding a set cards
     this->available_cost_filters = {};
@@ -125,32 +129,35 @@ void MainWindow::FillFiltersUsingSet(){
     this->available_type_filters = {};
     this->current_type_filters = {};
 
-    std::vector<Card>& cards = this->choosen_set->getCards();
-    for (Card c : cards){
-        if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c.getLevel()) == this->available_level_filters.end()) {
-            this->available_level_filters.push_back(c.getLevel());
-            this->current_level_filters.push_back(c.getLevel());
-        }
+    for (int i {0}; i < this->choosen_sets.size(); ++i){
+        std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
+        for (Card c : cards){
+            if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c.getLevel()) == this->available_level_filters.end()) {
+                this->available_level_filters.push_back(c.getLevel());
+                this->current_level_filters.push_back(c.getLevel());
+            }
 
-        if(std::find(this->available_color_filters.begin(), this->available_color_filters.end(), c.getColor()) == this->available_color_filters.end()) {
-            this->available_color_filters.push_back(c.getColor());
-            this->current_color_filters.push_back(c.getColor());
-        }
+            if(std::find(this->available_color_filters.begin(), this->available_color_filters.end(), c.getColor()) == this->available_color_filters.end()) {
+                this->available_color_filters.push_back(c.getColor());
+                this->current_color_filters.push_back(c.getColor());
+            }
 
-        if(std::find(this->available_cost_filters.begin(), this->available_cost_filters.end(), c.getCost()) == this->available_cost_filters.end()) {
-            this->available_cost_filters.push_back(c.getCost());
-            this->current_cost_filters.push_back(c.getCost());
-        }
+            if(std::find(this->available_cost_filters.begin(), this->available_cost_filters.end(), c.getCost()) == this->available_cost_filters.end()) {
+                this->available_cost_filters.push_back(c.getCost());
+                this->current_cost_filters.push_back(c.getCost());
+            }
 
-        if(std::find(this->available_type_filters.begin(), this->available_type_filters.end(), c.getCardType()) == this->available_type_filters.end()) {
-            this->available_type_filters.push_back(c.getCardType());
-            this->current_type_filters.push_back(c.getCardType());
-        }
-        if (c.getColor() == Color::NONE){
-            c.print();
-            return;
+            if(std::find(this->available_type_filters.begin(), this->available_type_filters.end(), c.getCardType()) == this->available_type_filters.end()) {
+                this->available_type_filters.push_back(c.getCardType());
+                this->current_type_filters.push_back(c.getCardType());
+            }
+            if (c.getColor() == Color::NONE){
+                c.print();
+                return;
+            }
         }
     }
+
 
     std::sort(this->available_level_filters.begin(),this->available_level_filters.end());
     std::sort(this->available_cost_filters.begin(),this->available_cost_filters.end());
@@ -255,17 +262,19 @@ void MainWindow::OnSeriePick(){
 
 void MainWindow::FillCardsUsingFilters(){
     this->current_cards_to_display = {};
-    std::vector<Card>& cards = this->choosen_set->getCards();
-    for (Card c : cards){
-        // apply filter by not adding filtered cards
-        if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
-            std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
-            std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
-            std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
-        {
-            this->current_cards_to_display.push_back(c);
+        for (int i {0}; i < this->choosen_sets.size(); ++i){
+            std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
+            for (Card c : cards){
+                // apply filter by not adding filtered cards
+                if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
+                    std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
+                    std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
+                    std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
+                {
+                    this->current_cards_to_display.push_back(c);
+                }
+            }
         }
-    }
 }
 void MainWindow::SortFilteredCards(){
     std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card a, Card b) { // lambda func
@@ -323,13 +332,14 @@ void MainWindow::SortFilteredCards(){
     });
 }
 void MainWindow::OnSetPick(){
+    this->UnloadData();
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
     this->UpdateUi();
     if (this->choosen_serie != nullptr){
         for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
             if (this->choosen_serie->getAllSets().at(i).getName() ==  choosen_set_name){
-                this->choosen_set = &this->choosen_serie->getAllSets().at(i);
+                this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
             }
 
         }
@@ -344,23 +354,54 @@ void MainWindow::OnSetPick(){
 
 }
 
+
+void MainWindow::OnSerieCardsPick(){
+    this->ClearCardsWidget();
+    this->UnloadData(false);
+    std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
+    //QMessageBox::information(this, "Item Selection",
+    //                         this->m_series_dropdown->currentText());
+    this->display_pick_set = true;
+    this->UpdateUi();
+    this->ui->setPickBox->clear();
+    for (int i {0}; i < this->series.size(); ++i){
+        if (this->series.at(i).getName() ==  choosen_serie_name){
+            this->choosen_serie = &this->series.at(i);
+        }
+
+    }
+
+    if (this->choosen_serie != nullptr){
+        for (Set se : this->choosen_serie->getAllSets()){
+            this->ui->setPickBox->addItem(QString::fromStdString(se.getName()));
+        }
+    }
+    else{
+        std::cout << "Error, serie not found among the list : " << this->ui->seriePickBox->currentText().toStdString() << std::endl;
+    }
+
+    if (this->choosen_serie != nullptr){
+        for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
+            this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
+        }
+    }
+
+    this->FillFiltersUsingSet();
+    this->FillCardsUsingFilters();
+    this->SortFilteredCards();
+    this->DisplayFilteredCards();
+}
+
+
+
 void MainWindow::DisplayFilteredCards(){
     int row = 0, col = 0;
     const int columns = 4; // adjust grid width
 
+    this->ui->cardGridWidget_2->setWordWrap(true);
+    this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     for (Card c : this->current_cards_to_display){
-        /*
-
-        QLabel label = QLabel(this->ui->cardGridWidget_2);
-        QPixmap pixmap(QString::fromStdString(c.getImagePath()));
-        label.setPixmap(pixmap);
-        label.setMask(pixmap.mask());
-        label.setFixedWidth(30);
-        label.setFixedHeight(40);
-        label.setVisible(true);
-        this->currentCardsImages.push_back(&label);
-        std::cout << "added label" << std::endl;
-*/
         std::cout << c.getImagePath() << std::endl;
         if (c.getImagePath() != "" ){
             std::string path_str = c.getImagePath();
@@ -390,6 +431,7 @@ void MainWindow::DisplayFilteredCards(){
                 this->ui->cardGridWidget_2->addItem(item);
                 this->ui->cardGridWidget_2->setItemWidget(item,final_widget);
                 item->setSizeHint( final_widget->sizeHint() );
+                this->cards_items.push_back(item);
                 //this->ui->cardGridWidget_2->addWidget(imgLabel);
 
                 if (++col >= columns) {
@@ -403,14 +445,16 @@ void MainWindow::DisplayFilteredCards(){
         }
 
     }
+
+    this->ui->cardGridWidget_2->setWordWrap(true);
+    this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     //this->ui->cardGridWidget_2->setFixedSize(ui->cardGridWidget_2->sizeHintForColumn(0) + ui->cardGridWidget_2->frameWidth() * 2,
     //                             ui->cardGridWidget_2->sizeHintForRow(0) * ui->cardGridWidget_2->count() + 2 * ui->cardGridWidget_2->frameWidth());
 
 }
 
-void MainWindow::DestroyDisplayedCards(){
 
-}
 void MainWindow::OnExit(){
     QApplication::quit();
 }
@@ -420,7 +464,7 @@ void MainWindow::OnUnloadSimulator(){
     this->UnloadData();
 }
 
-void MainWindow::UnloadData(){
+void MainWindow::UnloadData(bool unload_set_widget){
     this->available_level_filters.clear(); // Clear memory of objects in the vector
     this->available_level_filters = {}; // completely reset the size of the vector itself
     this->available_cost_filters.clear(); // Clear memory of objects in the vector
@@ -443,22 +487,40 @@ void MainWindow::UnloadData(){
     this->current_orders.clear();
     this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING};
 
-    this->series.clear();
-    this->series = {};
+
+
 
     this->choosen_serie = nullptr;
-    this->choosen_set = nullptr;
+    this->choosen_sets  = {};
 
+    if (unload_set_widget){
+    this->series.clear();
+    this->series = {};
     this->display_load_series = true;
     this->display_pick_set = false;
     this->display_cards = false;
 
+
     this->ui->simulatorPathBox->clear();
     this->ui->seriePickBox->clear();
     this->ui->setPickBox->clear();
+    }
+    this->current_cards_to_display.clear();
+    this->current_cards_to_display = {};
 
+    this->ClearCardsWidget();
     this->UpdateUi();
 
+}
+
+void MainWindow::ClearCardsWidget(){
+    if (this->cards_items.size() > 0){
+        for (QListWidgetItem* item : this->cards_items){
+            this->ui->cardGridWidget_2->removeItemWidget(item);
+        }
+    }
+    this->ui->cardGridWidget_2->clear();
+    this->cards_items = {};
 }
 
 void MainWindow::LoadSimulator(std::string simulator_path){

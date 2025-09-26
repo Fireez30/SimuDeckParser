@@ -162,6 +162,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="serieLoadCardsButton">
+          <property name="text">
+           <string>Load all cards</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
@@ -448,9 +455,9 @@
      </item>
     </layout>
    </widget>
-   <zorder>serieAndSetWidget</zorder>
    <zorder>simulatorWidget</zorder>
    <zorder>CardWholeAreaWidget_2</zorder>
+   <zorder>serieAndSetWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
