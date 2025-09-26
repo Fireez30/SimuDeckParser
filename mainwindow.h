@@ -50,11 +50,13 @@ private:
     bool display_pick_set;
     bool display_cards;
     std::vector<int> available_level_filters;
+    std::vector<std::string> available_trait_filters;
     std::vector<int> available_cost_filters;
     std::vector<Color> available_color_filters;
     std::vector<int> current_level_filters;
     std::vector<int> current_cost_filters;
     std::vector<Color> current_color_filters;
+    std::vector<std::string> current_trait_filters;
     std::vector<CardType> available_type_filters;
     std::vector<CardType> current_type_filters;
     std::vector<QListWidgetItem*> cards_items;
@@ -72,6 +74,7 @@ private slots:
     void OnUnloadSimulator();
     void TestFiltersAndSorts();
     void AddLevelFilter(bool active,int level);
+    void AddTraitFilter(bool active,std::string trait);
     void AddCostFilter(bool active, int cost);
     void AddColorFilter(bool active,Color color);
     void AddTypeFilter(bool active, CardType type);

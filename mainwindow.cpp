@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->current_color_filters = {};
     this->available_type_filters = {};
     this->current_type_filters = {};
+
+    this->available_trait_filters = {};
+    this->current_trait_filters = {};
+
     //display state
     this->display_load_series = true;
     this->display_pick_set = false;
@@ -67,6 +71,9 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
     std::string previous_path = GetSetting("simulator_data_path");
     if (previous_path != ""){
+        if (!endsWith(previous_path,std::to_string(separator()))){
+            previous_path += separator();
+        }
         LoadSimulator(GetSetting("simulator_data_path"));
     }
     //
@@ -171,6 +178,29 @@ void MainWindow::AddColorFilter(bool active,Color color){
     }
 
 }
+
+void MainWindow::AddTraitFilter(bool active,std::string trait){
+    if (active){
+        // add to filter
+        if(std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(),trait) == this->current_trait_filters.end()){
+            this->current_trait_filters.push_back(trait);
+
+        }
+    }
+    else
+    {
+        if(std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(),trait) != this->current_trait_filters.end()){
+            this->current_trait_filters.erase(std::remove(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait), this->current_trait_filters.end());
+
+        }
+        // remove from filter
+
+
+    }
+}
+
+
+
 void MainWindow::TestFiltersAndSorts(){
     std::cout << "test filter and sorts" << std::endl;
     WriteCardsToFile(this->all_cards_available,"/home/benjamin/cards_to_display_before.txt");
@@ -243,6 +273,9 @@ void MainWindow::FillFiltersUsingSet(){
     this->available_type_filters = {};
     this->current_type_filters = {};
 
+    this->available_trait_filters = {};
+    this->current_trait_filters = {};
+
     for (int i {0}; i < this->choosen_sets.size(); ++i){
         std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
         for (Card c : cards){
@@ -265,6 +298,12 @@ void MainWindow::FillFiltersUsingSet(){
                 this->available_type_filters.push_back(c.getCardType());
                 this->current_type_filters.push_back(c.getCardType());
             }
+            for (std::string trait : c.getTraits()){
+                if(std::find(this->available_trait_filters.begin(), this->available_trait_filters.end(), trait) == this->available_trait_filters.end()) {
+                    this->available_trait_filters.push_back(trait);
+                    this->current_trait_filters.push_back(trait);
+                }
+            }
             if (c.getColor() == Color::NONE){
                 c.print();
                 return;
@@ -281,6 +320,8 @@ void MainWindow::FillFiltersUsingSet(){
     std::sort(this->current_color_filters.begin(),this->current_color_filters.end());
     std::sort(this->available_type_filters.begin(),this->available_type_filters.end());
     std::sort(this->current_type_filters.begin(),this->current_type_filters.end());
+    std::sort(this->available_trait_filters.begin(),this->available_trait_filters.end());
+    std::sort(this->current_trait_filters.begin(),this->current_trait_filters.end());
 
     std::cout << "Available level filters"  << std::endl;
     for (int l : this->available_level_filters){
@@ -299,6 +340,23 @@ void MainWindow::FillFiltersUsingSet(){
 
     std::cout << std::endl;
 
+
+    std::cout << "Available trait filters"  << std::endl;
+    for (std::string l : this->available_trait_filters){
+        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(l));
+        this->ui->traitFilterLayout->addWidget(checkbox);
+        checkbox->setChecked(true);
+        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
+            bool checked = (state == Qt::Checked);
+            // Call your function with the checked state and the value
+            this->AddTraitFilter(checked, l);
+        });
+
+        std::cout << l << " , ";
+    }
+    this->ui->groupBox_5->setLayout(this->ui->traitFilterLayout);
+
+    std::cout << std::endl;
 
 
     std::cout << "Available type filters"  << std::endl;
@@ -431,12 +489,34 @@ void MainWindow::ApplyFilter(){
     this->current_cards_to_display = {};
     for (Card c : this->all_cards_available){
         // apply filter by not adding filtered cards
-        if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
+        if (this->ui->searchFilterEdit->toPlainText() != ""){
+            if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getName())){
+                this->current_cards_to_display.push_back(c);
+            }
+            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getKey()))
+            {
+                this->current_cards_to_display.push_back(c);
+            }
+            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getText()))
+            {
+                this->current_cards_to_display.push_back(c);
+            }
+        }
+        else if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
             std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
             std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
             std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
         {
-            this->current_cards_to_display.push_back(c);
+            bool include_due_to_traits = false;
+            for (std::string trait : c.getTraits()){
+                if (std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait) != this->current_trait_filters.end()){
+                    include_due_to_traits = true;
+                }
+            }
+
+            if (include_due_to_traits || this->available_trait_filters.size() == 0){
+                this->current_cards_to_display.push_back(c);
+            }
         }
     }
 }
@@ -640,7 +720,8 @@ void MainWindow::UnloadData(bool unload_set_widget){
     this->available_color_filters = {}; // completely reset the size of the vector itself
     this->available_type_filters.clear(); // Clear memory of objects in the vector
     this->available_type_filters = {}; // completely reset the size of the vector itself
-
+    this->available_trait_filters.clear(); // Clear memory of objects in the vector
+    this->available_trait_filters = {}; // completely reset the size of the vector itself
 
     this->current_level_filters.clear(); // Clear memory of objects in the vector
     this->current_level_filters = {}; // completely reset the size of the vector itself
@@ -650,12 +731,13 @@ void MainWindow::UnloadData(bool unload_set_widget){
     this->current_type_filters = {}; // completely reset the size of the vector itself
     this->current_color_filters.clear(); // Clear memory of objects in the vector
     this->current_color_filters = {}; // completely reset the size of the vector itself
+    this->current_trait_filters.clear(); // Clear memory of objects in the vector
+    this->current_trait_filters = {}; // completely reset the size of the vector itself
 
     this->current_orders.clear();
     this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING};
 
-
-
+    this->ui->searchFilterEdit->setPlainText(QString(""));
 
     this->choosen_serie = nullptr;
     this->choosen_sets  = {};
@@ -718,6 +800,9 @@ void MainWindow::LoadSimulator(std::string simulator_path){
 void MainWindow::LoadButtonClicked(){
     //"/home/ben/Games/Weiss Schwarz 0.6.3.2 Linux/Weiss Schwarz 0.6.3.2 Linux_Data/"
     std::string simulator_path { this->ui->simulatorPathBox->text().toStdString() };
+    if (!endsWith(simulator_path,std::to_string(separator()))){
+        simulator_path += separator();
+    }
     if (fs::exists(simulator_path)){
         AddOrUpdateSetting("simulator_data_path",simulator_path);
     }

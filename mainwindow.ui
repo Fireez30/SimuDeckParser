@@ -267,11 +267,14 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
        <layout class="QVBoxLayout" name="FiltersOrdersWidget">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QGroupBox" name="groupBox">
           <property name="sizePolicy">
@@ -300,11 +303,11 @@
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>131</width>
+             <width>191</width>
              <height>16</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="costFilterLayout_2" stretch="">
+           <layout class="QVBoxLayout" name="costFilterLayout_2">
             <property name="sizeConstraint">
              <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
             </property>
@@ -343,7 +346,7 @@
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>131</width>
+             <width>191</width>
              <height>16</height>
             </rect>
            </property>
@@ -382,7 +385,7 @@
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>131</width>
+             <width>191</width>
              <height>16</height>
             </rect>
            </property>
@@ -406,12 +409,54 @@
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>131</width>
+             <width>191</width>
              <height>16</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="typeFilterLayout"/>
           </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>Traits</string>
+          </property>
+          <widget class="QWidget" name="verticalLayoutWidget_5">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>20</y>
+             <width>191</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="traitFilterLayout"/>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Search by text in name, text</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>or card code</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="searchFilterEdit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
          </widget>
         </item>
         <item>
@@ -450,7 +495,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>1705</width>
+          <width>1655</width>
           <height>961</height>
          </rect>
         </property>

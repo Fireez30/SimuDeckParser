@@ -94,6 +94,25 @@ std::vector<std::string> split(const std::string &s, char delimiter) {
 }
 
 
+bool findSubstringIgnoreCase(const std::string& X, const std::string& Y) {
+    if (X.empty()) return true; // empty string is always found
+
+    std::string lowerX, lowerY;
+    lowerX.reserve(X.size());
+    lowerY.reserve(Y.size());
+
+    // Convert X to lowercase
+    std::transform(X.begin(), X.end(), std::back_inserter(lowerX),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    // Convert Y to lowercase
+    std::transform(Y.begin(), Y.end(), std::back_inserter(lowerY),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    // Search for lowerX in lowerY
+    return lowerY.find(lowerX) != std::string::npos;
+}
+
 bool endsWith(const std::string& s, const std::string& suffix)
 {
     return s.rfind(suffix) == (s.size() - suffix.size());
