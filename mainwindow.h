@@ -38,7 +38,6 @@ public:
     void DisplayFilteredCards();
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
-
     void ClearCardsWidget();
 private:
     Ui::MainWindow *ui;
@@ -69,5 +68,7 @@ private slots:
     void OnExit();
     void OnUnloadSimulator();
     void TestFiltersAndSorts();
+    void AddLevelFilter(bool active,int level);
+    void AddColorFilter(bool active,Color color);
 };
 #endif // MAINWINDOW_H

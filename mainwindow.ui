@@ -274,136 +274,143 @@
        <layout class="QVBoxLayout" name="FiltersOrdersWidget">
         <item>
          <widget class="QGroupBox" name="groupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>65</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>65</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="title">
            <string>Cost</string>
           </property>
-          <widget class="QRadioButton" name="radioButton">
+          <widget class="QWidget" name="verticalLayoutWidget">
            <property name="geometry">
             <rect>
-             <x>11</x>
-             <y>22</y>
-             <width>118</width>
-             <height>22</height>
+             <x>0</x>
+             <y>20</y>
+             <width>131</width>
+             <height>16</height>
             </rect>
            </property>
-           <property name="text">
-            <string>Ascending</string>
-           </property>
-          </widget>
-          <widget class="QRadioButton" name="radioButton_2">
-           <property name="geometry">
-            <rect>
-             <x>11</x>
-             <y>42</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Descending</string>
-           </property>
+           <layout class="QVBoxLayout" name="costFilterLayout_2" stretch="">
+            <property name="sizeConstraint">
+             <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+            </property>
+           </layout>
           </widget>
          </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>65</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>65</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="title">
            <string>Level</string>
           </property>
-          <widget class="QRadioButton" name="radioButton_3">
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+          </property>
+          <widget class="QWidget" name="verticalLayoutWidget_2">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>95</width>
-             <height>22</height>
+             <width>131</width>
+             <height>16</height>
             </rect>
            </property>
-           <property name="text">
-            <string>Ascending</string>
-           </property>
-          </widget>
-          <widget class="QRadioButton" name="radioButton_4">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>40</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Descending</string>
-           </property>
+           <layout class="QVBoxLayout" name="levelFilterLayout_2"/>
           </widget>
          </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>65</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>65</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="title">
-           <string>Power</string>
+           <string>Color</string>
           </property>
-          <widget class="QRadioButton" name="radioButton_5">
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+          </property>
+          <widget class="QWidget" name="verticalLayoutWidget_3">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>20</y>
-             <width>95</width>
-             <height>22</height>
+             <width>131</width>
+             <height>16</height>
             </rect>
            </property>
-           <property name="text">
-            <string>RadioButton</string>
-           </property>
+           <layout class="QVBoxLayout" name="colorFilterLayout_2"/>
           </widget>
-          <widget class="QRadioButton" name="radioButton_6">
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Type</string>
+          </property>
+          <widget class="QWidget" name="verticalLayoutWidget_4">
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>40</y>
-             <width>95</width>
-             <height>22</height>
+             <y>20</y>
+             <width>131</width>
+             <height>16</height>
             </rect>
            </property>
-           <property name="text">
-            <string>RadioButton</string>
-           </property>
+           <layout class="QVBoxLayout" name="typeFilterLayout"/>
           </widget>
          </widget>
         </item>

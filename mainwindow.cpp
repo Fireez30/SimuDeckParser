@@ -5,6 +5,7 @@
 #include<QLineEdit>
 #include "algorithms.h"
 #include "io.h"
+#include <QCheckBox>
 #include "data.h"
 #include <QComboBox>
 #include <QFile>
@@ -83,6 +84,43 @@ void AddFilter(std::string filter);
 void RemoveOrder(std::string order);
 void AddOrder(std::string order);
 
+void MainWindow::AddLevelFilter(bool active,int level){
+    if (active){
+        // add to filter
+        if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) == this->current_level_filters.end()){
+            this->current_level_filters.push_back(level);
+        }
+    }
+    else
+    {
+        if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) != this->current_level_filters.end()){
+            this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), level), this->current_level_filters.end());
+        }
+        // remove from filter
+
+
+    }
+
+}
+
+void MainWindow::AddColorFilter(bool active,Color color){
+    if (active){
+        // add to filter
+        if(std::find(this->current_color_filters.begin(), this->current_color_filters.end(),color) == this->current_color_filters.end()){
+            this->current_color_filters.push_back(color);
+        }
+    }
+    else
+    {
+        if(std::find(this->current_color_filters.begin(), this->current_color_filters.end(),color) != this->current_color_filters.end()){
+            this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), color), this->current_color_filters.end());
+        }
+        // remove from filter
+
+
+    }
+
+}
 void MainWindow::TestFiltersAndSorts(){
     std::cout << "test filter and sorts" << std::endl;
     WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_before.txt");
@@ -170,21 +208,36 @@ void MainWindow::FillFiltersUsingSet(){
 
     std::cout << "Available level filters"  << std::endl;
     for (int l : this->available_level_filters){
+        QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
+        this->ui->levelFilterLayout_2->addWidget(checkbox);
+        checkbox->setChecked(true);
+        QObject::connect(checkbox, &QCheckBox::stateChanged, [l,this](int state) {
+            bool checked = (state == Qt::Checked);
+            // Call your function with the checked state and the value
+            this->AddLevelFilter(checked, l);
+        });
+
         std::cout << l << " , ";
     }
+    this->ui->groupBox_2->setLayout(this->ui->levelFilterLayout_2);
+
     std::cout << std::endl;
 
-    std::cout << "Current level filters"  << std::endl;
-    for (int l : this->current_level_filters){
-        std::cout << l << " , ";
-    }
-    std::cout << std::endl;
 
 
     std::cout << "Available color filters"  << std::endl;
     for (Color l : this->available_color_filters){
+        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(GetColorString(l)));
+        this->ui->colorFilterLayout_2->addWidget(checkbox);
+        checkbox->setChecked(true);
+        QObject::connect(checkbox, &QCheckBox::stateChanged, [l,this](int state) {
+            bool checked = (state == Qt::Checked);
+            // Call your function with the checked state and the value
+            this->AddColorFilter(checked, l);
+        });
         std::cout << GetColorString(l) << " , ";
     }
+    this->ui->groupBox_3->setLayout(this->ui->colorFilterLayout_2);
     std::cout << std::endl;
 
     std::cout << "Current color filters"  << std::endl;
@@ -332,7 +385,8 @@ void MainWindow::SortFilteredCards(){
     });
 }
 void MainWindow::OnSetPick(){
-    this->UnloadData();
+    this->ClearCardsWidget();
+    this->UnloadData(false);
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
     this->UpdateUi();
