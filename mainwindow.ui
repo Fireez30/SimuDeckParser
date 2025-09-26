@@ -514,9 +514,31 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="CardListWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>22</y>
+      <width>1920</width>
+      <height>1058</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="DeckVisualisationWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>22</y>
+      <width>1920</width>
+      <height>1058</height>
+     </rect>
+    </property>
+   </widget>
    <zorder>simulatorWidget</zorder>
    <zorder>CardWholeAreaWidget_2</zorder>
    <zorder>serieAndSetWidget</zorder>
+   <zorder>CardListWidget</zorder>
+   <zorder>DeckVisualisationWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
