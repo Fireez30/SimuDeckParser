@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->series = {};
     this->currentCardsImages={};
     this->current_cards_to_display = {};
+    this->all_cards_available = {};
     this->choosen_serie = nullptr;
     this->choosen_sets = {};
     this->grid_height = grid_height;
@@ -62,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
     connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
     connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
+    connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
 
     std::string previous_path = GetSetting("simulator_data_path");
     if (previous_path != ""){
@@ -84,25 +86,73 @@ void AddFilter(std::string filter);
 void RemoveOrder(std::string order);
 void AddOrder(std::string order);
 
+void MainWindow::RedisplayAfterFilter(){
+    this->ClearCardsWidget();
+    this->ApplyFilter();
+    this->SortFilteredCards();
+    this->DisplayFilteredCards();
+}
+
+
+void MainWindow::ApplyFilters(){
+    this->RedisplayAfterFilter();
+}
+
+
+void MainWindow::AddCostFilter(bool active,int level){
+    if (active){
+        // add to filter
+        if(std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(),level) == this->current_cost_filters.end()){
+            this->current_cost_filters.push_back(level);
+
+        }
+    }
+    else
+    {
+        if(std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(),level) != this->current_cost_filters.end()){
+            this->current_cost_filters.erase(std::remove(this->current_cost_filters.begin(), this->current_cost_filters.end(), level), this->current_cost_filters.end());
+        }
+        // remove from filter
+    }
+}
+
 void MainWindow::AddLevelFilter(bool active,int level){
     if (active){
         // add to filter
         if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) == this->current_level_filters.end()){
             this->current_level_filters.push_back(level);
+
         }
     }
     else
     {
         if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) != this->current_level_filters.end()){
             this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), level), this->current_level_filters.end());
+
         }
         // remove from filter
 
 
     }
-
 }
 
+void MainWindow::AddTypeFilter(bool active, CardType type){
+    if (active){
+        // add to filter
+        if(std::find(this->current_type_filters.begin(), this->current_type_filters.end(),type) == this->current_type_filters.end()){
+            this->current_type_filters.push_back(type);
+        }
+    }
+    else
+    {
+        if(std::find(this->current_type_filters.begin(), this->current_type_filters.end(),type) != this->current_type_filters.end()){
+            this->current_type_filters.erase(std::remove(this->current_type_filters.begin(), this->current_type_filters.end(), type), this->current_type_filters.end());
+        }
+        // remove from filter
+
+
+    }
+}
 void MainWindow::AddColorFilter(bool active,Color color){
     if (active){
         // add to filter
@@ -123,7 +173,7 @@ void MainWindow::AddColorFilter(bool active,Color color){
 }
 void MainWindow::TestFiltersAndSorts(){
     std::cout << "test filter and sorts" << std::endl;
-    WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_before.txt");
+    WriteCardsToFile(this->all_cards_available,"/home/benjamin/cards_to_display_before.txt");
      std::cout << "after first save" << std::endl;
     // Try to filter each possibility to only get level 3 red character, than sort on reverse power
     this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), Color::YELLOW), this->current_color_filters.end());
@@ -141,7 +191,8 @@ void MainWindow::TestFiltersAndSorts(){
     for (Color c : this->current_color_filters){
         std::cout << GetColorString(c) << std::endl;
     }
-    this->FillCardsUsingFilters();
+    this->FillCards();
+    this->ApplyFilter();
     this->SortFilteredCards();
 
     std::cout << "Found " << this->current_cards_to_display.size() << " red only card cards " << std::endl;
@@ -150,6 +201,31 @@ void MainWindow::TestFiltersAndSorts(){
         std::cout << "Card level " << c2.getLevel() << " color " << GetColorString(c2.getColor()) << std::endl;
     }
     WriteCardsToFile(this->current_cards_to_display,"/home/benjamin/cards_to_display_after.txt");
+}
+
+ QColor GetQColorFromCardColor(Color c){
+    if (c == Color::GREEN){
+        return QColorConstants::Svg::green;
+    }
+
+    if (c == Color::BLUE){
+        return QColorConstants::Svg::blue;
+    }
+
+    if (c == Color::PURPLE){
+        return QColorConstants::Svg::purple;
+    }
+
+    if (c == Color::RED){
+        return QColorConstants::Svg::red;
+    }
+
+    if (c == Color::YELLOW)
+    {
+        return QColorConstants::Svg::yellow;
+    }
+
+    return QColorConstants::Svg::white;
 }
 void MainWindow::FillFiltersUsingSet(){
     if (this->choosen_sets.size() == 0){
@@ -211,7 +287,7 @@ void MainWindow::FillFiltersUsingSet(){
         QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
         this->ui->levelFilterLayout_2->addWidget(checkbox);
         checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::stateChanged, [l,this](int state) {
+        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
             bool checked = (state == Qt::Checked);
             // Call your function with the checked state and the value
             this->AddLevelFilter(checked, l);
@@ -225,12 +301,31 @@ void MainWindow::FillFiltersUsingSet(){
 
 
 
+    std::cout << "Available type filters"  << std::endl;
+    for (CardType l : this->available_type_filters){
+        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(GetCardTypeString(l)));
+        this->ui->typeFilterLayout->addWidget(checkbox);
+        checkbox->setChecked(true);
+        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
+            bool checked = (state == Qt::Checked);
+            // Call your function with the checked state and the value
+            this->AddTypeFilter(checked, l);
+        });
+        std::cout << GetCardTypeString(l) << " , ";
+    }
+    this->ui->groupBox_4->setLayout(this->ui->typeFilterLayout);
+    std::cout << std::endl;
+
+
     std::cout << "Available color filters"  << std::endl;
     for (Color l : this->available_color_filters){
         QCheckBox* checkbox = new QCheckBox(QString::fromStdString(GetColorString(l)));
         this->ui->colorFilterLayout_2->addWidget(checkbox);
         checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::stateChanged, [l,this](int state) {
+        QPalette p = checkbox->palette();
+        p.setColor(QPalette::Active, QPalette::WindowText, GetQColorFromCardColor(l));
+        checkbox->setPalette(p);
+        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
             bool checked = (state == Qt::Checked);
             // Call your function with the checked state and the value
             this->AddColorFilter(checked, l);
@@ -249,8 +344,17 @@ void MainWindow::FillFiltersUsingSet(){
 
     std::cout << "Available cost filters"  << std::endl;
     for (int l : this->available_cost_filters){
+        QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
+        this->ui->costFilterLayout_2->addWidget(checkbox);
+        checkbox->setChecked(true);
+        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
+            bool checked = (state == Qt::Checked);
+            // Call your function with the checked state and the value
+            this->AddCostFilter(checked, l);
+        });
         std::cout << l << " , ";
     }
+    this->ui->groupBox->setLayout(this->ui->costFilterLayout_2);
     std::cout << std::endl;
 
     std::cout << "Current cost filters"  << std::endl;
@@ -313,21 +417,28 @@ void MainWindow::OnSeriePick(){
 
 }
 
-void MainWindow::FillCardsUsingFilters(){
-    this->current_cards_to_display = {};
+void MainWindow::FillCards(){
+    this->all_cards_available = {};
         for (int i {0}; i < this->choosen_sets.size(); ++i){
             std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
             for (Card c : cards){
-                // apply filter by not adding filtered cards
-                if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
-                    std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
-                    std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
-                    std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
-                {
-                    this->current_cards_to_display.push_back(c);
-                }
+                this->all_cards_available.push_back(c);
             }
         }
+}
+
+void MainWindow::ApplyFilter(){
+    this->current_cards_to_display = {};
+    for (Card c : this->all_cards_available){
+        // apply filter by not adding filtered cards
+        if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
+            std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
+            std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
+            std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
+        {
+            this->current_cards_to_display.push_back(c);
+        }
+    }
 }
 void MainWindow::SortFilteredCards(){
     std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card a, Card b) { // lambda func
@@ -400,7 +511,8 @@ void MainWindow::OnSetPick(){
     }
 
     this->FillFiltersUsingSet();
-    this->FillCardsUsingFilters();
+    this->FillCards();
+    this->ApplyFilter();
     this->SortFilteredCards();
     this->DisplayFilteredCards();
     std::cout << "Found " << this->current_cards_to_display.size() << " cards " << std::endl;
@@ -441,7 +553,8 @@ void MainWindow::OnSerieCardsPick(){
     }
 
     this->FillFiltersUsingSet();
-    this->FillCardsUsingFilters();
+    this->FillCards();
+    this->ApplyFilter();
     this->SortFilteredCards();
     this->DisplayFilteredCards();
 }

@@ -27,14 +27,16 @@ public:
     int getGridCount();
     int current_cards_index;
     void FillFiltersUsingSet();
+    void FillCards();
     void UnloadData(bool unload_set_wiget=true);
-    void FillCardsUsingFilters();
+    void ApplyFilter();
     void LoadSimulator(std::string simulator_path);
     void SortFilteredCards();
     void RemoveFilter(std::string filter);
     void AddFilter(std::string filter);
     void RemoveOrder(std::string order);
     void AddOrder(std::string order);
+    void RedisplayAfterFilter();
     void DisplayFilteredCards();
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
@@ -60,6 +62,7 @@ private:
     std::vector<Orders> current_orders;
     int grid_height;
     std::vector<Card> current_cards_to_display;
+    std::vector<Card> all_cards_available;
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();
@@ -69,6 +72,9 @@ private slots:
     void OnUnloadSimulator();
     void TestFiltersAndSorts();
     void AddLevelFilter(bool active,int level);
+    void AddCostFilter(bool active, int cost);
     void AddColorFilter(bool active,Color color);
+    void AddTypeFilter(bool active, CardType type);
+    void ApplyFilters();
 };
 #endif // MAINWINDOW_H
