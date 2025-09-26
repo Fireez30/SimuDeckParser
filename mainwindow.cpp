@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
     connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
-
+    connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     std::string previous_path = GetSetting("simulator_data_path");
     if (previous_path != ""){
         if (!endsWith(previous_path,std::to_string(separator()))){
@@ -401,6 +401,7 @@ void MainWindow::FillFiltersUsingSet(){
 
 
     std::cout << "Available cost filters"  << std::endl;
+
     for (int l : this->available_cost_filters){
         QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
         this->ui->costFilterLayout_2->addWidget(checkbox);
@@ -436,6 +437,7 @@ void MainWindow::UpdateUi(){
     this->ui->serieWidget_2->setVisible(!this->display_load_series);
     this->ui->setWidget_2->setVisible(this->display_pick_set);
     this->ui->CardWholeAreaWidget_2->setVisible(this->display_pick_set);
+    this->ui->searchWidget->setVisible(this->display_pick_set);
 }
 
 std::vector<Serie> MainWindow::getAllSeries(){
@@ -660,14 +662,18 @@ void MainWindow::DisplayFilteredCards(){
                 QPixmap pix(path_image);
                 QLabel* textLabel = new QLabel(QString::fromStdString(c.getCardHTML()));
                 QLabel* imgLabel = new QLabel();
+                textLabel->setWordWrap(true);
+                //textLabel->setIndent(224);
                 textLabel->setTextFormat(Qt::RichText);
                 imgLabel->setScaledContents( true );
                 imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
                 imgLabel->setPixmap(pix);
                 imgLabel->setFixedSize(224, 313); // add padding around thumbnail
                 textLabel->setMinimumHeight(313);
-                //textLabel->setMaximumWidth(this->ui->cardGridWidget_2->width()-imgLabel->width());
+                textLabel->setMinimumWidth(800);
+                textLabel->setMaximumWidth(1300);
                 textLabel->setAlignment(Qt::AlignLeft);
+                qblayout->setAlignment(Qt::AlignLeft);
                 qblayout->addWidget(imgLabel);
                 qblayout->addWidget(textLabel);
                 //qblayout->addStretch(1);
@@ -693,9 +699,11 @@ void MainWindow::DisplayFilteredCards(){
 
     }
 
-    this->ui->cardGridWidget_2->setWordWrap(true);
-    this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    //this->ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    //this->ui->scrollArea->setLayout(this->ui->CardWholeAreaWidget_2);
+    this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+    //this->ui->scrollArea->verticalScrollBar()->setValue(this->ui->scrollArea->verticalScrollBar()->value() + 10);
+
     //this->ui->cardGridWidget_2->setFixedSize(ui->cardGridWidget_2->sizeHintForColumn(0) + ui->cardGridWidget_2->frameWidth() * 2,
     //                             ui->cardGridWidget_2->sizeHintForRow(0) * ui->cardGridWidget_2->count() + 2 * ui->cardGridWidget_2->frameWidth());
 

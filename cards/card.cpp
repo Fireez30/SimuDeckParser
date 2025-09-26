@@ -51,7 +51,6 @@ std::string Card::getCardHTML(){
     //"<p>This is<sub> subscript</sub> and <sup>superscript</sup></p>"
     card_html_display += "<p><b>"+this->getName()+"</b></p>";
     card_html_display += "<p><i>"+this->getKey()+"</i></p>";
-    card_html_display += "<br/>";
     card_html_display += "<p> Level : "+std::to_string(this->getLevel())+" / Power : "+std::to_string(this->getPower())+"</b></p>";
     if (this->triggers.size() > 0){
         card_html_display += "<p> Triggers : ";
@@ -64,9 +63,10 @@ std::string Card::getCardHTML(){
     card_html_display += "<p> Souls : " + std::to_string(this->getSoulCount()) + "</p>";
     if (this->traits.size() > 0){
         card_html_display += "<p> Traits : ";
-        for (int i {0}; i < this->getTraits().size() ; ++i){
-            card_html_display += " <" +  this->getTraits()[i] + ">";
+        for (std::string trait : this->getTraits()){
+            card_html_display += " " +  trait + " ,";
         }
+        card_html_display.pop_back();
         card_html_display += "</p> ";
     }
     card_html_display += "<p> Text : <br/>";
