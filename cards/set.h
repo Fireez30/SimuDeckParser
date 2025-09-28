@@ -3,7 +3,7 @@
 
 #include <string>
 #include "card.h"
-#include <vector>
+#include <map>
 class Set
 {
 public:
@@ -14,14 +14,15 @@ public:
     std::string getPath();
     void setKey(std::string key);
     void setName(std::string name);
-    std::vector<Card> &getCards();
-    Card getCardAt(int index);
+    std::map<std::string,Card> &getCards();
+    Card* getCard(std::string code);
     void setPath(std::string path);
+    bool containsCard(std::string code);
 private:
     std::string key;
     std::string name;
     std::string path;
-    std::vector<Card> cards;
+    std::map<std::string,Card> cards;
 };
 
 #endif // SET_H

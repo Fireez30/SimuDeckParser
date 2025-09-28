@@ -1,11 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include<iostream>
+#include <QSignalMapper>
 #include <QScrollBar>
 #include<QLineEdit>
 #include "algorithms.h"
 #include "io.h"
 #include <QCheckBox>
+#include "hoverlabel.h"
 #include "data.h"
 #include <QComboBox>
 #include <QFile>
@@ -21,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 {
     ui->setupUi(this);
 
+
     //data
     this->series = {};
     this->currentCardsImages={};
@@ -32,7 +35,8 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->grid_width = grid_width;
     this->current_cards_index = 0;
     this->cards_items = {};
-
+    this->decks = {};
+    this->picked_deck = "";
     this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
@@ -55,9 +59,22 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->display_load_series = true;
     this->display_pick_set = false;
     this->display_cards = false;
+
+    this->display_main_menu = true;
+    this->display_card_list = false;
+    this->display_deck_editor =false;
     // layouts setup
 
+    this->ui->cardImage->setScaledContents( true );
+    this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+    this->ui->cardImage->clear();
 
+    this->ui->cardText->clear();
+    this->ui->cardText->setWordWrap(true);
+    //textLabel->setIndent(224);
+    this->ui->cardText->setTextFormat(Qt::RichText);
+    this->ui->cardText->setMaximumWidth(1300);
+    this->ui->cardText->setAlignment(Qt::AlignLeft);
     this->UpdateUi();
     //binding signals
     connect(this->ui->loadSimulatorButton, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
@@ -69,6 +86,17 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
+    connect(this->ui->backButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
+    connect(this->ui->backButton_2, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
+    connect(this->ui->MainMenuCardListButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToCardList()));
+    connect(this->ui->MainMenuDeckEditorButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToDeckEditor()));
+    connect(this->ui->MainMenuQuitButton, SIGNAL (clicked(bool)),this, SLOT (OnExit()));
+    connect(this->ui->pickDeckButton, SIGNAL (clicked(bool)),this, SLOT (PickDeck()));
+    this->ui->simulatorWidget->setVisible(true);
+    this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
+    this->ui->MenusWidget->setVisible(false);
+    this->ui->MenusWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);
+
     std::string previous_path = GetSetting("simulator_data_path");
     if (previous_path != ""){
         if (!endsWith(previous_path,std::to_string(separator()))){
@@ -77,6 +105,103 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
         LoadSimulator(GetSetting("simulator_data_path"));
     }
     //
+}
+
+
+
+void MainWindow::SwitchToMainMenu(){
+
+    this->display_main_menu = true;
+    this->display_card_list = false;
+    this->display_deck_editor =false;
+
+    this->ClearCardsWidget();
+    this->ClearDeckWidget();
+    this->UnloadData(false);
+
+
+
+    this->UpdateUi();
+}
+
+void MainWindow::SwitchToCardList(){
+
+    this->ClearCardsWidget();
+    this->ClearDeckWidget();
+    this->UnloadData(false);
+
+    this->display_main_menu = false;
+    this->display_card_list = true;
+    this->display_deck_editor =false;
+    this->ui->seriePickBox->setVisible(true);
+    this->ui->setPickBox->setVisible(true);
+    this->ui->serieAndSetWidget->setVisible(true);
+    this->display_load_series = true;
+    this->display_pick_set = false;
+    this->display_cards = false;
+
+    this->UpdateUi();
+}
+
+void MainWindow::SwitchToDeckEditor(){
+
+    this->ClearCardsWidget();
+    this->UnloadData(false);
+
+    this->display_main_menu = false;
+    this->display_card_list = false;
+    this->display_deck_editor =true;
+
+    this->UpdateUi();
+    ParseDecks(this->decks);
+    std::map<std::string,Deck>::iterator it;
+    for (it = this->decks.begin(); it != this->decks.end(); it++){
+            std::string deck_key = (*it).first;
+            Deck &deck = (*it).second;
+            this->ui->deckPixBox->addItem(QString::fromStdString(deck.getName()));
+    }
+}
+
+void MainWindow::PickDeck(){
+    this->ClearDeckWidget();
+    std::string deck_name = this->ui->deckPixBox->currentText().toStdString();
+    LoadDeck(this->decks,deck_name,this->series);
+    this->picked_deck = deck_name;
+    std::map<std::string,Deck>::iterator itdeck;
+    itdeck = decks.find (deck_name);
+    if (itdeck != decks.end()){
+        (*itdeck).second.Print();
+    }
+
+    this->DisplayPickedDeck();
+}
+void MainWindow::UpdateUi(){
+    //this->display_load_series = true;
+    //this->display_pick_set = false;
+    //this->display_cards = false;
+
+    // this->ui->widget->setAttribute(Qt::WA_TransparentForMouseEvents,true); // WHEN DISABLING A WIDGET, PUT THIS : Prevent it to catch mouse event
+    // setAttribute(Qt::WA_TransparentForMouseEvents,false);// WHEN ENABLING // WHEN DISABLING A WIDGET, PUT THIS : enable back mouse events
+
+    this->ui->CardListWidget->setVisible(this->display_card_list);
+    this->ui->CardListWidget->setAttribute(Qt::WA_TransparentForMouseEvents,!this->display_card_list);
+
+    this->ui->MainMenuWidget->setVisible(this->display_main_menu);
+    this->ui->MainMenuWidget->setAttribute(Qt::WA_TransparentForMouseEvents,!this->display_main_menu);
+
+    this->ui->DeckVisualisationWidget->setVisible(this->display_deck_editor);
+    this->ui->DeckVisualisationWidget->setAttribute(Qt::WA_TransparentForMouseEvents,!this->display_deck_editor);
+
+    this->ui->simulatorWidget->setVisible(this->display_card_list && this->display_load_series);
+    this->ui->serieAndSetWidget->setVisible(this->display_card_list);
+    this->ui->serieWidget_2->setVisible(this->display_card_list);
+    this->ui->setWidget_2->setVisible(this->display_card_list && this->display_pick_set);
+    this->ui->CardWholeAreaWidget_2->setVisible(this->display_card_list && this->display_pick_set);
+    this->ui->searchWidget->setVisible(this->display_card_list && this->display_pick_set);
+
+    this->ui->seriePickBox->setVisible(this->display_card_list);
+    this->ui->setPickBox->setVisible(this->display_card_list);
+    this->ui->serieAndSetWidget->setVisible(this->display_card_list);
 }
 
 MainWindow::~MainWindow()
@@ -277,8 +402,11 @@ void MainWindow::FillFiltersUsingSet(){
     this->current_trait_filters = {};
 
     for (int i {0}; i < this->choosen_sets.size(); ++i){
-        std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
-        for (Card c : cards){
+
+        std::map<std::string,Card>::iterator it;
+        for (it = this->choosen_sets.at(i)->getCards().begin(); it != this->choosen_sets.at(i)->getCards().end(); it++){
+            std::string code = (*it).first;
+            Card c  = (*it).second;
             if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c.getLevel()) == this->available_level_filters.end()) {
                 this->available_level_filters.push_back(c.getLevel());
                 this->current_level_filters.push_back(c.getLevel());
@@ -333,7 +461,6 @@ void MainWindow::FillFiltersUsingSet(){
             // Call your function with the checked state and the value
             this->AddLevelFilter(checked, l);
         });
-
         std::cout << l << " , ";
     }
     this->ui->groupBox_2->setLayout(this->ui->levelFilterLayout_2);
@@ -351,7 +478,6 @@ void MainWindow::FillFiltersUsingSet(){
             // Call your function with the checked state and the value
             this->AddTraitFilter(checked, l);
         });
-
         std::cout << l << " , ";
     }
     this->ui->groupBox_5->setLayout(this->ui->traitFilterLayout);
@@ -428,17 +554,7 @@ void MainWindow::FillFiltersUsingSet(){
 int MainWindow::getGridCount(){
     return this->grid_height*this->grid_width;
 }
-void MainWindow::UpdateUi(){
-    //this->display_load_series = true;
-    //this->display_pick_set = false;
-    //this->display_cards = false;
-    this->ui->simulatorWidget->setVisible(this->display_load_series);
-    this->ui->serieAndSetWidget->setVisible(!this->display_load_series);
-    this->ui->serieWidget_2->setVisible(!this->display_load_series);
-    this->ui->setWidget_2->setVisible(this->display_pick_set);
-    this->ui->CardWholeAreaWidget_2->setVisible(this->display_pick_set);
-    this->ui->searchWidget->setVisible(this->display_pick_set);
-}
+
 
 std::vector<Serie> MainWindow::getAllSeries(){
     return this->series;
@@ -480,8 +596,10 @@ void MainWindow::OnSeriePick(){
 void MainWindow::FillCards(){
     this->all_cards_available = {};
         for (int i {0}; i < this->choosen_sets.size(); ++i){
-            std::vector<Card>& cards = this->choosen_sets.at(i)->getCards();
-            for (Card c : cards){
+            std::map<std::string,Card>::iterator it;
+            for (it = this->choosen_sets.at(i)->getCards().begin(); it != this->choosen_sets.at(i)->getCards().end(); it++){
+                std::string code = (*it).first;
+                Card c  = (*it).second;
                 this->all_cards_available.push_back(c);
             }
         }
@@ -583,15 +701,19 @@ void MainWindow::OnSetPick(){
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
     this->UpdateUi();
+    this->choosen_sets.clear();
+    std::cout << choosen_set_name << std::endl;
+    std::cout << this->choosen_serie->getAllSets().size() << std::endl;
     if (this->choosen_serie != nullptr){
         for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
+            std::cout << this->choosen_serie->getAllSets().at(i).getName() << std::endl;
             if (this->choosen_serie->getAllSets().at(i).getName() ==  choosen_set_name){
                 this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
             }
 
         }
     }
-
+    std::cout << "will display : " << this->choosen_sets.size() << " sets " << std::endl;
     this->FillFiltersUsingSet();
     this->FillCards();
     this->ApplyFilter();
@@ -642,10 +764,67 @@ void MainWindow::OnSerieCardsPick(){
 }
 
 
+void MainWindow::DisplayPickedDeck(){
+    std::cout << "Display picked : " << this->picked_deck << std::endl;
+    int row = 0, col = 0;
+    const int columns = 10;
+    std::map<std::string,Deck>::iterator itdeck;
+    itdeck = decks.find (this->picked_deck);
+    if (itdeck != decks.end()){
+        Deck de = (*itdeck).second;
+        for (Card value : de.getCardList()){
+            std::cout << "for loop card : " << value.getKey() << std::endl;
+            std::string path_str = value.getImagePath();
+            std::cout << "found image : " << value.getKey() << std::endl;
+
+            //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
+            QString path_image = QString::fromStdString(path_str);
+            std::cout << value.getKey() << std::endl;
+            if (QFile::exists(path_image)) {
+                QPixmap pix(path_image);
+                HoverLabel* imgLabel = new HoverLabel(this);
+                imgLabel->setScaledContents( true );
+                imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+                imgLabel->setPixmap(pix);
+                connect(imgLabel,&HoverLabel::mouseEntered, [this,value]() {
+                    this->ShowCardToSidePanel(value);
+                });
+                //QObject::connect(mapper,SIGNAL(mapped(QWidget *)),this,SLOT(mySlot(QWidget *)));
+
+                //QObject::connect(imgLabel, SIGNAL(clicked()),mapper,SLOT(ShowCardToSidePanel(value)));
+                //mapper->setMapping(imgLabel, imgLabel);
+
+                //QSignalMapper* signalmapper = new QSignalMapper();
+                //connect (imgLabel, SIGNAL(triggered()), signalmapper, SLOT(map())) ;
+                //signalmapper ->setMapping (imgLabel, value);
+                //connect (signalmapper , SIGNAL(mapped(Card)), this, SLOT(ShowCardToSidePanel(Card)));
+                //connect(imgLabel, SIGNAL(clicked()),this,[this,value](){this->ShowCardToSidePanel(value);});
+                //imgLabel->setPixmap(pix.scaled(220, 310,Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                imgLabel->setFixedSize(154, 213); // add padding around thumbnail
+                this->ui->cardGrid->addWidget(imgLabel,row,col);
+                if (++col >= columns) {
+                    col = 0;
+                    ++row;
+                }
+            }
+        }
+    }
+
+}
+
+void MainWindow::ShowCardToSidePanel(Card c){
+    std::string path_str = c.getImagePath();
+    QString path_image = QString::fromStdString(path_str);
+    if (QFile::exists(path_image)) {
+        QPixmap pix(path_image);
+        this->ui->cardImage->setScaledContents( true );
+        this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+        this->ui->cardImage->setPixmap(pix);
+    }
+    this->ui->cardText->setText(QString::fromStdString(c.getCardHTML()));
+}
 
 void MainWindow::DisplayFilteredCards(){
-    int row = 0, col = 0;
-    const int columns = 4; // adjust grid width
 
     this->ui->cardGridWidget_2->setWordWrap(true);
     this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -686,11 +865,6 @@ void MainWindow::DisplayFilteredCards(){
                 item->setSizeHint( final_widget->sizeHint() );
                 this->cards_items.push_back(item);
                 //this->ui->cardGridWidget_2->addWidget(imgLabel);
-
-                if (++col >= columns) {
-                    col = 0;
-                    ++row;
-                }
             } else {
                 qWarning() << "Image not found:" << path_image;
             }
@@ -716,6 +890,11 @@ void MainWindow::OnExit(){
 
 void MainWindow::OnUnloadSimulator(){
     DeleteSetting("simulator_data_path");
+    this->ui->simulatorWidget->setVisible(true);
+    this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
+    this->ui->MenusWidget->setVisible(false);
+    this->ui->MenusWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);
+    this->SwitchToMainMenu();
     this->UnloadData();
 }
 
@@ -747,35 +926,81 @@ void MainWindow::UnloadData(bool unload_set_widget){
 
     this->ui->searchFilterEdit->setPlainText(QString(""));
 
-    this->choosen_serie = nullptr;
-    this->choosen_sets  = {};
+
 
     if (unload_set_widget){
-    this->series.clear();
-    this->series = {};
-    this->display_load_series = true;
-    this->display_pick_set = false;
-    this->display_cards = false;
+        this->choosen_serie = nullptr;
+        this->choosen_sets  = {};
+        this->series.clear();
+        this->series = {};
+        this->display_load_series = true;
+        this->display_pick_set = false;
+        this->display_cards = false;
 
 
-    this->ui->simulatorPathBox->clear();
-    this->ui->seriePickBox->clear();
-    this->ui->setPickBox->clear();
+        this->ui->simulatorPathBox->clear();
+        this->ui->seriePickBox->clear();
+        this->ui->setPickBox->clear();
     }
     this->current_cards_to_display.clear();
     this->current_cards_to_display = {};
 
     this->ClearCardsWidget();
+    this->ClearDeckWidget();
     this->UpdateUi();
 
 }
 
+
+void MainWindow::ClearDeckWidget(){
+    QLayoutItem *child;
+    while ((child = this->ui->cardGrid->takeAt(0)) != nullptr) {
+        delete child;
+    }
+
+    this->ui->cardImage->setScaledContents( true );
+    this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+    this->ui->cardImage->clear();
+
+    this->ui->cardText->clear();
+    this->ui->cardText->setWordWrap(true);
+    //textLabel->setIndent(224);
+    this->ui->cardText->setTextFormat(Qt::RichText);
+    this->ui->cardText->setMaximumWidth(1300);
+    this->ui->cardText->setAlignment(Qt::AlignLeft);
+}
 void MainWindow::ClearCardsWidget(){
     if (this->cards_items.size() > 0){
         for (QListWidgetItem* item : this->cards_items){
             this->ui->cardGridWidget_2->removeItemWidget(item);
+            delete item;
         }
     }
+    QLayoutItem *child;
+    while ((child = this->ui->costFilterLayout_2->takeAt(0)) != nullptr) {
+        delete child;
+    }
+
+    QLayoutItem *child2;
+    while ((child2 = this->ui->colorFilterLayout_2->takeAt(0)) != nullptr) {
+        delete child2;
+    }
+
+    QLayoutItem *child3;
+    while ((child3 = this->ui->typeFilterLayout->takeAt(0)) != nullptr) {
+        delete child3;
+    }
+
+    QLayoutItem *child4;
+    while ((child4 = this->ui->traitFilterLayout->takeAt(0)) != nullptr) {
+        delete child4;
+    }
+
+    QLayoutItem *child5;
+    while ((child5 = this->ui->levelFilterLayout_2->takeAt(0)) != nullptr) {
+        delete child5;
+    }
+
     this->ui->cardGridWidget_2->clear();
     this->cards_items = {};
 }
@@ -797,6 +1022,11 @@ void MainWindow::LoadSimulator(std::string simulator_path){
             this->ui->seriePickBox->addItem(QString::fromStdString(sa.getName()));
         }
         this->display_load_series = false;
+        this->ui->simulatorWidget->setVisible(false);
+        this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);
+        this->ui->MenusWidget->setVisible(true);
+        this->ui->MenusWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
+        this->SwitchToMainMenu();
         this->UpdateUi();
     }
     else

@@ -24,6 +24,8 @@ set(PROJECT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/serie.h
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/set.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/set.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/deck.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cards/deck.h
         test.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.h
@@ -39,6 +41,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         utils/io.cpp
         utils/io.h
         utils/data.h utils/data.cpp
+        utils/tinyxml2.cpp
+        utils/tinyxml2.h
+        hoverlabel.h hoverlabel.cpp
 
     )
 # Define target properties for Android with Qt 6 as:

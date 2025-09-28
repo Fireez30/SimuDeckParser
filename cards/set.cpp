@@ -30,15 +30,23 @@ void Set::setPath(std::string path){
     this->path = path;
 }
 
-std::vector<Card> &Set::getCards(){
+std::map<std::string,Card> &Set::getCards(){
     return this->cards;
 }
 
-Card Set::getCardAt(int index){
-    if (index < 0 || index < this->cards.size()){
-        return Card(); // This sucks, should use something else
-        }
-    return this->cards.at(index);
+bool Set::containsCard(std::string code){
+    std::map<std::string,Card>::iterator it;
+    it = this->cards.find(code);
+    return (it != this->cards.end());
+}
+
+Card* Set::getCard(std::string code){
+    std::map<std::string,Card>::iterator it;
+    it = this->cards.find(code);
+    if (it != this->cards.end()){
+        return &((*it).second);
+    }
+    return nullptr; // Maybe there's a smarter thing to do
 }
 
 

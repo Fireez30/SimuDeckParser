@@ -7,7 +7,9 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QLabel>
+#include <QCheckBox>
 #include <QComboBox>
+#include "deck.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -41,14 +43,21 @@ public:
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
     void ClearCardsWidget();
+    void DisplayPickedDeck();
+    void ClearDeckWidget();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
     std::vector<Serie> series;
+    std::map<std::string,Deck> decks;
+    bool display_main_menu;
+    bool display_card_list;
+    bool display_deck_editor;
     bool display_load_series;
     bool display_pick_set;
     bool display_cards;
+    std::string picked_deck;
     std::vector<int> available_level_filters;
     std::vector<std::string> available_trait_filters;
     std::vector<int> available_cost_filters;
@@ -79,5 +88,10 @@ private slots:
     void AddColorFilter(bool active,Color color);
     void AddTypeFilter(bool active, CardType type);
     void ApplyFilters();
+    void SwitchToMainMenu();
+    void SwitchToCardList();
+    void SwitchToDeckEditor();
+    void PickDeck();
+    void ShowCardToSidePanel(Card c);
 };
 #endif // MAINWINDOW_H

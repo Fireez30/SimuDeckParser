@@ -5,12 +5,17 @@
 #include <stdexcept>
 #include <iostream>
 #include "algorithms.h"
+#include "tinyxml2.h"
 #include "set.h"
 #include <fstream>
 #include <QFile>
 #include <filesystem>
 #include "serie.h"
 #include <algorithm>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include "deck.h"
 
 namespace fs = std::filesystem;
 std::map<std::string,std::string> common_effects = {};
@@ -56,7 +61,7 @@ void ParseCommonEffects(std::string simulator_path) {
     }
 }
 void ParseCards(Set& set){
-    std::vector<Card>& cards = set.getCards();
+    std::map<std::string,Card>& cards = set.getCards();
     std::string set_path = set.getPath();
     std::string card_data = set_path+separator()+"CardData.txt";
     if (fs::exists(card_data)){
@@ -149,8 +154,10 @@ void ParseCards(Set& set){
                 else if (str.substr(0,6) ==  "Clone "){
                     std::string cloned_card_name = trim(str.substr(6,std::string::npos));
                     //std::cout << key << " cloned from " << cloned_card_name << std::endl;
-                    for (Card c : cards){
-
+                    std::map<std::string,Card>::iterator it;
+                    for (it = cards.begin(); it != cards.end(); it++){
+                        std::string code = (*it).first;
+                        Card c  = (*it).second;
                         if (c.getKey() == cloned_card_name){
                             //std::cout << "found cloned card" << c.getKey() << std::endl;
                             type=c.getCardType();
@@ -469,7 +476,7 @@ void ParseCards(Set& set){
                     if (!QFile::exists(QString::fromStdString(path))) {
                         path = ":/images/emptycard.jpg";
                     }
-                    cards.push_back(Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
+                    cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //
                     key = "";
                     type=CardType::CHARACTER;
                     name = "";
@@ -561,3 +568,139 @@ std::vector<Serie> ParseSeries(std::string cards_path){
 
     return series;
 }
+
+static std::string base64_encode(const std::string &in) {
+
+    std::string out;
+
+    int val = 0, valb = -6;
+    for (uchar c : in) {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0) {
+            out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(val>>valb)&0x3F]);
+            valb -= 6;
+        }
+    }
+    if (valb>-6) out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[((val<<8)>>(valb+8))&0x3F]);
+    while (out.size()%4) out.push_back('=');
+    return out;
+}
+
+static std::string base64_decode(const std::string &in) {
+
+    std::string out;
+
+    std::vector<int> T(256,-1);
+    for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
+
+    int val=0, valb=-8;
+    for (uchar c : in) {
+        if (T[c] == -1) break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(char((val>>valb)&0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+void ParseDecks(std::map<std::string,Deck> &decks){
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    if (fs::exists(prefsfile)){
+        tinyxml2::XMLDocument doc;
+        doc.LoadFile(prefsfile.c_str());
+        tinyxml2::XMLElement* rootnode = doc.RootElement();
+        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
+        while (firstchild != nullptr){
+            if (firstchild->FindAttribute("name") != nullptr){
+            std::string name = firstchild->FindAttribute("name")->Value();
+                if (name.substr(0,5) == "Date_"){
+                    std::string deck_name = trim(name.substr(5,std::string::npos));
+                    std::string base64_date = firstchild->GetText();
+                    std::string deck_date = trim(base64_decode(base64_date));
+                    decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+                }
+            }
+            firstchild = firstchild->NextSiblingElement();
+        }
+    }
+}
+
+void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,std::vector<Serie> &series)
+{
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    //std::cout << "pref file : " << prefsfile << std::endl;
+    if (fs::exists(prefsfile)){
+        //std::cout << "Found pref file : "<< std::endl;
+        tinyxml2::XMLDocument doc;
+        doc.LoadFile(prefsfile.c_str());
+        tinyxml2::XMLElement* rootnode = doc.RootElement();
+        //std::cout << "Root node : " << rootnode->Name() << std::endl;
+        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
+        while (firstchild != nullptr){
+            //std::cout << "found child : " << std::endl;
+            if (firstchild->FindAttribute("name") != nullptr){
+                //std::cout << firstchild->FindAttribute("name")->Value() << std::endl;
+                std::string name = firstchild->FindAttribute("name")->Value();
+                if (name.substr(0,5) == "Deck_"){
+                    //std::cout << "found deck " << std::endl;
+                    std::string deck_name = name.substr(5,std::string::npos);
+                    if (deck_name == target_deck_name){
+                        //std::cout << "found date name " << std::endl;
+                        //std::cout << "found deck : " << deck_name << std::endl;
+                        // tinyxml2::XMLText* textNode = firstchild->ToText();
+                        //std::cout << "found textNode " << std::endl;
+
+                        ///std::cout << "after while" << std::endl;
+                        std::string base64_decklist = firstchild->GetText();
+                        //std::cout << "found base64_decklist " << std::endl;
+                        std::string deck_list = trim(base64_decode(base64_decklist));
+                        //std::cout <<  " list : " << deck_list << std::endl;
+
+                        std::map<std::string,Deck>::iterator itdeck;
+                        itdeck = decks.find (deck_name);
+                        //std::cout << "after declaration of iterator" << std::endl;
+                        if (itdeck != decks.end()){
+                            std::vector<std::string> card_codes  = split(deck_list,'|');
+                            //std::cout << "after getting codes" << std::endl;
+                            for (std::string card : card_codes){
+                                bool found = false;
+                                //std::cout << "card " << card << std::endl;
+                                if (trim(card) != ""){
+                                    for (Serie s : series){ // Do not keep this in final release , too slow.
+                                        //std::cout << "is it in serie " << s.getName() << std::endl;
+                                        if (!found){
+                                            for (Set set : s.getAllSets()){
+                                                //std::cout << "is it in set " << set.getName() << std::endl;
+                                                if (!found && set.containsCard(card)){
+                                                    Card* c = set.getCard(card);
+                                                    //std::cout << "retrieved card" << std::endl;
+                                                    (*itdeck).second.AddCard(*c);
+                                                    //std::cout << "added card" << std::endl;
+                                                    found = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+            firstchild = firstchild->NextSiblingElement();
+        }
+    }
+    std::cout << "finished loading deck" << std::endl;
+}
+
