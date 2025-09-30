@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
     //orders and filters
-    this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
+    this->current_orders = {Orders::KEYCODE_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
 
     this->available_level_filters = {}; // This will be loaded when laoding a set cards
     this->available_cost_filters = {};
@@ -155,12 +155,18 @@ void MainWindow::SwitchToDeckEditor(){
 void MainWindow::PickDeck(){
     this->ClearDeckWidget();
     std::string deck_name = this->ui->deckPixBox->currentText().toStdString();
-    LoadDeck(this->decks,deck_name,this->series);
+    //LoadDeck(this->decks,deck_name,this->series);
     this->picked_deck = deck_name;
     std::map<std::string,Deck>::iterator itdeck;
     itdeck = decks.find (deck_name);
     if (itdeck != decks.end()){
         (*itdeck).second.Print();
+        if ((*itdeck).second.getCardList().size() == 0){
+            LoadDeck(this->decks,deck_name,this->series);
+        }
+    }
+    else {
+        LoadDeck(this->decks,deck_name,this->series);
     }
 
     this->DisplayPickedDeck();
@@ -676,6 +682,12 @@ void MainWindow::SortFilteredCards(){
                         return a.getPower() > b.getPower();
                     }
                 }
+                else if (o == Orders::KEYCODE_ASCENDING){
+                    if (a.getKey() != b.getKey()){
+                        return a.getKey() < b.getKey();
+                    }
+                }
+
             }
         }
         if (a.getLevel() != b.getLevel()){ // default is level > power
@@ -912,7 +924,7 @@ void MainWindow::UnloadData(bool unload_set_widget){
     this->current_trait_filters = {}; // completely reset the size of the vector itself
 
     this->current_orders.clear();
-    this->current_orders = {Orders::LEVEL_ASCENDING,Orders::POWER_ASCENDING};
+    this->current_orders = {Orders::KEYCODE_ASCENDING};
 
     this->ui->searchFilterEdit->setPlainText(QString(""));
 

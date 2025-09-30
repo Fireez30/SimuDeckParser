@@ -7,14 +7,31 @@
 #include <filesystem>
 #include <card.h>
 #include "io.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 namespace fs = std::filesystem;
 
-std::string settings_file = "settings.txt";
 
+std::string settings_file(){
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string simulator_config_folder = homedirstr+separator()+".config"+separator()+"weiss_simulator_parser"+separator();
+    if (!fs::exists(simulator_config_folder)){
+        fs::create_directories(simulator_config_folder);
+    }
+    std::string simulator_config_file = homedirstr+separator()+".config"+separator()+"weiss_simulator_parser"+separator()+"settings.conf";
+    if (!fs::exists(simulator_config_file)){
+        std::ofstream output(simulator_config_file);
+    }
+
+    return simulator_config_file;
+}
 
 
 std::map<std::string,std::string> get_settings(){
-    std::string setting_path = settings_file;
+    std::string setting_path = settings_file();
     std::map<std::string,std::string> current_settings = {};
     if (fs::exists(setting_path)){
         std::ifstream file(setting_path);
@@ -28,20 +45,11 @@ std::map<std::string,std::string> get_settings(){
         while (std::getline(file, str))
         {
             if (str != ""){
-                auto pos = str.find(del); // ALL OF THIS BECAUSE C++ DOESNT HAVE A STRING SPLIT FUNCTION OzjQDIQZJIDJQZOP
-                while (pos != std::string::npos) {
-                    if (set_key == ""){
-                        set_key = str.substr(0,pos);
-                    }
-                    else if (set_val == ""){
-                        set_val = str.substr(0,pos);
-                    }
-                    str.erase(0, pos + del.length());
-                    pos = str.find(del);
+                std::vector<std::string> splited = split(trim(str),':');
+                if (splited.size() > 1){
+                    current_settings[splited[0]] = splited[1];
                 }
-                if (set_key != "" && set_val != ""){
-                    current_settings[set_key] = set_val;
-                }
+
             }
         }
     }
@@ -53,15 +61,15 @@ std::string GetSetting(std::string setting_key){
     std::map<std::string,std::string>::iterator it;
     std::map<std::string,std::string> current_settings = get_settings();
     for (it = current_settings.begin(); it != current_settings.end(); it++){
-        if ((*it).first == setting_key){
-            return (*it).second;
+        if (trim((*it).first) == setting_key){
+            return trim((*it).second);
         }
     }
     return "";
 }
 
 void WriteSettings(std::map<std::string,std::string> setting_map){
-    std::string setting_path = settings_file;
+    std::string setting_path = settings_file();
     std::ofstream outputFile(setting_path);  // Open/create a file named "test.txt" for writing
     std::map<std::string, std::string>::iterator it;
     if (outputFile.is_open()) {  // Check if the file was successfully opened

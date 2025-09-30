@@ -17,6 +17,8 @@
 #include <pwd.h>
 #include "deck.h"
 
+std::string card_to_print = "GL/S52-E068";
+
 namespace fs = std::filesystem;
 std::map<std::string,std::string> common_effects = {};
 
@@ -54,11 +56,6 @@ void ParseCommonEffects(std::string simulator_path) {
         }
     }
 
-    std::map<std::string,std::string>::iterator it;
-    for (it = common_effects.begin(); it != common_effects.end(); it++){
-        std::cout << (*it).first << std::endl;
-        std::cout << (*it).second << std::endl;
-    }
 }
 
 std::string retrieveCardPath(const std::string set_path,const std::string card_key,const std::string alternate_artwork_folder){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
@@ -69,11 +66,22 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     std::string path=set_path+separator_found+trim(sub_str)+".jpg";
 
-
+    if (card_key == card_to_print){ std::cout << "trying path : " << path << std::endl;}
 
     if (QFile::exists(QString::fromStdString(path))) { // Normal card found
         return path;
     }
+
+    sub_str = card_key; // check if to lower
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
 
     sub_str = card_key;
     replace_in_string(sub_str,"-","-E");
@@ -85,11 +93,34 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     }
 
     sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English to lower
+        return path;
+    }
+
+
+    sub_str = card_key;
     replace_in_string(sub_str,"-T","-TE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     path=set_path+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English to lower
         return path;
     }
 
@@ -102,6 +133,16 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
         return path;
     }
 
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
+        return path;
+    }
 
     // FOIL CARD (JP)
 
@@ -126,12 +167,35 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
         return path;
     }
 
+
+    sub_str = card_key;
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
+
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card found to lower
+        return path;
+    }
+
     sub_str = card_key;
     replace_in_string(sub_str,"-","-E");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     path=set_path+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English to lower
         return path;
     }
 
@@ -143,6 +207,16 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
         return path;
     }
+    sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English to lower
+        return path;
+    }
 
     sub_str = card_key;
     replace_in_string(sub_str,"-P","-PE");
@@ -152,6 +226,18 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
         return path;
     }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English to lower
+        return path;
+    }
+
 
     //ARI/S103-001 => en folder : ENS103
 
@@ -167,11 +253,33 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     }
 
     sub_str = card_key;
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
+
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card found to lower
+        return path;
+    }
+
+    sub_str = card_key;
     replace_in_string(sub_str,"-","-E");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     path=set_path+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English to lower
         return path;
     }
 
@@ -185,6 +293,17 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     }
 
     sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English to lower
+        return path;
+    }
+
+    sub_str = card_key;
     replace_in_string(sub_str,"-P","-PE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
@@ -193,6 +312,17 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
         return path;
     }
 
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+              ::tolower);
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English to lower
+        return path;
+    }
 
     return ":/images/emptycard.jpg";
 }
@@ -230,14 +360,17 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
             if (str != "" && str.substr(0,5) != "Combo"){
                 if (str.substr(0,10) == "Character:"){
                     key=trim(str.substr(10,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found character for key " << card_to_print << std::endl;}
                     type = CardType::CHARACTER;
                 }
                 else if (str.substr(0,6) == "Event:"){
                     key=trim(str.substr(6,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found event for key " << card_to_print << std::endl;}
                     type = CardType::EVENT;
                 }
                 else if (str.substr(0,7) == "Climax:"){
                     key=trim(str.substr(7,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found climax for key " << card_to_print << std::endl;}
                     type = CardType::CLIMAX;
                 }
 
@@ -251,18 +384,18 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         path = ":/images/emptycard.jpg";
                     }
 
+                    if (key == card_to_print){std::cout << "Found path " << path << " for key " << card_to_print << std::endl;}
+
                 }
 
                 else if (str.substr(0,5) == "Name "){
                     name= trim(str.substr(5,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found name " << name << " for key " << card_to_print << std::endl;}
                 }
 
                 else if (str.substr(0,6) == "Color "){
 
                     std::string temp_color = trim(str.substr(6,std::string::npos));
-                    if (key == "KS/W49-T10"){
-                        std::cout << "temp color : " << temp_color << std::endl;
-                    }
                     if (temp_color == "Y"){
                         color = Color::YELLOW;
                     }
@@ -280,15 +413,21 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         // right now, no case for ALL colors, but it could be possible later during effects
                         color = Color::NONE;
                     }
+                    if (key == card_to_print){std::cout << "Found color " << GetColorString(color) << " for key " << card_to_print << std::endl;}
+
                 }
                 else if (str.substr(0,6) == "Level "){
                     unsigned long lresult = stoul(trim(str.substr(6,std::string::npos)), 0, 10);
                     unsigned int result = lresult;
                     if (result != lresult) throw std::out_of_range("Error parsing level ! ");
                     level = result;
+                    if (key == card_to_print){std::cout << "Found level " << level << " for key " << card_to_print << std::endl;}
+
                 }
                 else if (str.substr(0,6) ==  "Clone "){
                     std::string cloned_card_name = trim(str.substr(6,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found clone " << cloned_card_name << " for key " << card_to_print << std::endl;}
+
                     //std::cout << key << " cloned from " << cloned_card_name << std::endl;
                     std::map<std::string,Card>::iterator it;
                     for (it = cards.begin(); it != cards.end(); it++){
@@ -334,9 +473,13 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     unsigned int result = lresult;
                     if (result != lresult) throw std::out_of_range("Error parsing cpst ! ");
                     cost = result;
+                    if (key == card_to_print){std::cout << "Found cost " << cost << " for key " << card_to_print << std::endl;}
+
                 }
                 else if (str.substr(0,6) == "Power "){
                     power = std::stoi(trim(str.substr(6,std::string::npos)));
+                    if (key == card_to_print){std::cout << "Found power " << power << " for key " << card_to_print << std::endl;}
+
                 }
                 else if (str.substr(0,5) == "Trait"){
                     is_previous_line_trait = true;
@@ -350,6 +493,9 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     else if (trait3 == ""){
                         trait3 = found_trait;
                     }
+                    if (key == card_to_print){std::cout << "Found trait1 " << trait1 << " for key " << card_to_print << std::endl;}
+                        if (key == card_to_print){std::cout << "Found trait2 " << trait2 << " for key " << card_to_print << std::endl;}
+                        if (key == card_to_print){std::cout << "Found trait3 " << trait3 << " for key " << card_to_print << std::endl;}
                 }
                 else if (type == CardType::CLIMAX && str.substr(0,1) == "*"){ // THIS IS ONLY FOR DETERMINING CLIMAX TRIGGERS AND COLORS. MANDATORY
                     //todo
@@ -492,12 +638,14 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         trigger2 = Trigger::SOUL;
 
                     }
+
+                    if (key == card_to_print){std::cout << "Found triggr1 " << GetTriggerString(trigger1) << " for key " << card_to_print << std::endl;}
+                        if (key == card_to_print){std::cout << "Found trait2 " << GetTriggerString(trigger2) << " for key " << card_to_print << std::endl;}
+                        if (key == card_to_print){std::cout << "Found color " << GetColorString(color) << " for key " << card_to_print << std::endl;}
                 }
                 else if (str.substr(0,1) == "*"){
-                    std::string card_to_print = "KS/W76-E103";
                     std::string effect_parsed = trim(str.substr(1,std::string::npos));
                     replace_in_string(effect_parsed,"()","");
-                    if (key == card_to_print){std::cout << "found start" << std::endl;}
                     std::map<std::string,std::string>::iterator it;
                     it = common_effects.find (effect_parsed);
                     bool used=false;
@@ -509,7 +657,6 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     }
                     if (!used){
                         bool found_effect = false;
-                        if (key == card_to_print){std::cout << "start loop" << std::endl;}
                         std::map<std::string,std::string>::iterator it;
                         for (it = common_effects.begin(); it != common_effects.end(); it++){
                             if (!found_effect){
@@ -519,7 +666,6 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
 
                                 std::string preffix_effect_key = effect_key.substr(0,effect_key.find('('));
                                 std::string prefix_str_key = effect_parsed.substr(0,effect_parsed.find('('));
-                                if (key == card_to_print){std::cout << prefix_str_key << " - " << preffix_effect_key << std::endl;}
                                 if (preffix_effect_key == prefix_str_key){
                                     if (key == card_to_print){std::cout << "before substr" << std::endl;}
                                     if (effect_key.find('(') != std::string::npos && effect_parsed.find('(') != std::string::npos){
@@ -530,55 +676,39 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                                         replace_in_string(params_effect_key,")","");
                                         replace_in_string(params_str_key,"(","");
                                         replace_in_string(params_str_key,")","");
-                                        if (key == card_to_print){std::cout << "before split " << std::endl;}
-                                         if (key == card_to_print){std::cout << effect_key << std::endl;}
-                                          if (key == card_to_print){std::cout << effect_parsed << std::endl;}
                                         std::vector<std::string> list_of_params_effect_key = split(params_effect_key,',');
                                         std::vector<std::string> list_of_params_str_key = split(params_str_key,',');
 
 
-                                        if (key == card_to_print){
-                                            std::cout << "list of effect split" << std::endl;
-                                            for (std::string s : list_of_params_effect_key){
-                                                std::cout << s << std::endl;
-                                            }
-                                        }
 
-                                        if (key == card_to_print){
-                                            std::cout << "list of str split" << std::endl;
-                                            for (std::string s : list_of_params_str_key){
-                                                std::cout << s << std::endl;
-                                            }
-                                        }
                                         found_effect = true;
                                         used = true;
                                         if (list_of_params_effect_key.size() == list_of_params_str_key.size()){
                                             if (list_of_params_str_key.size() > 0){
                                                 for (int i {0}; i < list_of_params_effect_key.size(); ++i){
-                                                    if (key == card_to_print){std::cout << "Replace " << trim(list_of_params_effect_key[i]) << " for "  << trim(list_of_params_str_key[i])<< std::endl;}
                                                     replace_in_string(effect_text,trim(list_of_params_effect_key[i]),trim(list_of_params_str_key[i]));
                                                 }
                                                 replace_in_string(effect_text,"$","");
                                                 replace_in_string(effect_text,"|"," or ");
                                             }
                                             text += trim(effect_text) + "\n";
+                                            if (key == card_to_print){std::cout << "Append to text " << trim(effect_text) << " for key " << card_to_print << std::endl;}
                                             break;
                                         }
                                     }
                                 }
                             }
                         }
-                        if (key == card_to_print){std::cout << "went through loop and found : " << used << std::endl;}
 
                     }
                     if (!used){
-                        if (key == card_to_print){std::cout << "not found anything , giving back START" << std::endl;}
                         text += trim(str.substr(1,std::string::npos)) + "\n" ; // Here we replace common effect tag by the real text
-                        if (key == card_to_print){std::cout << "not found anything , giving back END" << std::endl;}
+                        if (key == card_to_print){std::cout << "Append to text " << trim(str.substr(1,std::string::npos)) << " for key " << card_to_print << std::endl;}
+
                     }
 
                 }
-                else if ((str.substr(0,5) != "Trait" && str.substr(0,5)!= "Text ") && (parsing_code || str.substr(0,5) == "Cont:" || str.substr(0,5) == "Auto:" || str.substr(0,4) == "Act:")){
+                else if ((str.substr(0,7) != "EndCard" && str.substr(0,5) != "Trait" && str.substr(0,5)!= "Text ") && (parsing_code || str.substr(0,5) == "Cont:" || str.substr(0,5) == "Auto:" || str.substr(0,4) == "Act:")){
                     // we finished, now everything that is after this is card code, unless found a line that begins with "Text"
                     is_previous_line_trait = true;
                     if (parsing_text){
@@ -586,6 +716,8 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         parsing_text = false;
                     }
                     parsing_code = true;
+                    if (key == card_to_print){std::cout << "Append to code " << trim(str) << " for key " << card_to_print << std::endl;}
+
                     code += trim(str) + "\n";
                 }
                 else if ((str.substr(0,7) != "EndCard" && str.substr(0,5) != "Cont:" &&  str.substr(0,5) != "Auto:" && str.substr(0,4) != "Act:") &&  (str.substr(0,5) == "Text " || parsing_text)){
@@ -596,9 +728,13 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     }
                     parsing_text = true;
                     if (str.substr(0,5) == "Text "){
+                        if (key == card_to_print){std::cout << "Append to text " << trim(str.substr(5,std::string::npos)) << " for key " << card_to_print << std::endl;}
+
                         text += trim(str.substr(5,std::string::npos)) + "\n";
                     }
                     else {
+                            if (key == card_to_print){std::cout << "Append to text " << trim(str) << " for key " << card_to_print << std::endl;}
+
                         text += trim(str) + "\n" ;
                     }
                     // here, we finished going through the card code, it's time to parse text
@@ -607,7 +743,11 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                 else if (str.substr(0,7) == "EndCard"){
                     path = retrieveCardPath(set_path,key,alternate_cards_folder);
                     //std::cout << "found path for card " << key << " = " << path << std::endl;
+
                     cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //
+                    if (key == card_to_print){
+                        cards[key].print();
+                    }
                     key = "";
                     type=CardType::CHARACTER;
                     name = "";
@@ -768,6 +908,7 @@ void ParseDecks(std::map<std::string,Deck> &decks){
 
 void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,std::vector<Serie> &series)
 {
+
     struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     std::string homedirstr = homedir;
@@ -833,12 +974,13 @@ void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,st
                             }
 
                         }
+                          std::cout << "finished loading deck , loaded : " << (*itdeck).second.getCardList().size() << " card " << std::endl;
                     }
                 }
             }
             firstchild = firstchild->NextSiblingElement();
         }
     }
-    std::cout << "finished loading deck" << std::endl;
+
 }
 

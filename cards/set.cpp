@@ -49,7 +49,7 @@ bool Set::containsCard(std::string code){
     // BUG HERE ! IF CARD CODE ENDS WITH A LETTER (IF THERE IS 4 or 5 CHARACTER), AND IT NOT FOUND, VERIFY IF REMOVING LAST CHARACTER
     if (it == this->cards.end()){
         std::string new_code = removeTrailingAlphas(code);
-        std::cout << "Retrying from " << code << " to " << new_code << std::endl;
+        //std::cout << "Retrying from " << code << " to " << new_code << std::endl;
         it = this->cards.find(new_code);
     }
     return (it != this->cards.end());
@@ -65,7 +65,7 @@ Card* Set::getCard(std::string code){
         if (it == this->cards.end()){
             std::string new_code = removeTrailingAlphas(code);
             if (code != new_code){
-                std::cout << "Retrying from " << code << " to " << new_code << std::endl;
+                //std::cout << "Retrying from " << code << " to " << new_code << std::endl;
                 it = this->cards.find(new_code);
                 if (it != this->cards.end()){
                     return &((*it).second);
