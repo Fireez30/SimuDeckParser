@@ -55,8 +55,9 @@ When sliding your mouse over a card, you will see the card data on the right pan
 
 Soon : 
 
- - integration of deck import from encoredecks to the simulator 
+ - integration of deck import from encoredecks to the simulator
  - support for windows
+ - UI updates (alignemnts, better design, responsiveness ?)
 
 Longer : 
 
@@ -73,3 +74,15 @@ You will be able to enter the new path and save it again
 - I have a bug, what can I do ? 
 
 => You can post an issue in this github repository, explaining the bug, and if possible how you reached the bug, a screenshot and/or a video
+
+
+
+
+
+
+
+
+
+
+
+
