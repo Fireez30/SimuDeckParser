@@ -110,26 +110,18 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
 
 void MainWindow::SwitchToMainMenu(){
+    this->UnloadData(false);
 
     this->display_main_menu = true;
     this->display_card_list = false;
     this->display_deck_editor =false;
-
-    this->ClearCardsWidget();
-    this->ClearDeckWidget();
-    this->UnloadData(false);
-
 
 
     this->UpdateUi();
 }
 
 void MainWindow::SwitchToCardList(){
-
-    this->ClearCardsWidget();
-    this->ClearDeckWidget();
     this->UnloadData(false);
-
     this->display_main_menu = false;
     this->display_card_list = true;
     this->display_deck_editor =false;
@@ -144,8 +136,6 @@ void MainWindow::SwitchToCardList(){
 }
 
 void MainWindow::SwitchToDeckEditor(){
-
-    this->ClearCardsWidget();
     this->UnloadData(false);
 
     this->display_main_menu = false;
@@ -219,7 +209,7 @@ void RemoveOrder(std::string order);
 void AddOrder(std::string order);
 
 void MainWindow::RedisplayAfterFilter(){
-    this->ClearCardsWidget();
+    this->ClearCardsWidget(false);
     this->ApplyFilter();
     this->SortFilteredCards();
     this->DisplayFilteredCards();
@@ -569,6 +559,7 @@ Serie MainWindow::getSerieByName(std::string name){
 }
 
 void MainWindow::OnSeriePick(){
+    this->UnloadData(false);
     std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
     //QMessageBox::information(this, "Item Selection",
     //                         this->m_series_dropdown->currentText());
@@ -696,44 +687,40 @@ void MainWindow::SortFilteredCards(){
     });
 }
 void MainWindow::OnSetPick(){
-    this->ClearCardsWidget();
     this->UnloadData(false);
+
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
     this->display_cards = true;
     this->UpdateUi();
     this->choosen_sets.clear();
-    std::cout << choosen_set_name << std::endl;
-    std::cout << this->choosen_serie->getAllSets().size() << std::endl;
     if (this->choosen_serie != nullptr){
         for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
-            std::cout << this->choosen_serie->getAllSets().at(i).getName() << std::endl;
             if (this->choosen_serie->getAllSets().at(i).getName() ==  choosen_set_name){
                 this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
             }
 
         }
     }
-    std::cout << "will display : " << this->choosen_sets.size() << " sets " << std::endl;
     this->FillFiltersUsingSet();
     this->FillCards();
     this->ApplyFilter();
     this->SortFilteredCards();
     this->DisplayFilteredCards();
-    std::cout << "Found " << this->current_cards_to_display.size() << " cards " << std::endl;
 
 
 }
 
 
 void MainWindow::OnSerieCardsPick(){
-    this->ClearCardsWidget();
     this->UnloadData(false);
     std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
     //QMessageBox::information(this, "Item Selection",
     //                         this->m_series_dropdown->currentText());
     this->display_pick_set = true;
+    this->display_cards = true;
     this->UpdateUi();
     this->ui->setPickBox->clear();
+    this->choosen_sets.clear();
     for (int i {0}; i < this->series.size(); ++i){
         if (this->series.at(i).getName() ==  choosen_serie_name){
             this->choosen_serie = &this->series.at(i);
@@ -765,7 +752,7 @@ void MainWindow::OnSerieCardsPick(){
 
 
 void MainWindow::DisplayPickedDeck(){
-    std::cout << "Display picked : " << this->picked_deck << std::endl;
+    //std::cout << "Display picked : " << this->picked_deck << std::endl;
     int row = 0, col = 0;
     const int columns = 10;
     std::map<std::string,Deck>::iterator itdeck;
@@ -773,13 +760,13 @@ void MainWindow::DisplayPickedDeck(){
     if (itdeck != decks.end()){
         Deck de = (*itdeck).second;
         for (Card value : de.getCardList()){
-            std::cout << "for loop card : " << value.getKey() << std::endl;
+            //std::cout << "for loop card : " << value.getKey() << std::endl;
             std::string path_str = value.getImagePath();
-            std::cout << "found image : " << value.getKey() << std::endl;
+            //std::cout << "found image : " << value.getKey() << std::endl;
 
             //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
             QString path_image = QString::fromStdString(path_str);
-            std::cout << value.getKey() << std::endl;
+            //std::cout << value.getKey() << std::endl;
             if (QFile::exists(path_image)) {
                 QPixmap pix(path_image);
                 HoverLabel* imgLabel = new HoverLabel(this);
@@ -830,7 +817,7 @@ void MainWindow::DisplayFilteredCards(){
     this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     for (Card c : this->current_cards_to_display){
-        std::cout << c.getImagePath() << std::endl;
+        //std::cout << c.getImagePath() << std::endl;
         if (c.getImagePath() != "" ){
             std::string path_str = c.getImagePath();
             //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
@@ -899,6 +886,9 @@ void MainWindow::OnUnloadSimulator(){
 }
 
 void MainWindow::UnloadData(bool unload_set_widget){
+    this->ClearCardsWidget();
+    this->ClearDeckWidget();
+
     this->available_level_filters.clear(); // Clear memory of objects in the vector
     this->available_level_filters = {}; // completely reset the size of the vector itself
     this->available_cost_filters.clear(); // Clear memory of objects in the vector
@@ -945,18 +935,31 @@ void MainWindow::UnloadData(bool unload_set_widget){
     this->current_cards_to_display.clear();
     this->current_cards_to_display = {};
 
-    this->ClearCardsWidget();
-    this->ClearDeckWidget();
+
     this->UpdateUi();
 
 }
 
+void clearLayout(QLayout* layout) {
+    if (!layout)
+        return;
+
+    QLayoutItem* item;
+    while ((item = layout->takeAt(0)) != nullptr) {
+        if (QWidget* widget = item->widget()) {
+            widget->deleteLater();  // Schedule widget for deletion
+        }
+        if (QLayout* childLayout = item->layout()) {
+            clearLayout(childLayout);  // Recursively clear nested layouts
+            delete childLayout;
+        }
+        delete item;
+    }
+}
 
 void MainWindow::ClearDeckWidget(){
-    QLayoutItem *child;
-    while ((child = this->ui->cardGrid->takeAt(0)) != nullptr) {
-        delete child;
-    }
+
+    clearLayout(this->ui->cardGrid);
 
     this->ui->cardImage->setScaledContents( true );
     this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
@@ -969,39 +972,73 @@ void MainWindow::ClearDeckWidget(){
     this->ui->cardText->setMaximumWidth(1300);
     this->ui->cardText->setAlignment(Qt::AlignLeft);
 }
-void MainWindow::ClearCardsWidget(){
-    if (this->cards_items.size() > 0){
+void MainWindow::ClearCardsWidget(bool clear_filters){
+    /*if (this->cards_items.size() > 0){
         for (QListWidgetItem* item : this->cards_items){
             this->ui->cardGridWidget_2->removeItemWidget(item);
             delete item;
         }
-    }
-    QLayoutItem *child;
-    while ((child = this->ui->costFilterLayout_2->takeAt(0)) != nullptr) {
-        delete child;
-    }
+    }*/
 
-    QLayoutItem *child2;
-    while ((child2 = this->ui->colorFilterLayout_2->takeAt(0)) != nullptr) {
-        delete child2;
+    for (int i = 0; i < this->ui->cardGridWidget_2->count(); ++i) {
+        QListWidgetItem* item = this->ui->cardGridWidget_2->item(i);
+        QWidget* widget = this->ui->cardGridWidget_2->itemWidget(item);
+        if (widget) {
+            delete widget;  // Delete the associated custom widget
+        }
+        delete item;  // Delete the item itself
     }
-
-    QLayoutItem *child3;
-    while ((child3 = this->ui->typeFilterLayout->takeAt(0)) != nullptr) {
-        delete child3;
-    }
-
-    QLayoutItem *child4;
-    while ((child4 = this->ui->traitFilterLayout->takeAt(0)) != nullptr) {
-        delete child4;
-    }
-
-    QLayoutItem *child5;
-    while ((child5 = this->ui->levelFilterLayout_2->takeAt(0)) != nullptr) {
-        delete child5;
-    }
-
     this->ui->cardGridWidget_2->clear();
+    if (clear_filters){
+        clearLayout(this->ui->costFilterLayout_2);
+        clearLayout(this->ui->colorFilterLayout_2);
+        clearLayout(this->ui->typeFilterLayout);
+        clearLayout(this->ui->traitFilterLayout);
+        clearLayout(this->ui->levelFilterLayout_2);
+    }
+    /*QLayoutItem* item;
+    while ( ( item =  this->ui->costFilterLayout_2->layout()->takeAt( 0 ) ) != NULL )
+    {
+        delete item->widget();
+        delete item;
+    }
+    this->ui->costFilterLayout_2->clear();
+    //delete  this->ui->costFilterLayout_2->layout();*/
+
+    /*QLayoutItem* item2;
+    while ( ( item2 =  this->ui->colorFilterLayout_2->layout()->takeAt( 0 ) ) != NULL )
+    {
+        delete item2->widget();
+        delete item2;
+    }*/
+
+
+
+    /*QLayoutItem* item3;
+    while ( ( item3 =  this->ui->typeFilterLayout->layout()->takeAt( 0 ) ) != NULL )
+    {
+        delete item3->widget();
+        delete item3;
+    }*/
+
+
+    /*QLayoutItem* item4;
+    while ( ( item4 =  this->ui->traitFilterLayout->takeAt( 0 ) ) != nullptr )
+    {
+        delete item4->widget();
+        delete item4;
+    }
+    //delete  this->ui->traitFilterLayout->layout();
+    */
+    /*
+    QLayoutItem* item5;
+    while ( ( item5 =  this->ui->levelFilterLayout_2->takeAt( 0 ) ) != nullptr )
+    {
+        delete item5->widget();
+        delete item5;
+    }*/
+
+
     this->cards_items = {};
 }
 

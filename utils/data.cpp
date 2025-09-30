@@ -60,7 +60,143 @@ void ParseCommonEffects(std::string simulator_path) {
         std::cout << (*it).second << std::endl;
     }
 }
-void ParseCards(Set& set){
+
+std::string retrieveCardPath(const std::string set_path,const std::string card_key,const std::string alternate_artwork_folder){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
+    // NON FOIL CARD
+    char separator_found = separator();
+    std::string sub_str = card_key;
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    std::string path=set_path+separator_found+trim(sub_str)+".jpg";
+
+
+
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card found
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
+        return path;
+    }
+
+
+    // FOIL CARD (JP)
+
+    //ARI/S103-001 => jap folder : S103
+    std::string foil_set = "";
+    std::vector<std::string> splitted_slash = split(card_key,'/');
+    if (splitted_slash.size() > 1){
+        std::vector<std::string> splitted_dash = split(splitted_slash.at(1),'-');
+        if (splitted_dash.size() > 1){
+            foil_set = splitted_dash[0];
+        }
+    }
+
+
+    sub_str = card_key;
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
+
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card found
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
+        return path;
+    }
+
+    //ARI/S103-001 => en folder : ENS103
+
+    foil_set = "EN"+foil_set;
+    sub_str = card_key;
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
+
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card found
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-","-E");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-T","-TE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
+        return path;
+    }
+
+    sub_str = card_key;
+    replace_in_string(sub_str,"-P","-PE");
+    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
+    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
+    path=set_path+separator_found+trim(sub_str)+".jpg";
+    if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
+        return path;
+    }
+
+
+    return ":/images/emptycard.jpg";
+}
+void ParseCards(Set& set,std::string alternate_cards_folder){
     std::map<std::string,Card>& cards = set.getCards();
     std::string set_path = set.getPath();
     std::string card_data = set_path+separator()+"CardData.txt";
@@ -469,13 +605,8 @@ void ParseCards(Set& set){
                 }
 
                 else if (str.substr(0,7) == "EndCard"){
-                    std::string sub_str = key;
-                    std::replace(sub_str.begin(), sub_str.end(), '/', '_');
-                    std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-                    path=set_path+separator()+trim(sub_str)+".jpg";
-                    if (!QFile::exists(QString::fromStdString(path))) {
-                        path = ":/images/emptycard.jpg";
-                    }
+                    path = retrieveCardPath(set_path,key,alternate_cards_folder);
+                    //std::cout << "found path for card " << key << " = " << path << std::endl;
                     cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //
                     key = "";
                     type=CardType::CHARACTER;
@@ -505,6 +636,9 @@ void ParseCards(Set& set){
 
 }
 void ParseSets(Serie& serie,std::string card_path){
+
+    std::string alternate_artwork_path = card_path;
+    replace_in_string(alternate_artwork_path,"Cards","AlternateArtwork");
     std::string serie_path = serie.getPath();
     std::vector<Set>& sets = serie.getAllSets();
     std::string single_card_data = serie_path+separator()+"SingleSetData.txt";
@@ -541,7 +675,7 @@ void ParseSets(Serie& serie,std::string card_path){
                     //std::cout << "found serie" << std::endl;
                     if (set_name != ""){
                         Set found = Set(set_key,set_name,set_folder);
-                        ParseCards(found);
+                        ParseCards(found,alternate_artwork_path);
                         sets.push_back(found);
                     }
                 }
@@ -671,6 +805,7 @@ void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,st
                         //std::cout << "after declaration of iterator" << std::endl;
                         if (itdeck != decks.end()){
                             std::vector<std::string> card_codes  = split(deck_list,'|');
+                            std::cout << "card codes length : " << card_codes.size()  << std::endl;
                             //std::cout << "after getting codes" << std::endl;
                             for (std::string card : card_codes){
                                 bool found = false;
@@ -691,6 +826,9 @@ void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,st
                                             }
                                         }
                                     }
+                                }
+                                if (!found){
+                                    std::cout << " Didn't find anything related to : " << card << std::endl;
                                 }
                             }
 

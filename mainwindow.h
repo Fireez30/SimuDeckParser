@@ -42,7 +42,7 @@ public:
     void DisplayFilteredCards();
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
-    void ClearCardsWidget();
+    void ClearCardsWidget(bool clear_filters=true);
     void DisplayPickedDeck();
     void ClearDeckWidget();
 private:
