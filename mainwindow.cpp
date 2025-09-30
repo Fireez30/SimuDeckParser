@@ -82,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->setLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSetPick()));
     connect(this->ui->actionExit, SIGNAL (triggered()), this, SLOT (OnExit()));
     connect(this->ui->actionUnload_simulator, SIGNAL (triggered()), this,SLOT (OnUnloadSimulator()));
-    connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
+    //connect(this->ui->testFiltersButton,SIGNAL (clicked(bool)), this, SLOT (TestFiltersAndSorts()));
     connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->MainMenuDeckEditorButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToDeckEditor()));
     connect(this->ui->MainMenuQuitButton, SIGNAL (clicked(bool)),this, SLOT (OnExit()));
     connect(this->ui->pickDeckButton, SIGNAL (clicked(bool)),this, SLOT (PickDeck()));
+    connect(this->ui->unloadButton, SIGNAL (clicked(bool)),this, SLOT (OnUnloadSimulator()));
     this->ui->simulatorWidget->setVisible(true);
     this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
     this->ui->MenusWidget->setVisible(false);
@@ -889,12 +890,12 @@ void MainWindow::OnExit(){
 
 void MainWindow::OnUnloadSimulator(){
     DeleteSetting("simulator_data_path");
+    this->SwitchToMainMenu();
+    this->UnloadData();
     this->ui->simulatorWidget->setVisible(true);
     this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
     this->ui->MenusWidget->setVisible(false);
     this->ui->MenusWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);
-    this->SwitchToMainMenu();
-    this->UnloadData();
 }
 
 void MainWindow::UnloadData(bool unload_set_widget){

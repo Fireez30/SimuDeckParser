@@ -160,13 +160,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="testFiltersButton">
-           <property name="text">
-            <string>Test filters sorts</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer_3">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
@@ -755,6 +748,24 @@
        </size>
       </property>
      </widget>
+     <widget class="QPushButton" name="unloadButton">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>904</y>
+        <width>201</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Unload Simulator</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="DeckVisualisationWidget" native="true">
@@ -879,9 +890,9 @@
      </layout>
     </widget>
    </widget>
-   <zorder>MainMenuWidget</zorder>
    <zorder>DeckVisualisationWidget</zorder>
    <zorder>CardListWidget</zorder>
+   <zorder>MainMenuWidget</zorder>
   </widget>
   <action name="actionUnload_simulator">
    <property name="text">
