@@ -11,6 +11,13 @@ std::string trim(const std::string &s)
     return (wsback<=wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
+std::string removeTrailingAlphas(const std::string& input) {
+    int end = input.length() - 1;
+    while (end >= 0 && std::isalpha(static_cast<unsigned char>(input[end]))) {
+        --end;
+    }
+    return input.substr(0, end + 1);
+}
 
 std::string GetColorString(Color c){
     switch (c){

@@ -43,6 +43,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         utils/tinyxml2.cpp
         utils/tinyxml2.h
         hoverlabel.h hoverlabel.cpp
+        utils/HTTPRequest.hpp utils/json.hpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SimuDeckParser APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

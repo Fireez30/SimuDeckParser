@@ -76,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->ui->cardText->setMaximumWidth(1300);
     this->ui->cardText->setAlignment(Qt::AlignLeft);
     this->UpdateUi();
+    this->HideImportPanel();
     //binding signals
     connect(this->ui->loadSimulatorButton, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
     connect(this->ui->serieLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSeriePick()));
@@ -93,6 +94,9 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     connect(this->ui->MainMenuQuitButton, SIGNAL (clicked(bool)),this, SLOT (OnExit()));
     connect(this->ui->pickDeckButton, SIGNAL (clicked(bool)),this, SLOT (PickDeck()));
     connect(this->ui->unloadButton, SIGNAL (clicked(bool)),this, SLOT (OnUnloadSimulator()));
+    connect(this->ui->ImportButton, SIGNAL (clicked(bool)),this, SLOT (ImportLink()));
+    connect(this->ui->OpenImportWidgetButton, SIGNAL (clicked(bool)),this,SLOT (DisplayImportPanel()));
+    connect(this->ui->closeImportPanelButton, SIGNAL (clicked(bool)),this,SLOT (HideImportPanel()));
     this->ui->simulatorWidget->setVisible(true);
     this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,false);
     this->ui->MenusWidget->setVisible(false);
@@ -109,7 +113,25 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 }
 
 
+void MainWindow::DisplayImportPanel(){
+    this->ui->ImportDeckWidget->setVisible(true);
+    this->ui->EncoreDeckLinkField->clear();
+}
 
+void MainWindow::HideImportPanel(){
+    this->ui->ImportDeckWidget->setVisible(false);
+    this->ui->EncoreDeckLinkField->clear();
+}
+
+void MainWindow::ImportLink(){
+    std::string link = this->ui->EncoreDeckLinkField->text().toStdString();
+    std::vector<std::string> splitted_link  = split(link,'/');
+    if (splitted_link.size() > 4){
+        ParseDeckById(splitted_link.back(),this->decks,this->series);
+    }
+
+    this->HideImportPanel();
+}
 void MainWindow::SwitchToMainMenu(){
     this->UnloadData(false);
 

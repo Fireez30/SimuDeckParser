@@ -16,11 +16,316 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include "deck.h"
-
+#include "HTTPRequest.hpp"
+#include "json.hpp"
+#include <ctime>
 std::string card_to_print = "GL/S52-E068";
-
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 std::map<std::string,std::string> common_effects = {};
+
+static std::string base64_encode(const std::string &in) {
+
+    std::string out;
+
+    int val = 0, valb = -6;
+    for (uchar c : in) {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0) {
+            out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(val>>valb)&0x3F]);
+            valb -= 6;
+        }
+    }
+    if (valb>-6) out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[((val<<8)>>(valb+8))&0x3F]);
+    while (out.size()%4) out.push_back('=');
+    return out;
+}
+
+static std::string base64_decode(const std::string &in) {
+
+    std::string out;
+
+    std::vector<int> T(256,-1);
+    for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
+
+    int val=0, valb=-8;
+    for (uchar c : in) {
+        if (T[c] == -1) break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(char((val>>valb)&0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
+    std::vector<std::string> final_card_list = {};
+    std::vector<std::string> existing_card_codes = {};
+
+    for (Serie s : series){ // Do not keep this in final release , too slow.
+        //std::cout << "is it in serie " << s.getName() << std::endl;
+        for (Set set : s.getAllSets()){
+            //std::cout << "is it in set " << set.getName() << std::endl;
+            std::map<std::string,Card>::iterator it;
+            for (it = set.getCards().begin(); it != set.getCards().end(); it++){
+                std::string code = (*it).first;
+                existing_card_codes.push_back(code);
+            }
+        }
+    }
+
+    // NON FOIL CARD
+    //std::string new_code = removeTrailingAlphas(code);
+    for (std::string card_key : card_keys){
+        bool found = false;
+        std::string sub_raw_str;
+        std::string sub_str = card_key;
+        if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+            final_card_list.push_back(sub_str);
+            found = true;
+        }
+
+        if (!found){
+            sub_str = card_key; // check if to lower
+            sub_raw_str = card_key;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-","-E");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-","-E");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-T","-TE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-T","-TE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-P","-PE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-P","-PE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-P","-PE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-P","-PE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            final_card_list.push_back(card_key);
+        }
+
+    }
+
+    return final_card_list;
+}
+
+bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list){
+    bool added = false;
+    std::string encoded_name = base64_encode(name);
+    std::string encoded_date = base64_encode(date);
+
+    return added;
+}
+
+void ParseDeckFromJson(json deck_json,std::map<std::string,Deck> &decks,std::vector<Serie> &series,bool print){
+    if (print){
+        std::cout << " Parse deck from JSON" << std::endl;
+        //std::cout << deck_json << std::endl;
+        //for (json::iterator it = deck_json.begin(); it != deck_json.end(); ++it) {
+        //    std::cout << it.key()  << "\n";
+        //}
+
+    }
+    std::string deck_name;
+    std::string deck_date;
+    if (deck_json.contains("name")){
+        deck_name = trim(deck_json["name"]);
+    }
+    else {
+        std::cout << "name not found" << std::endl;
+    }
+
+    if (deck_json.contains("datecreated")){
+        deck_date = trim(deck_json["datecreated"]);
+    }
+    else {
+        std::cout << "datecreated not found" << std::endl;
+        if (deck_json.contains("datemodified")){
+            deck_date = trim(deck_json["datemodified"]);
+        }
+    }
+    std::string final_date = "";
+    //
+    //  transform date
+    //
+    std::string trimmed = deck_date.substr(0, 19); // "2025-09-30T22:20:36"
+
+    std::tm tm = {};
+    std::istringstream ss(trimmed);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.fail()) {
+        std::cerr << "Failed to parse time\n";
+    } else {
+        std::time_t time = std::mktime(&tm);
+        //std::cout << "Parsed time: " << std::ctime(&time);
+
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%H:%M %d/%m/%Y");
+
+        final_date = oss.str();        //15:26  09/22/2025
+    }
+
+    std::vector<std::string> deck_list = {};
+    int ncards = deck_json["cards"].size();
+    for(auto ct=deck_json["cards"].begin();ct!=deck_json["cards"].end();++ct){
+        json card_json = ct.value();
+        if (print)
+            std::cout << card_json << "\n";
+        std::string card_code = trim(card_json["cardcode"]);
+        deck_list.push_back(card_code);
+
+        //
+        // write in prefs file
+        //
+    }
+    std::vector<std::string> new_deck_list = TransformToExistingCardKey(series,deck_list);
+
+    std::cout << deck_name << std::endl;
+    std::cout << final_date << std::endl;
+    std::cout << "Deck list found " << new_deck_list.size() << " cards" << std::endl;
+    for (std::string card : new_deck_list){
+        std::cout << card << std::endl;
+    }
+
+    return;
+    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list);
+    if (added){
+        decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+        LoadDeckFromList(decks,series,new_deck_list,deck_name);
+    }
+    else {
+        std::cout << "ERROR ADDING TO SIMULATOR" << std::endl;
+    }
+}
+
+
+json SendRequest(std::string url){
+
+    // you can pass http::InternetProtocol::V6 to Request to make an IPv6 request
+    http::Request request{url};
+
+    // send a get request
+    std::cout << url << "\n";
+    const auto response = request.send("GET");
+    std::string resp =  std::string{response.body.begin(), response.body.end()};
+    json j1 = json::parse(resp);
+    return j1;
+
+}
+
+void ParseDeckById(std::string deck_code,std::map<std::string,Deck> &decks,std::vector<Serie> &series){
+    std::cout << "parsing deck " << deck_code << std::endl;
+    json deckobject = SendRequest("http://www.encoredecks.com/api/deck/"+trim(deck_code));
+    ParseDeckFromJson(deckobject,decks,series,false);
+}
+
+
 
 void ParseCommonEffects(std::string simulator_path) {
     std::string common_effect_path = simulator_path+"StreamingAssets"+separator()+"CommonEffects(copy).txt";
@@ -183,7 +488,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-","-E");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
         return path;
     }
@@ -194,7 +499,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English to lower
         return path;
     }
@@ -203,7 +508,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-T","-TE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
         return path;
     }
@@ -213,7 +518,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English to lower
         return path;
     }
@@ -222,7 +527,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-P","-PE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
         return path;
     }
@@ -233,7 +538,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English to lower
         return path;
     }
@@ -267,7 +572,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-","-E");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English
         return path;
     }
@@ -278,7 +583,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Normal card transformed for English to lower
         return path;
     }
@@ -287,7 +592,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-T","-TE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English
         return path;
     }
@@ -298,7 +603,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Trial deck card transformed for English to lower
         return path;
     }
@@ -307,7 +612,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     replace_in_string(sub_str,"-P","-PE");
     std::replace(sub_str.begin(), sub_str.end(), '/', '_');
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English
         return path;
     }
@@ -319,7 +624,7 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     std::replace(sub_str.begin(), sub_str.end(), '-', '_');
     transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
               ::tolower);
-    path=set_path+separator_found+trim(sub_str)+".jpg";
+    path=alternate_artwork_folder+separator_found+foil_set+separator_found+trim(sub_str)+".jpg";
     if (QFile::exists(QString::fromStdString(path))) { // Promo card transformed for English to lower
         return path;
     }
@@ -843,43 +1148,7 @@ std::vector<Serie> ParseSeries(std::string cards_path){
     return series;
 }
 
-static std::string base64_encode(const std::string &in) {
 
-    std::string out;
-
-    int val = 0, valb = -6;
-    for (uchar c : in) {
-        val = (val << 8) + c;
-        valb += 8;
-        while (valb >= 0) {
-            out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(val>>valb)&0x3F]);
-            valb -= 6;
-        }
-    }
-    if (valb>-6) out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[((val<<8)>>(valb+8))&0x3F]);
-    while (out.size()%4) out.push_back('=');
-    return out;
-}
-
-static std::string base64_decode(const std::string &in) {
-
-    std::string out;
-
-    std::vector<int> T(256,-1);
-    for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
-
-    int val=0, valb=-8;
-    for (uchar c : in) {
-        if (T[c] == -1) break;
-        val = (val << 6) + T[c];
-        valb += 6;
-        if (valb >= 0) {
-            out.push_back(char((val>>valb)&0xFF));
-            valb -= 8;
-        }
-    }
-    return out;
-}
 
 void ParseDecks(std::map<std::string,Deck> &decks){
     struct passwd *pw = getpwuid(getuid());
@@ -905,7 +1174,41 @@ void ParseDecks(std::map<std::string,Deck> &decks){
         }
     }
 }
+void LoadDeckFromList(std::map<std::string,Deck> &decks,std::vector<Serie> &series,std::vector<std::string> card_list,std::string deck_name){
+    std::map<std::string,Deck>::iterator itdeck;
+    itdeck = decks.find (deck_name);
+    //std::cout << "after declaration of iterator" << std::endl;
+    if (itdeck != decks.end()){
+        std::cout << "card codes length : " << card_list.size()  << std::endl;
+        //std::cout << "after getting codes" << std::endl;
+        for (std::string card : card_list){
+            bool found = false;
+            //std::cout << "card " << card << std::endl;
+            if (trim(card) != ""){
+                for (Serie s : series){ // Do not keep this in final release , too slow.
+                    //std::cout << "is it in serie " << s.getName() << std::endl;
+                    if (!found){
+                        for (Set set : s.getAllSets()){
+                            //std::cout << "is it in set " << set.getName() << std::endl;
+                            if (!found && set.containsCard(card)){
+                                Card* c = set.getCard(card);
+                                //std::cout << "retrieved card" << std::endl;
+                                (*itdeck).second.AddCard(*c);
+                                //std::cout << "added card" << std::endl;
+                                found = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!found){
+                std::cout << " Didn't find anything related to : " << card << std::endl;
+            }
+        }
 
+    }
+    std::cout << "finished loading deck , loaded : " << (*itdeck).second.getCardList().size() << " card " << std::endl;
+}
 void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,std::vector<Serie> &series)
 {
 
@@ -940,41 +1243,9 @@ void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,st
                         //std::cout << "found base64_decklist " << std::endl;
                         std::string deck_list = trim(base64_decode(base64_decklist));
                         //std::cout <<  " list : " << deck_list << std::endl;
+                        std::vector<std::string> card_codes  = split(deck_list,'|');
+                        LoadDeckFromList(decks,series,card_codes,deck_name);
 
-                        std::map<std::string,Deck>::iterator itdeck;
-                        itdeck = decks.find (deck_name);
-                        //std::cout << "after declaration of iterator" << std::endl;
-                        if (itdeck != decks.end()){
-                            std::vector<std::string> card_codes  = split(deck_list,'|');
-                            std::cout << "card codes length : " << card_codes.size()  << std::endl;
-                            //std::cout << "after getting codes" << std::endl;
-                            for (std::string card : card_codes){
-                                bool found = false;
-                                //std::cout << "card " << card << std::endl;
-                                if (trim(card) != ""){
-                                    for (Serie s : series){ // Do not keep this in final release , too slow.
-                                        //std::cout << "is it in serie " << s.getName() << std::endl;
-                                        if (!found){
-                                            for (Set set : s.getAllSets()){
-                                                //std::cout << "is it in set " << set.getName() << std::endl;
-                                                if (!found && set.containsCard(card)){
-                                                    Card* c = set.getCard(card);
-                                                    //std::cout << "retrieved card" << std::endl;
-                                                    (*itdeck).second.AddCard(*c);
-                                                    //std::cout << "added card" << std::endl;
-                                                    found = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if (!found){
-                                    std::cout << " Didn't find anything related to : " << card << std::endl;
-                                }
-                            }
-
-                        }
-                          std::cout << "finished loading deck , loaded : " << (*itdeck).second.getCardList().size() << " card " << std::endl;
                     }
                 }
             }

@@ -40,7 +40,7 @@ From there, you will see all cards in the set or the serie. On the left you can 
 If you are looking for a card by name, card code, or text in its effect, you can use the search box at the top right, then click on search
 (this features overrides all other filters)
 
-## AI / User deck exploration
+## Default / User deck exploration
 
 This mode allows you to look at the decks you created, or available by default, it is reached from the main menu by "Simulator Deck Editor"
 

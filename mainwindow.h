@@ -93,5 +93,8 @@ private slots:
     void SwitchToDeckEditor();
     void PickDeck();
     void ShowCardToSidePanel(Card c);
+    void ImportLink();
+    void DisplayImportPanel();
+    void HideImportPanel();
 };
 #endif // MAINWINDOW_H

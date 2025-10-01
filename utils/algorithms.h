@@ -60,4 +60,5 @@ std::string trim(const std::string &s);
 void replace_in_string(std::string &str, const std::string &a, const std::string &b);
 std::vector<std::string> split(const std::string &s, char delimiter);
 bool findSubstringIgnoreCase(const std::string& X, const std::string& Y);
+std::string removeTrailingAlphas(const std::string& input);
 #endif // ALGORITHMS_H

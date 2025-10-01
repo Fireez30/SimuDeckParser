@@ -1,5 +1,5 @@
 #include "set.h"
-#include<iostream>
+#include"algorithms.h"
 Set::Set(std::string key,std::string name,std::string path){
     this->key = key;
     this->name = name;
@@ -35,13 +35,7 @@ std::map<std::string,Card> &Set::getCards(){
     return this->cards;
 }
 
-std::string removeTrailingAlphas(const std::string& input) {
-    int end = input.length() - 1;
-    while (end >= 0 && std::isalpha(static_cast<unsigned char>(input[end]))) {
-        --end;
-    }
-    return input.substr(0, end + 1);
-}
+
 
 bool Set::containsCard(std::string code){
     std::map<std::string,Card>::iterator it;
