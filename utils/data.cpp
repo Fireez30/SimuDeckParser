@@ -23,23 +23,33 @@ std::string card_to_print = "GL/S52-E068";
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 std::map<std::string,std::string> common_effects = {};
+std::string base64_encode(const std::string& input) {
+    static const char encoding_table[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static std::string base64_encode(const std::string &in) {
+    std::string output;
+    int val = 0;
+    int valb = -6;
 
-    std::string out;
-
-    int val = 0, valb = -6;
-    for (uchar c : in) {
+    for (unsigned char c : input) {
         val = (val << 8) + c;
         valb += 8;
+
         while (valb >= 0) {
-            out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(val>>valb)&0x3F]);
+            output.push_back(encoding_table[(val >> valb) & 0x3F]);
             valb -= 6;
         }
     }
-    if (valb>-6) out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[((val<<8)>>(valb+8))&0x3F]);
-    while (out.size()%4) out.push_back('=');
-    return out;
+
+    if (valb > -6) {
+        output.push_back(encoding_table[((val << 8) >> (valb + 8)) & 0x3F]);
+    }
+
+    while (output.size() % 4) {
+        output.push_back('=');
+    }
+
+    return output;
 }
 
 static std::string base64_decode(const std::string &in) {
@@ -110,6 +120,15 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
 
         if (!found){
             sub_str = card_key;
+            replace_in_string(sub_str,"-E","-");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
             replace_in_string(sub_str,"-","-E");
             sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
@@ -122,6 +141,18 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
 
         if (!found){
             sub_str = card_key;
+            replace_in_string(sub_str,"-E","-");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
             replace_in_string(sub_str,"-T","-TE");
             if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
                 final_card_list.push_back(sub_str);
@@ -131,6 +162,15 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
 
         if (!found){
             sub_str = card_key;
+            replace_in_string(sub_str,"-TE","-T");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
             replace_in_string(sub_str,"-T","-TE");
             sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
@@ -143,6 +183,18 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
 
         if (!found){
             sub_str = card_key;
+            replace_in_string(sub_str,"-TE","-T");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
             replace_in_string(sub_str,"-P","-PE");
             if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
                 final_card_list.push_back(sub_str);
@@ -151,7 +203,28 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
         }
         if (!found){
             sub_str = card_key;
+            replace_in_string(sub_str,"-PE","-P");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
             replace_in_string(sub_str,"-P","-PE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-PE","-P");
             sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
@@ -195,6 +268,16 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-PE","-P");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-P","-PE");
             sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
@@ -204,20 +287,216 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,c
                 found = true;
             }
         }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-PE","-P");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-","-E");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-E","-");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-","-E");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-E","-");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-T","-TE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-TE","-T");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-T","-TE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-TE","-T");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
 
         if (!found){
             final_card_list.push_back(card_key);
         }
+
 
     }
 
     return final_card_list;
 }
 
-bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list){
+bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list,std::string pref_file_path, std::string pref_backup_path){
     bool added = false;
-    std::string encoded_name = base64_encode(name);
     std::string encoded_date = base64_encode(date);
+    std::string decklist_formated = "";
+    for (std::string card : card_list){
+        decklist_formated += card+"|";
+    }
+    std::string decklist_encoded = base64_encode(decklist_formated);
+    std::string initial_backup = pref_file_path;
+    replace_in_string(initial_backup,"prefs","initial_prefs");
+    if (!fs::exists(initial_backup)){ // First ever backup
+        fs::copy_file(pref_file_path, initial_backup, fs::copy_options::overwrite_existing);
+    }
+    // backup file to backup name
+    try // If you want to avoid exception handling, then use the error code overload of the following functions.
+    {
+         fs::copy_file(pref_file_path, pref_backup_path, fs::copy_options::overwrite_existing);
+    }
+    catch (std::exception& e) // Not using fs::filesystem_error since std::bad_alloc can throw too.
+    {
+        std::cout << "Error during backup " << std::endl;
+        std::cout << e.what();
+        return false;
+    }
+
+    if (fs::exists(pref_file_path)){
+        //std::cout << "Found pref file : "<< std::endl;
+        tinyxml2::XMLDocument doc;
+        doc.LoadFile(pref_file_path.c_str());
+        tinyxml2::XMLElement* rootnode = doc.RootElement();
+        //std::cout << "Root node : " << rootnode->Name() << std::endl;
+        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
+        while (firstchild != nullptr){
+            //std::cout << "found child : " << std::endl;
+            if (firstchild->FindAttribute("name") != nullptr){
+                //std::cout << firstchild->FindAttribute("name")->Value() << std::endl;
+                std::string name_elem = firstchild->FindAttribute("name")->Value();
+                if (name_elem.substr(0,9) == "DeckNames"){
+                    //std::cout << "found deck " << std::endl;
+                    //std::cout << "found date name " << std::endl;
+                    //std::cout << "found deck : " << deck_name << std::endl;
+                    // tinyxml2::XMLText* textNode = firstchild->ToText();
+                    //std::cout << "found textNode " << std::endl;
+
+                    ///std::cout << "after while" << std::endl;
+                    std::string base64_deckslist = firstchild->GetText();
+                    //std::cout << "found base64_decklist " << std::endl;
+                    std::string deck_list = base64_decode(base64_deckslist);
+                    deck_list += name + "|";
+                    std::string encoded_finaldeck_list = base64_encode(deck_list);
+
+                    firstchild->SetText(encoded_finaldeck_list.c_str());
+
+                }
+            }
+            firstchild = firstchild->NextSiblingElement();
+        }
+
+        tinyxml2::XMLElement* date_element = rootnode->InsertNewChildElement("pref");
+        date_element->SetAttribute("name",("Date_"+name).c_str());
+        date_element->SetAttribute("type","string");
+        date_element->SetText(encoded_date.c_str());
+
+        tinyxml2::XMLElement* cards_element = rootnode->InsertNewChildElement("pref");
+        cards_element->SetAttribute("name",("Deck_"+name).c_str());
+        cards_element->SetAttribute("type","string");
+        cards_element->SetText(decklist_encoded.c_str());
+
+        std::vector<tinyxml2::XMLElement*> children;
+        for (tinyxml2::XMLElement* child = rootnode->FirstChildElement(); child != nullptr; child = child->NextSiblingElement()) {
+            children.push_back(child);
+        }
+
+        std::sort(children.begin(), children.end(), [](tinyxml2::XMLElement* a, tinyxml2::XMLElement* b) {
+            const char* nameA = a->Attribute("name");
+            const char* nameB = b->Attribute("name");
+            return std::string(nameA ? nameA : "") < std::string(nameB ? nameB : "");
+        });
+
+        for (tinyxml2::XMLElement* child : children) {
+            rootnode->InsertEndChild(child); // Ok not to remove before, because it's moved if already found
+        }
+
+        doc.SaveFile(pref_file_path.c_str());
+
+        added = true;
+
+    }
+
+    // order nodes by attribute name
 
     return added;
 }
@@ -231,6 +510,11 @@ void ParseDeckFromJson(json deck_json,std::map<std::string,Deck> &decks,std::vec
         //}
 
     }
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    std::string prefsfile_backup =  homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs_backedup";
     std::string deck_name;
     std::string deck_date;
     if (deck_json.contains("name")){
@@ -266,9 +550,10 @@ void ParseDeckFromJson(json deck_json,std::map<std::string,Deck> &decks,std::vec
         //std::cout << "Parsed time: " << std::ctime(&time);
 
         std::ostringstream oss;
-        oss << std::put_time(&tm, "%H:%M %d/%m/%Y");
+        oss << std::put_time(&tm, "%H:%M  %m/%d/%Y");
 
         final_date = oss.str();        //15:26  09/22/2025
+        std::cout << final_date << std::endl;
     }
 
     std::vector<std::string> deck_list = {};
@@ -293,14 +578,15 @@ void ParseDeckFromJson(json deck_json,std::map<std::string,Deck> &decks,std::vec
         std::cout << card << std::endl;
     }
 
-    return;
-    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list);
+
+    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list,prefsfile,prefsfile_backup);
     if (added){
         decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
         LoadDeckFromList(decks,series,new_deck_list,deck_name);
     }
     else {
         std::cout << "ERROR ADDING TO SIMULATOR" << std::endl;
+        // transfer backuped file to prefs file to reset changes
     }
 }
 
@@ -1178,10 +1464,11 @@ void LoadDeckFromList(std::map<std::string,Deck> &decks,std::vector<Serie> &seri
     std::map<std::string,Deck>::iterator itdeck;
     itdeck = decks.find (deck_name);
     //std::cout << "after declaration of iterator" << std::endl;
+    std::vector<std::string> found_codes =  TransformToExistingCardKey(series,card_list);
     if (itdeck != decks.end()){
         std::cout << "card codes length : " << card_list.size()  << std::endl;
         //std::cout << "after getting codes" << std::endl;
-        for (std::string card : card_list){
+        for (std::string card : found_codes){
             bool found = false;
             //std::cout << "card " << card << std::endl;
             if (trim(card) != ""){

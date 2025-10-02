@@ -33,7 +33,7 @@ public:
     void UnloadData(bool unload_set_wiget=true);
     void ApplyFilter();
     void LoadSimulator(std::string simulator_path);
-    void SortFilteredCards();
+    void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order);
     void RemoveFilter(std::string filter);
     void AddFilter(std::string filter);
     void RemoveOrder(std::string order);
@@ -45,6 +45,7 @@ public:
     void ClearCardsWidget(bool clear_filters=true);
     void DisplayPickedDeck();
     void ClearDeckWidget();
+    void SortDeck();
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
@@ -71,6 +72,7 @@ private:
     std::vector<QListWidgetItem*> cards_items;
     int grid_width;
     std::vector<Orders> current_orders;
+    std::vector<Orders> current_deck_orders;
     int grid_height;
     std::vector<Card> current_cards_to_display;
     std::vector<Card> all_cards_available;

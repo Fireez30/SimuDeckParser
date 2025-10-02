@@ -55,7 +55,8 @@ When sliding your mouse over a card, you will see the card data on the right pan
 
 Soon : 
 
- - integration of deck import from encoredecks to the simulator
+ - integration of deck import from encoredecks to the simulator (done , in test)
+ - integration of effects icons into cards text and description 
  - support for windows
  - UI updates (alignemnts, better design, responsiveness ?)
 

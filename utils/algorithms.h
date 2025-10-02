@@ -37,6 +37,8 @@ enum class Trigger {
 };
 
 enum class Orders {
+    COLOR,
+    TYPE_ASCENDING,
     LEVEL_ASCENDING,
     LEVEL_DESCENDING,
     COST_ASCENDING,

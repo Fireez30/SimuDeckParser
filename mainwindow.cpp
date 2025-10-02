@@ -42,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
     //orders and filters
     this->current_orders = {Orders::KEYCODE_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
-
     this->available_level_filters = {}; // This will be loaded when laoding a set cards
     this->available_cost_filters = {};
     this->available_color_filters = {};
@@ -167,6 +166,7 @@ void MainWindow::SwitchToDeckEditor(){
 
     this->UpdateUi();
     ParseDecks(this->decks);
+    this->ui->deckPixBox->clear();
     std::map<std::string,Deck>::iterator it;
     for (it = this->decks.begin(); it != this->decks.end(); it++){
             std::string deck_key = (*it).first;
@@ -240,7 +240,7 @@ void AddOrder(std::string order);
 void MainWindow::RedisplayAfterFilter(){
     this->ClearCardsWidget(false);
     this->ApplyFilter();
-    this->SortFilteredCards();
+    this->SortFilteredCards(&this->current_cards_to_display,this->current_orders);
     this->DisplayFilteredCards();
 }
 
@@ -367,7 +367,7 @@ void MainWindow::TestFiltersAndSorts(){
     }
     this->FillCards();
     this->ApplyFilter();
-    this->SortFilteredCards();
+    this->SortFilteredCards(&this->current_cards_to_display,this->current_orders);
 
     std::cout << "Found " << this->current_cards_to_display.size() << " red only card cards " << std::endl;
     for (Card c2 : this->current_cards_to_display){
@@ -660,12 +660,21 @@ void MainWindow::ApplyFilter(){
         }
     }
 }
-void MainWindow::SortFilteredCards(){
-    std::sort(this->current_cards_to_display.begin(), this->current_cards_to_display.end(), [this](Card a, Card b) { // lambda func
-        if (this->current_orders.size()){
-            for (Orders o : this->current_orders){
-                if (a.getColor() != b.getColor()){
-                    return a.getColor() < b.getColor();
+
+
+void MainWindow::SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order){
+    std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card a, Card b) { // lambda func
+        if (order.size() > 0){
+            for (Orders o : order){
+                if (o == Orders::TYPE_ASCENDING){
+                    if (a.getCardType() != b.getCardType()){
+                        return a.getCardType() < b.getCardType();
+                    }
+                }
+                else if (o == Orders::COLOR){
+                    if (a.getColor() != b.getColor()){
+                        return a.getColor() < b.getColor();
+                    }
                 }
                 else
                 {
@@ -673,6 +682,7 @@ void MainWindow::SortFilteredCards(){
                         return a.getCardType() < b.getCardType();
                     }
                 }
+
                 if (o == Orders::LEVEL_ASCENDING){
                     if (a.getLevel() != b.getLevel()){
                         return a.getLevel() < b.getLevel();
@@ -739,7 +749,7 @@ void MainWindow::OnSetPick(){
     this->FillFiltersUsingSet();
     this->FillCards();
     this->ApplyFilter();
-    this->SortFilteredCards();
+    this->SortFilteredCards(&this->current_cards_to_display,this->current_orders);
     this->DisplayFilteredCards();
 
 
@@ -781,7 +791,7 @@ void MainWindow::OnSerieCardsPick(){
     this->FillFiltersUsingSet();
     this->FillCards();
     this->ApplyFilter();
-    this->SortFilteredCards();
+    this->SortFilteredCards(&this->current_cards_to_display,this->current_orders);
     this->DisplayFilteredCards();
 }
 
@@ -794,7 +804,10 @@ void MainWindow::DisplayPickedDeck(){
     itdeck = decks.find (this->picked_deck);
     if (itdeck != decks.end()){
         Deck de = (*itdeck).second;
-        for (Card value : de.getCardList()){
+        std::vector<Orders> deck_orders = {Orders::TYPE_ASCENDING,Orders::LEVEL_ASCENDING,Orders::COST_ASCENDING,Orders::POWER_ASCENDING,Orders::COLOR};
+        std::vector<Card> card_list = (*itdeck).second.getCardList();
+        this->SortFilteredCards(&card_list,deck_orders);
+        for (Card value : card_list){
             //std::cout << "for loop card : " << value.getKey() << std::endl;
             std::string path_str = value.getImagePath();
             //std::cout << "found image : " << value.getKey() << std::endl;
@@ -1006,6 +1019,8 @@ void MainWindow::ClearDeckWidget(){
     this->ui->cardText->setTextFormat(Qt::RichText);
     this->ui->cardText->setMaximumWidth(1300);
     this->ui->cardText->setAlignment(Qt::AlignLeft);
+
+    //this->ui->deckPixBox->clear();
 }
 void MainWindow::ClearCardsWidget(bool clear_filters){
     /*if (this->cards_items.size() > 0){

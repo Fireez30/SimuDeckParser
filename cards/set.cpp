@@ -1,5 +1,6 @@
 #include "set.h"
 #include"algorithms.h"
+#include <iostream>
 Set::Set(std::string key,std::string name,std::string path){
     this->key = key;
     this->name = name;
@@ -59,7 +60,7 @@ Card* Set::getCard(std::string code){
         if (it == this->cards.end()){
             std::string new_code = removeTrailingAlphas(code);
             if (code != new_code){
-                //std::cout << "Retrying from " << code << " to " << new_code << std::endl;
+
                 it = this->cards.find(new_code);
                 if (it != this->cards.end()){
                     return &((*it).second);
