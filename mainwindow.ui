@@ -748,108 +748,6 @@
        <string>Unload Simulator</string>
       </property>
      </widget>
-     <widget class="QWidget" name="ImportDeckWidget" native="true">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>450</x>
-        <y>370</y>
-        <width>1031</width>
-        <height>371</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(38, 40, 47);</string>
-      </property>
-      <widget class="QLineEdit" name="EncoreDeckLinkField">
-       <property name="geometry">
-        <rect>
-         <x>260</x>
-         <y>170</y>
-         <width>581</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="placeholderText">
-        <string>Enter the encore decks link here</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>170</y>
-         <width>201</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Encore deck link :</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="ImportButton">
-       <property name="geometry">
-        <rect>
-         <x>870</x>
-         <y>173</y>
-         <width>81</width>
-         <height>25</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Import</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>6</y>
-         <width>1031</width>
-         <height>101</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>21</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Import from encoredecks</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="closeImportPanelButton">
-       <property name="geometry">
-        <rect>
-         <x>430</x>
-         <y>320</y>
-         <width>151</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Close</string>
-       </property>
-      </widget>
-     </widget>
      <widget class="QPushButton" name="OpenImportWidgetButton">
       <property name="geometry">
        <rect>
@@ -886,13 +784,121 @@
        <string>Simulator Deck Editor</string>
       </property>
      </widget>
-     <zorder>MainMenuTitle</zorder>
-     <zorder>MainMenuCardListButton</zorder>
-     <zorder>MainMenuQuitButton</zorder>
-     <zorder>unloadButton</zorder>
-     <zorder>OpenImportWidgetButton</zorder>
-     <zorder>MainMenuDeckEditorButton</zorder>
-     <zorder>ImportDeckWidget</zorder>
+     <widget class="QWidget" name="backgroundImportWidget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>300</y>
+        <width>1121</width>
+        <height>471</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(134, 134, 134);</string>
+      </property>
+      <widget class="QWidget" name="ImportDeckWidget" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>1101</width>
+         <height>451</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(38, 40, 47);</string>
+       </property>
+       <widget class="QLineEdit" name="EncoreDeckLinkField">
+        <property name="geometry">
+         <rect>
+          <x>280</x>
+          <y>170</y>
+          <width>581</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="placeholderText">
+         <string>Enter the encore decks link here</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_3">
+        <property name="geometry">
+         <rect>
+          <x>60</x>
+          <y>170</y>
+          <width>201</width>
+          <height>30</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Encore deck link :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="ImportButton">
+        <property name="geometry">
+         <rect>
+          <x>890</x>
+          <y>173</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_4">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>6</y>
+          <width>1101</width>
+          <height>101</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>21</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Import from encoredecks</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="closeImportPanelButton">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>350</y>
+          <width>151</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Close</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="DeckVisualisationWidget" native="true">

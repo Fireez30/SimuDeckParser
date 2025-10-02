@@ -113,12 +113,12 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
 
 void MainWindow::DisplayImportPanel(){
-    this->ui->ImportDeckWidget->setVisible(true);
+    this->ui->backgroundImportWidget->setVisible(true);
     this->ui->EncoreDeckLinkField->clear();
 }
 
 void MainWindow::HideImportPanel(){
-    this->ui->ImportDeckWidget->setVisible(false);
+    this->ui->backgroundImportWidget->setVisible(false);
     this->ui->EncoreDeckLinkField->clear();
 }
 

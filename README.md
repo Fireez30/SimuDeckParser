@@ -50,6 +50,21 @@ When picking a deck, it will load the cards in memory (expect 3 or 4 seconds del
 
 When sliding your mouse over a card, you will see the card data on the right panel.
 
+## Encore decks import
+
+You can import a deck from encore decks, into the simulator 
+
+Before the first ever import , a backup of your fresh decks file is done into the simulator folder 
+
+Before any import, another backup is done 
+
+After opening the import panel, just paste the deck url into the text edit, and press Import.
+
+The import is done in background, and the panel will close automatically when done (or failed).
+
+The link should look like this : " https://www.encoredecks.com/deck/PPyvcLuvt "
+
+PS : during import, if a card is not is not found by the tool, it will search for the equivalent card (JP or EN, Foil or non foil). All imports should be okay . If you meet an error with import, please open an issue, saying that this deck cannot import, with the link of the deck
 
 # Planned features
 
