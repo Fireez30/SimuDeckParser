@@ -23,22 +23,33 @@ You can enter this mode using the "Card List Visualization" button.
 
 From there, you will see a dropdown with all of the series found in the simulator. Pick the one you want, and then you can :
 
-- Load serie : load all the set available , in order to pick one 
-- Load all cards : load all the cards so you can look at all cards at once
+- (1) Load serie : load all the set available , in order to pick one 
+- (2) Load all cards : load all the cards so you can look at all cards at once
+
+![Serie loading window](./documentation/images/card_list_load_seri_decoratede.png)
 
 If you choose Load Serie , you will see a dropdown with all available sets. 
-Pick one and click on "Load Set"
 
-From there, you will see all cards in the set or the serie. On the left you can filter out some of the cards via : 
+Pick one and click on (3) "Load Set"
+
+![Set loading window](./documentation/images/card_list_load_set.png)
+
+From there, you will see all cards in the set or the serie (4). 
+
+
+On the left you can filter out some of the cards via (5) : 
 
 - cost
 - level
 - color
 - type 
 - traits 
+![Card list window](./documentation/images/card_list_loaded_1_decorated.png)
 
 If you are looking for a card by name, card code, or text in its effect, you can use the search box at the top right, then click on search
 (this features overrides all other filters)
+
+![Card list search box](./documentation/images/card_list_loaded_2_search_box.png)
 
 ## Default / User deck exploration
 
