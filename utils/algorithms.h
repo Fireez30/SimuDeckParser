@@ -52,7 +52,7 @@ enum class Orders {
 std::string GetColorString(Color c);
 std::string GetCardTypeString(CardType t);
 std::string GetTriggerString(Trigger t);
-
+std::string GetTriggerPath(Trigger t);
 
 
 //Determine pass separator using OS

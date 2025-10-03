@@ -2,5 +2,16 @@
     <qresource prefix="/">
         <file>images/emptycard.jpg</file>
         <file>settings.txt</file>
+        <file>images/2soul.png</file>
+        <file>images/book.png</file>
+        <file>images/bounce.png</file>
+        <file>images/door.png</file>
+        <file>images/gate.png</file>
+        <file>images/goldbag.png</file>
+        <file>images/goldbar.png</file>
+        <file>images/shot.png</file>
+        <file>images/soul.png</file>
+        <file>images/standby.png</file>
+        <file>images/switch.png</file>
     </qresource>
 </RCC>

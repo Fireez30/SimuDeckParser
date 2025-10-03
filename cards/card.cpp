@@ -55,16 +55,27 @@ std::string Card::getCardHTML(){
     if (this->triggers.size() > 0){
         card_html_display += "<p> Triggers : ";
         for (Trigger t : this->triggers){
-            card_html_display += GetTriggerString(t) + " ";
+            if (t != Trigger::NONE){
+                std::string trigger_tag = "<img style=\"display:inline;padding-top:4px\"  width=\"18\"  height=\"22\" src=\""+GetTriggerPath(t) + "\"> </img> ";
+                card_html_display += trigger_tag;
+                std::cout << trigger_tag << std::endl;
+            }
         }
         card_html_display += "</p>";
     }
 
-    card_html_display += "<p> Souls : " + std::to_string(this->getSoulCount()) + "</p>";
+    if (this->getSoulCount() > 0){
+        card_html_display += "<p> Souls : ";
+        for (int i {0}; i <= this->getSoulCount() ; ++i){
+            std::string soul_tag = "<img style=\"display:inline;padding-top:4px\"  width=\"18\"  height=\"22\" src=\"qrc:/images/soul.png\"> </img> ";
+            card_html_display += soul_tag;
+        }
+    }
+    card_html_display += "</p>";
     if (this->traits.size() > 0){
         card_html_display += "<p> Traits : ";
         for (std::string trait : this->getTraits()){
-            card_html_display += " " +  trait + " ,";
+            card_html_display += " \"" +  trait + "\" ";
         }
         card_html_display.pop_back();
         card_html_display += "</p> ";

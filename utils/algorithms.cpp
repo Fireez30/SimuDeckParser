@@ -73,6 +73,32 @@ std::string GetTriggerString(Trigger t){
     }
 }
 
+std::string GetTriggerPath(Trigger t){
+    switch (t){
+    case Trigger::BAG:
+        return "qrc:/images/goldbag.png";
+    case Trigger::BAR:
+        return "qrc:/images/goldbar.png";
+    case Trigger::BOOK:
+        return "qrc:/images/book.png";
+    case Trigger::BURN:
+        return "qrc:/images/burn.png";
+    case Trigger::CHOICE:
+        return "qrc:/images/switch.png";
+    case Trigger::PANT:
+        return "qrc:/images/door.png";
+    case Trigger::SALVAGE:
+        return "qrc:/images/gate.png";
+    case Trigger::SOUL:
+        return "qrc:/images/soul.png";
+    case Trigger::STANDBY:
+        return "qrc:/images/standby.png";
+    case Trigger::WIND:
+        return "qrc:/images/bounce.png";
+    default:
+        return "qrc:/images/emptycard.jpg";
+    }
+}
 
 std::string GetCardTypeString(CardType t){
     switch (t){

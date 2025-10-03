@@ -12,6 +12,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+
 void ParseCards(Set& set);
 void ParseSets(Serie& serie,std::string card_path);
 std::vector<Serie> ParseSeries(std::string cards_path);
