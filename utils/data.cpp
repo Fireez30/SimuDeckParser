@@ -19,7 +19,7 @@
 #include "HTTPRequest.hpp"
 #include "json.hpp"
 #include <ctime>
-std::string card_to_print = "GL/S52-E068";
+std::string card_to_print = "KS/W49-E073";
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 std::map<std::string,std::string> common_effects = {};
@@ -934,7 +934,7 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
         int power = 1;
         Trigger trigger1 = Trigger::NONE;
         Trigger trigger2 = Trigger::NONE;
-        uint soul_count = 0;
+        uint soul_count = 1;
         std::string code = "";
         std::string text = "";
         std::string trait1="";
@@ -944,6 +944,7 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
         bool is_previous_line_trait = false;
         bool found_text = false;
         bool parsing_code = false;
+        bool found_soul = false;
         bool parsing_text = false;
         while (std::getline(file, str))
         {
@@ -1072,6 +1073,20 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     if (key == card_to_print){std::cout << "Found power " << power << " for key " << card_to_print << std::endl;}
 
                 }
+                else if (str.substr(0,5) == "Soul "){
+                    found_soul= true;
+                    soul_count = std::stoi(trim(str.substr(5,std::string::npos)));
+                    if (key == card_to_print){std::cout << "Found soul count  " << soul_count << " for key " << card_to_print << std::endl;}
+
+                }
+                else if (str.substr(0,8) == "Trigger "){
+                    if (trim(str.substr(8,std::string::npos)) == "Soul"){
+                        trigger1 = Trigger::SOUL;
+                        trigger2 = Trigger::NONE;
+                    }
+                    if (key == card_to_print){std::cout << "Found a soul for key " << card_to_print << std::endl;}
+
+                }
                 else if (str.substr(0,5) == "Trait"){
                     is_previous_line_trait = true;
                     std::string found_trait=trim(str.substr(6,std::string::npos)); // we skip 1 digit here that is the number of the trait
@@ -1107,7 +1122,7 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
 
                     if (trigger_found == "BookClimax"){
                         trigger1 = Trigger::BOOK;
-                        trigger2 = Trigger::SOUL;
+                        trigger2 = Trigger::NONE;
                         color = Color::BLUE;
                     }
 
@@ -1349,7 +1364,7 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     power = 1;
                     trigger1 = Trigger::NONE;
                     trigger2 = Trigger::NONE;
-                    soul_count = 0;
+                    soul_count = 1;
                     code = "";
                     text = "";
                     trait1="";

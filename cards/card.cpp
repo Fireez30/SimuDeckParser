@@ -66,7 +66,7 @@ std::string Card::getCardHTML(){
 
     if (this->getSoulCount() > 0){
         card_html_display += "<p> Souls : ";
-        for (int i {0}; i <= this->getSoulCount() ; ++i){
+        for (int i {0}; i < this->getSoulCount() ; ++i){
             std::string soul_tag = "<img style=\"display:inline;padding-top:4px\"  width=\"18\"  height=\"22\" src=\"qrc:/images/soul.png\"> </img> ";
             card_html_display += soul_tag;
         }
