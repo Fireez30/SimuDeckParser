@@ -55,11 +55,15 @@ If you are looking for a card by name, card code, or text in its effect, you can
 
 This mode allows you to look at the decks you created, or available by default, it is reached from the main menu by "Simulator Deck Editor"
 
-When entered, the tool will load all your decks in a dropdown, so you can pick one.
+When entered, the tool will load all your decks in a dropdown (1), so you can pick one (2).
 
-When picking a deck, it will load the cards in memory (expect 3 or 4 seconds delay), and display the deck.
+![Pick a deck](./documentation/images/deck_list_pick_dex.png)
 
-When sliding your mouse over a card, you will see the card data on the right panel.
+When picking a deck, it will load the cards in memory (expect 3 or 4 seconds delay), and display the deck (3).
+
+When sliding your mouse over a card , you will see the card data on the right panel (4) .
+
+![Display a deck and a specific card](./documentation/images/deck_list_displayed.png)
 
 ## Encore decks import
 
@@ -69,7 +73,9 @@ Before the first ever import , a backup of your fresh decks file is done into th
 
 Before any import, another backup is done 
 
-After opening the import panel, just paste the deck url into the text edit, and press Import.
+After opening the import panel, just paste the deck url into the text edit (1), and press Import (2).
+
+![Import a deck panel](./documentation/images/import_panel.png)
 
 The import is done in background, and the panel will close automatically when done (or failed).
 
