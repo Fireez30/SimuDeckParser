@@ -58,6 +58,7 @@ private:
     bool display_load_series;
     bool display_pick_set;
     bool display_cards;
+    bool lock_card_panel;
     std::string picked_deck;
     std::vector<int> available_level_filters;
     std::vector<std::string> available_trait_filters;
@@ -98,5 +99,7 @@ private slots:
     void ImportLink();
     void DisplayImportPanel();
     void HideImportPanel();
+    void LockCardPanel(Card c);
+    void UnlockCardPanel();
 };
 #endif // MAINWINDOW_H

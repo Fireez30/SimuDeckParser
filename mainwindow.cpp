@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->current_cards_index = 0;
     this->cards_items = {};
     this->decks = {};
+    this->UnlockCardPanel();
     this->picked_deck = "";
     this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
@@ -138,7 +139,7 @@ void MainWindow::SwitchToMainMenu(){
     this->display_card_list = false;
     this->display_deck_editor =false;
 
-
+    this->UnlockCardPanel();
     this->UpdateUi();
 }
 
@@ -153,7 +154,7 @@ void MainWindow::SwitchToCardList(){
     this->display_load_series = true;
     this->display_pick_set = false;
     this->display_cards = false;
-
+    this->UnlockCardPanel();
     this->UpdateUi();
 }
 
@@ -163,7 +164,7 @@ void MainWindow::SwitchToDeckEditor(){
     this->display_main_menu = false;
     this->display_card_list = false;
     this->display_deck_editor =true;
-
+    this->UnlockCardPanel();
     this->UpdateUi();
     ParseDecks(this->decks);
     this->ui->deckPixBox->clear();
@@ -191,7 +192,7 @@ void MainWindow::PickDeck(){
     else {
         LoadDeck(this->decks,deck_name,this->series);
     }
-
+    this->UnlockCardPanel();
     this->DisplayPickedDeck();
 }
 void MainWindow::UpdateUi(){
@@ -824,6 +825,12 @@ void MainWindow::DisplayPickedDeck(){
                 connect(imgLabel,&HoverLabel::mouseEntered, [this,value]() {
                     this->ShowCardToSidePanel(value);
                 });
+                connect(imgLabel,&HoverLabel::mouseClicked, [this,value]() {
+                    this->LockCardPanel(value);
+                });
+                connect(imgLabel,&HoverLabel::mouseDoubleClicked, [this]() {
+                    this->UnlockCardPanel();
+                });
                 //QObject::connect(mapper,SIGNAL(mapped(QWidget *)),this,SLOT(mySlot(QWidget *)));
 
                 //QObject::connect(imgLabel, SIGNAL(clicked()),mapper,SLOT(ShowCardToSidePanel(value)));
@@ -847,16 +854,31 @@ void MainWindow::DisplayPickedDeck(){
 
 }
 
+void MainWindow::UnlockCardPanel(){
+    this->lock_card_panel = false;
+    this->ui->cardImage->setStyleSheet(QString(""));
+
+}
+
+void MainWindow::LockCardPanel(Card c){
+    this->lock_card_panel = false;
+    this->ShowCardToSidePanel(c);
+    this->lock_card_panel = true;
+    this->ui->cardImage->setStyleSheet(QString("border-style:solid;border-width:2px;border-color:red"));
+}
+
 void MainWindow::ShowCardToSidePanel(Card c){
-    std::string path_str = c.getImagePath();
-    QString path_image = QString::fromStdString(path_str);
-    if (QFile::exists(path_image)) {
-        QPixmap pix(path_image);
-        this->ui->cardImage->setScaledContents( true );
-        this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-        this->ui->cardImage->setPixmap(pix);
+    if (!this->lock_card_panel){
+        std::string path_str = c.getImagePath();
+        QString path_image = QString::fromStdString(path_str);
+        if (QFile::exists(path_image)) {
+            QPixmap pix(path_image);
+            this->ui->cardImage->setScaledContents( true );
+            this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+            this->ui->cardImage->setPixmap(pix);
+        }
+        this->ui->cardText->setText(QString::fromStdString(c.getCardHTML()));
     }
-    this->ui->cardText->setText(QString::fromStdString(c.getCardHTML()));
 }
 
 void MainWindow::DisplayFilteredCards(){
