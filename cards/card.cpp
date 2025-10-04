@@ -58,7 +58,6 @@ std::string Card::getCardHTML(){
             if (t != Trigger::NONE){
                 std::string trigger_tag = "<img  width=\"16\"  height=\"20\" src=\""+GetTriggerPath(t) + "\"> </img> ";
                 card_html_display += trigger_tag;
-                std::cout << trigger_tag << std::endl;
             }
         }
         card_html_display += "</p>";
