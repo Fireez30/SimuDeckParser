@@ -88,7 +88,9 @@ PS : during import, if a card is not is not found by the tool, it will search fo
 Soon : 
 
  - integration of deck import from encoredecks to the simulator (done , in test)
- - integration of effects icons into cards text and description 
+ - integration of effects icons into cards text and description (done)
+ - make usual keywords (Brainstorm, memory , etc ) bold (done)
+ - in deck editor mode, on click on a card, lock the right visualisation panel so it doesn't change
  - support for windows
  - UI updates (alignemnts, better design, responsiveness ?)
 

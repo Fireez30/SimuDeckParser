@@ -1349,7 +1349,9 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                 else if (str.substr(0,7) == "EndCard"){
                     path = retrieveCardPath(set_path,key,alternate_cards_folder);
                     //std::cout << "found path for card " << key << " = " << path << std::endl;
-
+                    if (type == CardType::CLIMAX){
+                        soul_count = 0;
+                    }
                     cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //
                     if (key == card_to_print){
                         cards[key].print();

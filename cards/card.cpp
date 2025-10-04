@@ -56,7 +56,7 @@ std::string Card::getCardHTML(){
         card_html_display += "<p> Triggers : ";
         for (Trigger t : this->triggers){
             if (t != Trigger::NONE){
-                std::string trigger_tag = "<img style=\"display:inline;padding-top:4px\"  width=\"18\"  height=\"22\" src=\""+GetTriggerPath(t) + "\"> </img> ";
+                std::string trigger_tag = "<img  width=\"16\"  height=\"20\" src=\""+GetTriggerPath(t) + "\"> </img> ";
                 card_html_display += trigger_tag;
                 std::cout << trigger_tag << std::endl;
             }
@@ -67,7 +67,7 @@ std::string Card::getCardHTML(){
     if (this->getSoulCount() > 0){
         card_html_display += "<p> Souls : ";
         for (int i {0}; i < this->getSoulCount() ; ++i){
-            std::string soul_tag = "<img style=\"display:inline;padding-top:4px\"  width=\"18\"  height=\"22\" src=\"qrc:/images/soul.png\"> </img> ";
+            std::string soul_tag = "<img  width=\"16\"  height=\"20\" src=\"qrc:/images/soul.png\"> </img> ";
             card_html_display += soul_tag;
         }
     }
@@ -84,6 +84,22 @@ std::string Card::getCardHTML(){
     //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
     std::string text = this->getText();
     replace_in_string(text,"\n","<br/>");
+    replace_in_string(text,"Auto:","<img width=\"24\"  height=\"12\" src=\"qrc:/images/auto.jpg\"> </img>");
+    replace_in_string(text,"Cont:","<img width=\"24\"  height=\"12\" src=\"qrc:/images/cont.jpg\"> </img>");
+    replace_in_string(text,"Act:","<img width=\"24\"  height=\"12\" src=\"qrc:/images/act.jpg\"> </img>");
+    replace_in_string(text,"CxCombo","<img width=\"45\"  height=\"12\" src=\"qrc:/images/ccx.png\"> </img>");
+    replace_in_string(text,"ALARM","<b>Alarm</b>");
+    replace_in_string(text,"ACCELERATE","<b>Accelerate</b>");
+    replace_in_string(text,"ASSIST","<b>Assist</b>");
+    replace_in_string(text,"BACKUP","<b>Backup</b>");
+    replace_in_string(text,"BOND","<b>Bond</b>");
+    replace_in_string(text,"BRAINSTORM","<b>Brainstorm</b>");
+    replace_in_string(text,"CHANGE","<b>Change</b>");
+    replace_in_string(text,"ENCORE","<b>Encore</b>");
+    replace_in_string(text,"EXPERIENCE","<b>Experience</b>");
+    replace_in_string(text,"GREAT PERFORMANCE","<b>Great Performance</b>");
+    replace_in_string(text,"MEMORY","<b>Memory</b>");
+    replace_in_string(text,"SHIFT","<b>Shift</b>");
     //text.replace(text.find("\n"),std::string("\n").size(),"</br>",text.find("\n"),std::string("</br>").size());
     card_html_display += text + "</p>";
     return card_html_display;

@@ -13,5 +13,9 @@
         <file>images/soul.png</file>
         <file>images/standby.png</file>
         <file>images/switch.png</file>
+        <file>images/auto.jpg</file>
+        <file>images/cont.jpg</file>
+        <file>images/ccx.png</file>
+        <file>images/act.jpg</file>
     </qresource>
 </RCC>
