@@ -18,8 +18,11 @@ public:
     DataLoader(DataLoader &other) = delete;
     void operator=(const DataLoader &) = delete;
     static DataLoader *GetInstance();
+    std::vector<Serie*>* getAllSeries();
+    Serie* getSerieByName(std::string name);
     std::vector<Serie*>* getSeries();
     std::map<std::string,Deck*>* getDecks();
+    Deck* getDeck(std::string name);
     Deck* LoadDeck(std::string target_deck_name);
     void ParseCards(Set& set,std::string alternate_cards_folder);
     Deck* LoadDeckFromList(std::vector<std::string> card_list,std::string deck_name);

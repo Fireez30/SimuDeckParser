@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>deckvisualization</class>
+ <widget class="QWidget" name="deckvisualization">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,181 +11,124 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Form</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="DeckVisualisationWidget" native="true">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
+  <widget class="QWidget" name="DeckVisualisationWidget" native="true">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1920</width>
+     <height>1058</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>5</x>
-      <y>5</y>
-      <width>1920</width>
-      <height>1058</height>
+      <x>0</x>
+      <y>60</y>
+      <width>1911</width>
+      <height>1011</height>
      </rect>
     </property>
-    <widget class="QWidget" name="horizontalLayoutWidget_2">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>60</y>
-       <width>1911</width>
-       <height>1011</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="DeckGridLayout">
-      <item>
-       <layout class="QGridLayout" name="cardGrid"/>
-      </item>
-      <item>
-       <widget class="QWidget" name="cardDisplayWidget" native="true">
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>16777215</height>
-         </size>
+    <layout class="QHBoxLayout" name="DeckGridLayout">
+     <item>
+      <layout class="QGridLayout" name="cardGrid"/>
+     </item>
+     <item>
+      <widget class="QWidget" name="cardDisplayWidget" native="true">
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <widget class="QLabel" name="cardImage">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>381</width>
+          <height>521</height>
+         </rect>
         </property>
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <widget class="QLabel" name="cardImage">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>381</width>
-           <height>521</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="cardText">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>540</y>
-           <width>381</width>
-           <height>471</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="horizontalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>1</x>
-       <y>1</y>
-       <width>1911</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="LoadDeckLayout">
-      <item>
-       <widget class="QComboBox" name="deckPixBox">
-        <property name="minimumSize">
-         <size>
-          <width>500</width>
-          <height>0</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pickDeckButton">
         <property name="text">
-         <string>Pick deck</string>
+         <string>TextLabel</string>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
+       <widget class="QLabel" name="cardText">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>540</y>
+          <width>381</width>
+          <height>471</height>
+         </rect>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="backButton_2">
         <property name="text">
-         <string>Back</string>
+         <string>TextLabel</string>
         </property>
        </widget>
-      </item>
-     </layout>
-    </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>1</x>
+      <y>1</y>
+      <width>1911</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="LoadDeckLayout">
+     <item>
+      <widget class="QComboBox" name="deckPixBox">
+       <property name="minimumSize">
+        <size>
+         <width>500</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pickDeckButton">
+       <property name="text">
+        <string>Pick deck</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="backButton_2">
+       <property name="text">
+        <string>Back</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
-  <action name="actionUnload_simulator">
-   <property name="text">
-    <string>Unload simulator</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionColor">
-   <property name="text">
-    <string>Color</string>
-   </property>
-  </action>
-  <action name="actionCost">
-   <property name="text">
-    <string>Cost</string>
-   </property>
-  </action>
-  <action name="actionLevel">
-   <property name="text">
-    <string>Level</string>
-   </property>
-  </action>
-  <action name="actionAscending">
-   <property name="text">
-    <string>Ascending</string>
-   </property>
-  </action>
-  <action name="actionDescending">
-   <property name="text">
-    <string>Descending</string>
-   </property>
-  </action>
-  <action name="actionAscending_2">
-   <property name="text">
-    <string>Ascending</string>
-   </property>
-  </action>
-  <action name="actionDescending_2">
-   <property name="text">
-    <string>Descending</string>
-   </property>
-  </action>
-  <action name="actionAscending_3">
-   <property name="text">
-    <string>Ascending</string>
-   </property>
-  </action>
-  <action name="actionDescending_3">
-   <property name="text">
-    <string>Descending</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>

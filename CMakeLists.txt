@@ -46,10 +46,17 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         utils/tinyxml2.h
         hoverlabel.h hoverlabel.cpp
         utils/HTTPRequest.hpp utils/json.hpp
-        cardlist.ui
-        deckvisualization.ui
-        mainwindow_copy.ui
+
+
+        old_uis.ui
         dataloader.h dataloader.cpp
+
+        cardlist.h cardlist.cpp cardlist.ui
+        importdeck.h importdeck.cpp importdeck.ui
+        deckvisualization.h deckvisualization.cpp deckvisualization.ui
+
+
+
 
     )
 # Define target properties for Android with Qt 6 as:

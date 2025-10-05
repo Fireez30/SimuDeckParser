@@ -30,6 +30,8 @@ json SendRequest(std::string url){
 
 }
 
+
+
 std::string retrieveCardPath(const std::string set_path,const std::string card_key,const std::string alternate_artwork_folder){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
     // NON FOIL CARD
     char separator_found = separator();
@@ -299,6 +301,16 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
     return ":/images/emptycard.jpg";
 }
 
+
+Deck* DataLoader::getDeck(std::string name){
+    std::map<std::string,Deck*>::iterator it;
+    it = dataloader_->getDecks()->find (name);
+    if (it != decks.end()){
+        return (*it).second;
+    }
+
+    return nullptr;
+}
 
 void DataLoader::ParseCommonEffects(std::string simulator_path) {
     std::string common_effect_path = simulator_path+"StreamingAssets"+separator()+"CommonEffects(copy).txt";
@@ -1198,4 +1210,15 @@ bool DataLoader::AddDeckToSimulator(std::string name,std::string date, std::vect
     // order nodes by attribute name
 
     return added;
+}
+
+
+Serie* DataLoader::getSerieByName(std::string name){
+    std::vector<Serie*>* series = dataloader_->getSeries();
+    for (int i{ 0 }; i <= series->size(); ++i){
+        if (series->at(i)->getName() == name){
+            return series->at(i);
+        }
+    }
+    return nullptr;
 }

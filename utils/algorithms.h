@@ -2,6 +2,7 @@
 #define ALGORITHMS_H
 #include<string>
 #include<vector>
+#include <QLayout>
 class Card;
 class Serie;
 
@@ -66,4 +67,6 @@ std::vector<std::string> split(const std::string &s, char delimiter);
 bool findSubstringIgnoreCase(const std::string& X, const std::string& Y);
 std::string removeTrailingAlphas(const std::string& input);
 std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys);
+void clearLayout(QLayout* layout);
+void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order);
 #endif // ALGORITHMS_H

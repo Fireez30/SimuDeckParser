@@ -23,8 +23,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    std::vector<Serie> getAllSeries();
-    Serie getSerieByName(std::string name);
+
     void UpdateUi();
     int getGridCount();
     int current_cards_index;
@@ -33,7 +32,6 @@ public:
     void UnloadData(bool unload_set_wiget=true);
     void ApplyFilter();
     void LoadSimulator(std::string simulator_path);
-    void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order);
     void RemoveFilter(std::string filter);
     void AddFilter(std::string filter);
     void RemoveOrder(std::string order);
@@ -43,9 +41,6 @@ public:
     std::vector<QLabel*> currentCardsImages;
     void DestroyDisplayedCards();
     void ClearCardsWidget(bool clear_filters=true);
-    void DisplayPickedDeck();
-    void ClearDeckWidget();
-    void SortDeck();
     void switchToUi(const QString &uiFilePath);
 private:
     Ui::MainWindow *ui;
@@ -58,7 +53,7 @@ private:
     bool display_pick_set;
     bool display_cards;
     bool lock_card_panel;
-    std::string picked_deck;
+
     std::vector<Card> all_cards_available;
     std::vector<CardType> available_type_filters;
     std::vector<int> available_level_filters;
@@ -69,11 +64,10 @@ private:
     std::vector<int> current_cost_filters;
     std::vector<Color> current_color_filters;
     std::vector<std::string> current_trait_filters;
-
     std::vector<CardType> current_type_filters;
     std::vector<QListWidgetItem*> cards_items;
     std::vector<Orders> current_orders;
-    std::vector<Orders> current_deck_orders;
+
     std::vector<Card> current_cards_to_display;
 
 private slots:

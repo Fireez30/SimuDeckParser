@@ -9,13 +9,13 @@
 #include <QCheckBox>
 #include "hoverlabel.h"
 #include <QUiLoader>
-#include "data.h"
 #include <QComboBox>
 #include <QFile>
 #include <QLabel>
 #include <QScrollArea>
 #include <QMessageBox>
 #include <filesystem>
+#include "dataloader.h"
 namespace fs = std::filesystem;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->available_type_filters = {};
     this->all_cards_available = {};
     this->UnlockCardPanel();
-    this->picked_deck = "";
+
     this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
     this->ui->cardGridWidget_2->setResizeMode(QListView::Adjust);
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
@@ -63,16 +63,6 @@ MainWindow::MainWindow(QWidget *parent)
     this->display_deck_editor =false;
     // layouts setup
 
-    this->ui->cardImage->setScaledContents( true );
-    this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-    this->ui->cardImage->clear();
-
-    this->ui->cardText->clear();
-    this->ui->cardText->setWordWrap(true);
-    //textLabel->setIndent(224);
-    this->ui->cardText->setTextFormat(Qt::RichText);
-    this->ui->cardText->setMaximumWidth(1300);
-    this->ui->cardText->setAlignment(Qt::AlignLeft);
     this->UpdateUi();
     this->HideImportPanel();
     //binding signals
@@ -86,7 +76,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->backButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
-    connect(this->ui->backButton_2, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
     connect(this->ui->MainMenuCardListButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToCardList()));
     connect(this->ui->MainMenuDeckEditorButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToDeckEditor()));
     connect(this->ui->MainMenuQuitButton, SIGNAL (clicked(bool)),this, SLOT (OnExit()));
@@ -178,7 +167,7 @@ void MainWindow::SwitchToDeckEditor(){
     this->display_deck_editor =true;
     this->UnlockCardPanel();
     this->UpdateUi();
-    ParseDecks(this->decks);
+
     this->ui->deckPixBox->clear();
     std::map<std::string,Deck>::iterator it;
     for (it = this->decks.begin(); it != this->decks.end(); it++){
@@ -188,25 +177,7 @@ void MainWindow::SwitchToDeckEditor(){
     }
 }
 
-void MainWindow::PickDeck(){
-    this->ClearDeckWidget();
-    std::string deck_name = this->ui->deckPixBox->currentText().toStdString();
-    //LoadDeck(this->decks,deck_name,this->series);
-    this->picked_deck = deck_name;
-    std::map<std::string,Deck>::iterator itdeck;
-    itdeck = decks.find (deck_name);
-    if (itdeck != decks.end()){
-        (*itdeck).second.Print();
-        if ((*itdeck).second.getCardList().size() == 0){
-            LoadDeck(this->decks,deck_name,this->series);
-        }
-    }
-    else {
-        LoadDeck(this->decks,deck_name,this->series);
-    }
-    this->UnlockCardPanel();
-    this->DisplayPickedDeck();
-}
+
 void MainWindow::UpdateUi(){
     //this->display_load_series = true;
     //this->display_pick_set = false;
@@ -380,7 +351,7 @@ void MainWindow::TestFiltersAndSorts(){
     }
     this->FillCards();
     this->ApplyFilter();
-    this->SortFilteredCards(&this->current_cards_to_display,this->current_orders);
+    SortFilteredCards(&this->current_cards_to_display,this->current_orders);
 
     std::cout << "Found " << this->current_cards_to_display.size() << " red only card cards " << std::endl;
     for (Card c2 : this->current_cards_to_display){
@@ -583,22 +554,7 @@ void MainWindow::FillFiltersUsingSet(){
 
 }
 
-int MainWindow::getGridCount(){
-    return this->grid_height*this->grid_width;
-}
 
-
-std::vector<Serie> MainWindow::getAllSeries(){
-    return this->series;
-}
-Serie MainWindow::getSerieByName(std::string name){
-    for (int i{ 0 }; i <= this->series.size(); ++i){
-        if (this->series.at(i).getName() == name){
-            return this->series.at(i);
-        }
-    }
-    return Serie("","");
-}
 
 void MainWindow::OnSeriePick(){
     this->UnloadData(false);
@@ -675,75 +631,7 @@ void MainWindow::ApplyFilter(){
 }
 
 
-void MainWindow::SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order){
-    std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card a, Card b) { // lambda func
-        if (order.size() > 0){
-            for (Orders o : order){
-                if (o == Orders::TYPE_ASCENDING){
-                    if (a.getCardType() != b.getCardType()){
-                        return a.getCardType() < b.getCardType();
-                    }
-                }
-                else if (o == Orders::COLOR){
-                    if (a.getColor() != b.getColor()){
-                        return a.getColor() < b.getColor();
-                    }
-                }
-                else
-                {
-                    if (a.getCardType() != b.getCardType()){
-                        return a.getCardType() < b.getCardType();
-                    }
-                }
 
-                if (o == Orders::LEVEL_ASCENDING){
-                    if (a.getLevel() != b.getLevel()){
-                        return a.getLevel() < b.getLevel();
-                    }
-                }
-                else if (o == Orders::LEVEL_DESCENDING){
-                    if (a.getLevel() != b.getLevel()){
-                        return a.getLevel() > b.getLevel();
-                    }
-                }
-
-                else if (o == Orders::COST_ASCENDING){
-                    if (a.getCost() != b.getCost()){
-                        return a.getCost() < b.getCost();
-                    }
-                }
-                else if (o == Orders::COST_DESCENDING){
-                    if (a.getCost() != b.getCost()){
-                        return a.getCost() > b.getCost();
-                    }
-                }
-
-                else if (o == Orders::POWER_ASCENDING){
-                    if (a.getPower() != b.getPower()){
-                        return a.getPower() < b.getPower();
-                    }
-                }
-                else if (o == Orders::POWER_DESCENDING){
-                    if (a.getPower() != b.getPower()){
-                        return a.getPower() > b.getPower();
-                    }
-                }
-                else if (o == Orders::KEYCODE_ASCENDING){
-                    if (a.getKey() != b.getKey()){
-                        return a.getKey() < b.getKey();
-                    }
-                }
-
-            }
-        }
-        if (a.getLevel() != b.getLevel()){ // default is level > power
-            return a.getLevel() < b.getLevel();
-        }
-        else {
-            return a.getPower() > b.getPower(); // default is power but should not happen
-        }
-    });
-}
 void MainWindow::OnSetPick(){
     this->UnloadData(false);
 
@@ -809,89 +697,8 @@ void MainWindow::OnSerieCardsPick(){
 }
 
 
-void MainWindow::DisplayPickedDeck(){
-    //std::cout << "Display picked : " << this->picked_deck << std::endl;
-    int row = 0, col = 0;
-    const int columns = 10;
-    std::map<std::string,Deck>::iterator itdeck;
-    itdeck = decks.find (this->picked_deck);
-    if (itdeck != decks.end()){
-        Deck de = (*itdeck).second;
-        std::vector<Orders> deck_orders = {Orders::TYPE_ASCENDING,Orders::LEVEL_ASCENDING,Orders::COST_ASCENDING,Orders::POWER_ASCENDING,Orders::COLOR};
-        std::vector<Card> card_list = (*itdeck).second.getCardList();
-        this->SortFilteredCards(&card_list,deck_orders);
-        for (Card value : card_list){
-            //std::cout << "for loop card : " << value.getKey() << std::endl;
-            std::string path_str = value.getImagePath();
-            //std::cout << "found image : " << value.getKey() << std::endl;
 
-            //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
-            QString path_image = QString::fromStdString(path_str);
-            //std::cout << value.getKey() << std::endl;
-            if (QFile::exists(path_image)) {
-                QPixmap pix(path_image);
-                HoverLabel* imgLabel = new HoverLabel(this);
-                imgLabel->setScaledContents( true );
-                imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-                imgLabel->setPixmap(pix);
-                connect(imgLabel,&HoverLabel::mouseEntered, [this,value]() {
-                    this->ShowCardToSidePanel(value);
-                });
-                connect(imgLabel,&HoverLabel::mouseClicked, [this,value]() {
-                    this->LockCardPanel(value);
-                });
-                connect(imgLabel,&HoverLabel::mouseDoubleClicked, [this]() {
-                    this->UnlockCardPanel();
-                });
-                //QObject::connect(mapper,SIGNAL(mapped(QWidget *)),this,SLOT(mySlot(QWidget *)));
 
-                //QObject::connect(imgLabel, SIGNAL(clicked()),mapper,SLOT(ShowCardToSidePanel(value)));
-                //mapper->setMapping(imgLabel, imgLabel);
-
-                //QSignalMapper* signalmapper = new QSignalMapper();
-                //connect (imgLabel, SIGNAL(triggered()), signalmapper, SLOT(map())) ;
-                //signalmapper ->setMapping (imgLabel, value);
-                //connect (signalmapper , SIGNAL(mapped(Card)), this, SLOT(ShowCardToSidePanel(Card)));
-                //connect(imgLabel, SIGNAL(clicked()),this,[this,value](){this->ShowCardToSidePanel(value);});
-                //imgLabel->setPixmap(pix.scaled(220, 310,Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                imgLabel->setFixedSize(154, 213); // add padding around thumbnail
-                this->ui->cardGrid->addWidget(imgLabel,row,col);
-                if (++col >= columns) {
-                    col = 0;
-                    ++row;
-                }
-            }
-        }
-    }
-
-}
-
-void MainWindow::UnlockCardPanel(){
-    this->lock_card_panel = false;
-    this->ui->cardImage->setStyleSheet(QString(""));
-
-}
-
-void MainWindow::LockCardPanel(Card c){
-    this->lock_card_panel = false;
-    this->ShowCardToSidePanel(c);
-    this->lock_card_panel = true;
-    this->ui->cardImage->setStyleSheet(QString("border-style:solid;border-width:2px;border-color:red"));
-}
-
-void MainWindow::ShowCardToSidePanel(Card c){
-    if (!this->lock_card_panel){
-        std::string path_str = c.getImagePath();
-        QString path_image = QString::fromStdString(path_str);
-        if (QFile::exists(path_image)) {
-            QPixmap pix(path_image);
-            this->ui->cardImage->setScaledContents( true );
-            this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-            this->ui->cardImage->setPixmap(pix);
-        }
-        this->ui->cardText->setText(QString::fromStdString(c.getCardHTML()));
-    }
-}
 
 void MainWindow::DisplayFilteredCards(){
 
@@ -969,7 +776,6 @@ void MainWindow::OnUnloadSimulator(){
 
 void MainWindow::UnloadData(bool unload_set_widget){
     this->ClearCardsWidget();
-    this->ClearDeckWidget();
 
     this->available_level_filters.clear(); // Clear memory of objects in the vector
     this->available_level_filters = {}; // completely reset the size of the vector itself
@@ -1022,40 +828,9 @@ void MainWindow::UnloadData(bool unload_set_widget){
 
 }
 
-void clearLayout(QLayout* layout) {
-    if (!layout)
-        return;
 
-    QLayoutItem* item;
-    while ((item = layout->takeAt(0)) != nullptr) {
-        if (QWidget* widget = item->widget()) {
-            widget->deleteLater();  // Schedule widget for deletion
-        }
-        if (QLayout* childLayout = item->layout()) {
-            clearLayout(childLayout);  // Recursively clear nested layouts
-            delete childLayout;
-        }
-        delete item;
-    }
-}
 
-void MainWindow::ClearDeckWidget(){
 
-    clearLayout(this->ui->cardGrid);
-
-    this->ui->cardImage->setScaledContents( true );
-    this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-    this->ui->cardImage->clear();
-
-    this->ui->cardText->clear();
-    this->ui->cardText->setWordWrap(true);
-    //textLabel->setIndent(224);
-    this->ui->cardText->setTextFormat(Qt::RichText);
-    this->ui->cardText->setMaximumWidth(1300);
-    this->ui->cardText->setAlignment(Qt::AlignLeft);
-
-    //this->ui->deckPixBox->clear();
-}
 void MainWindow::ClearCardsWidget(bool clear_filters){
     /*if (this->cards_items.size() > 0){
         for (QListWidgetItem* item : this->cards_items){
@@ -1128,20 +903,11 @@ void MainWindow::ClearCardsWidget(bool clear_filters){
 
 void MainWindow::LoadSimulator(std::string simulator_path){
     if (fs::exists(simulator_path)){
-        ParseCommonEffects(simulator_path);
+        DataLoader::GetInstance()->ParseCommonEffects(simulator_path);
         // internal subfolders
         std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
         // parsing all series
-        this->series = ParseSeries(cards_folder);
-
-
-        for (Serie sa : this->series){
-            /*std::cout << sa.getName() << " : " << sa.getAllSets().size() << std::endl;
-            for (Set set_obj : sa.getAllSets()){
-                std::cout << set_obj.getName() << " , " << set_obj.getKey() << " : " << set_obj.getCards().size() << std::endl;
-            }*/
-            this->ui->seriePickBox->addItem(QString::fromStdString(sa.getName()));
-        }
+        DataLoader::GetInstance()->ParseSeries(cards_folder);
         this->display_load_series = false;
         this->ui->simulatorWidget->setVisible(false);
         this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);

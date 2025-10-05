@@ -3,7 +3,9 @@
 #include "set.h"
 #include "serie.h"
 #include <QFile>
+#include <QWidget>
 #include <algorithm>
+#include <QLayout>
 namespace fs = std::filesystem;
 
 std::string base64_encode(const std::string& input) {
@@ -55,6 +57,92 @@ std::string base64_decode(const std::string &in) {
     return out;
 }
 
+void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order){
+    std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card a, Card b) { // lambda func
+        if (order.size() > 0){
+            for (Orders o : order){
+                if (o == Orders::TYPE_ASCENDING){
+                    if (a.getCardType() != b.getCardType()){
+                        return a.getCardType() < b.getCardType();
+                    }
+                }
+                else if (o == Orders::COLOR){
+                    if (a.getColor() != b.getColor()){
+                        return a.getColor() < b.getColor();
+                    }
+                }
+                else
+                {
+                    if (a.getCardType() != b.getCardType()){
+                        return a.getCardType() < b.getCardType();
+                    }
+                }
+
+                if (o == Orders::LEVEL_ASCENDING){
+                    if (a.getLevel() != b.getLevel()){
+                        return a.getLevel() < b.getLevel();
+                    }
+                }
+                else if (o == Orders::LEVEL_DESCENDING){
+                    if (a.getLevel() != b.getLevel()){
+                        return a.getLevel() > b.getLevel();
+                    }
+                }
+
+                else if (o == Orders::COST_ASCENDING){
+                    if (a.getCost() != b.getCost()){
+                        return a.getCost() < b.getCost();
+                    }
+                }
+                else if (o == Orders::COST_DESCENDING){
+                    if (a.getCost() != b.getCost()){
+                        return a.getCost() > b.getCost();
+                    }
+                }
+
+                else if (o == Orders::POWER_ASCENDING){
+                    if (a.getPower() != b.getPower()){
+                        return a.getPower() < b.getPower();
+                    }
+                }
+                else if (o == Orders::POWER_DESCENDING){
+                    if (a.getPower() != b.getPower()){
+                        return a.getPower() > b.getPower();
+                    }
+                }
+                else if (o == Orders::KEYCODE_ASCENDING){
+                    if (a.getKey() != b.getKey()){
+                        return a.getKey() < b.getKey();
+                    }
+                }
+
+            }
+        }
+        if (a.getLevel() != b.getLevel()){ // default is level > power
+            return a.getLevel() < b.getLevel();
+        }
+        else {
+            return a.getPower() > b.getPower(); // default is power but should not happen
+        }
+    });
+}
+
+void clearLayout(QLayout* layout) {
+    if (!layout)
+        return;
+
+    QLayoutItem* item;
+    while ((item = layout->takeAt(0)) != nullptr) {
+        if (QWidget* widget = item->widget()) {
+            widget->deleteLater();  // Schedule widget for deletion
+        }
+        if (QLayout* childLayout = item->layout()) {
+            clearLayout(childLayout);  // Recursively clear nested layouts
+            delete childLayout;
+        }
+        delete item;
+    }
+}
 
 std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
     std::vector<std::string> final_card_list = {};
