@@ -20,15 +20,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void LoadSimulator(std::string simulator_path);
-    void switchToUi(const QString &uiFilePath);
-private:
-    Ui::MainWindow *ui;
-private slots:
-    void LoadButtonClicked();
-    void OnExit();
-    void OnUnloadSimulator();
     void SwitchToCardList();
     void SwitchToDeckEditor();
+    void SwitchToMainMenu();
+    void SwitchToImportDeck();
+private:
+    Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H

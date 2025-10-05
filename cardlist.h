@@ -3,7 +3,7 @@
 #include "card.h"
 #include <QListWidgetItem>
 #include <QWidget>
-#include <QMainWindow>
+#include "mainwindow.h"
 #include <QLabel>
 #include "set.h"
 namespace Ui {
@@ -30,10 +30,9 @@ public:
     void FillCards();
     void UnloadData(bool unload_set_wiget=true);
     void ApplyFilter();
-    void switchToUi(const QString &uiFilePath);
     void UpdateUi();
 private:
-    QMainWindow parent;
+    MainWindow parent;
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
     bool display_load_series;

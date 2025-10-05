@@ -44,8 +44,7 @@ deckvisualization::~deckvisualization()
 }
 
 void deckvisualization::SwitchToMainMenu(){
-    this->ClearDeckWidget();
-    this->switchToUi(QString(":/forms/mainwindow.ui"));
+    this->parent.SwitchToMainMenu();
 }
 
 void deckvisualization::ClearDeckWidget(){

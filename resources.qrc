@@ -17,5 +17,12 @@
         <file>images/cont.jpg</file>
         <file>images/ccx.png</file>
         <file>images/act.jpg</file>
+        <file>forms/cardlist.ui</file>
+        <file>forms/deckvisualization.ui</file>
+        <file>forms/deckvisualization2.ui</file>
+        <file>forms/importdeck_2.ui</file>
+        <file>forms/importdeck.ui</file>
+        <file>forms/mainwindow.ui</file>
+        <file>forms/old_uis.ui</file>
     </qresource>
 </RCC>

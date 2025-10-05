@@ -7,7 +7,8 @@
 #include <QCheckBox>
 cardlist::cardlist(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::cardlist) , parent(parent)
+    , ui(new Ui::cardlist)
+    , parent(parent)
 {
     ui->setupUi(this);
     std::vector<Serie*>* series = DataLoader::GetInstance()->getSeries();
@@ -159,21 +160,10 @@ void cardlist::RedisplayAfterFilter(){
     this->DisplayFilteredCards();
 }
 
-void cardlist::SwitchToMainMenu() {
-    this->UnloadData(true);
-    this->switchToUi(QString(":/forms/mainwindow.ui"));
+void cardlist::SwitchToMainMenu(){
+    this->parent.SwitchToMainMenu();
 }
 
-void cardlist::switchToUi(const QString &uiFilePath)
-{
-    QUiLoader loader;
-    QFile file(uiFilePath);
-    if (file.open(QFile::ReadOnly)) {
-        QWidget *newWidget = loader.load(&file, this);
-        file.close();
-        parent.setCentralWidget(newWidget);
-    }
-}
 
 void cardlist::ApplyFilters(){
     this->RedisplayAfterFilter();

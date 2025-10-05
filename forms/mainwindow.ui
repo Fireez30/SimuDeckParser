@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1081</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1921</width>
+      <height>1081</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="page">
+     <property name="minimumSize">
+      <size>
+       <width>1921</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QWidget" name="page_2">
+     <property name="minimumSize">
+      <size>
+       <width>1921</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <action name="actionUnload_simulator">
+   <property name="text">
+    <string>Unload simulator</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionColor">
+   <property name="text">
+    <string>Color</string>
+   </property>
+  </action>
+  <action name="actionCost">
+   <property name="text">
+    <string>Cost</string>
+   </property>
+  </action>
+  <action name="actionLevel">
+   <property name="text">
+    <string>Level</string>
+   </property>
+  </action>
+  <action name="actionAscending">
+   <property name="text">
+    <string>Ascending</string>
+   </property>
+  </action>
+  <action name="actionDescending">
+   <property name="text">
+    <string>Descending</string>
+   </property>
+  </action>
+  <action name="actionAscending_2">
+   <property name="text">
+    <string>Ascending</string>
+   </property>
+  </action>
+  <action name="actionDescending_2">
+   <property name="text">
+    <string>Descending</string>
+   </property>
+  </action>
+  <action name="actionAscending_3">
+   <property name="text">
+    <string>Ascending</string>
+   </property>
+  </action>
+  <action name="actionDescending_3">
+   <property name="text">
+    <string>Descending</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

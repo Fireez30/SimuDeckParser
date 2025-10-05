@@ -1,6 +1,5 @@
 #include "importdeck.h"
 #include "ui_importdeck.h"
-#include "algorithms.h"
 #include <QUiLoader>
 #include <QFile>
 
@@ -34,9 +33,8 @@ void importdeck::ImportLink(){
 
 
 void importdeck::SwitchToMainMenu(){
-    this->switchToUi(QString(":/forms/mainwindow.ui"));
+    this->parent.SwitchToMainMenu();
 }
-
 
 
 void importdeck::switchToUi(const QString &uiFilePath)

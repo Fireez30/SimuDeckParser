@@ -8,18 +8,18 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS UiTools)
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/cards)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/utils)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
-        mainwindow.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/card.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/card.h
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/serie.cpp
@@ -30,6 +30,11 @@ set(PROJECT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/cards/deck.h
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/algorithms.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/forms/cardlist.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/forms/deckvisualization.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/forms/mainwindow.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/forms/importdeck.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/forms/old_uis.ui
 )
 
 
@@ -48,12 +53,14 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         utils/HTTPRequest.hpp utils/json.hpp
 
 
-        old_uis.ui
+
         dataloader.h dataloader.cpp
 
-        cardlist.h cardlist.cpp cardlist.ui
-        importdeck.h importdeck.cpp importdeck.ui
-        deckvisualization.h deckvisualization.cpp deckvisualization.ui
+        cardlist.h cardlist.cpp
+        importdeck.h importdeck.cpp
+        deckvisualization.h deckvisualization.cpp
+        mainmenu.h
+        mainmenu.cpp
 
 
 

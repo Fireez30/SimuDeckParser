@@ -349,13 +349,7 @@ void DataLoader::ParseCommonEffects(std::string simulator_path) {
 }
 
 DataLoader::DataLoader(){
-    if(dataloader_==nullptr){
-        dataloader_ = new DataLoader();
-        dataloader_->series = {};
 
-        dataloader_->decks = {};
-
-    }
 }
 DataLoader* DataLoader::dataloader_= nullptr;;
 
@@ -364,6 +358,9 @@ DataLoader *DataLoader::GetInstance()
 {
     if(dataloader_==nullptr){
         dataloader_ = new DataLoader();
+        dataloader_->series = {};
+        dataloader_->decks = {};
+        dataloader_->common_effects = {};
     }
     return dataloader_;
 }
