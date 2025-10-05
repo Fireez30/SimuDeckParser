@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr,int grid_width=3,int grid_height=4);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     std::vector<Serie> getAllSeries();
     Serie getSerieByName(std::string name);
@@ -46,12 +46,11 @@ public:
     void DisplayPickedDeck();
     void ClearDeckWidget();
     void SortDeck();
+    void switchToUi(const QString &uiFilePath);
 private:
     Ui::MainWindow *ui;
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
-    std::vector<Serie> series;
-    std::map<std::string,Deck> decks;
     bool display_main_menu;
     bool display_card_list;
     bool display_deck_editor;
@@ -60,6 +59,8 @@ private:
     bool display_cards;
     bool lock_card_panel;
     std::string picked_deck;
+    std::vector<Card> all_cards_available;
+    std::vector<CardType> available_type_filters;
     std::vector<int> available_level_filters;
     std::vector<std::string> available_trait_filters;
     std::vector<int> available_cost_filters;
@@ -68,15 +69,13 @@ private:
     std::vector<int> current_cost_filters;
     std::vector<Color> current_color_filters;
     std::vector<std::string> current_trait_filters;
-    std::vector<CardType> available_type_filters;
+
     std::vector<CardType> current_type_filters;
     std::vector<QListWidgetItem*> cards_items;
-    int grid_width;
     std::vector<Orders> current_orders;
     std::vector<Orders> current_deck_orders;
-    int grid_height;
     std::vector<Card> current_cards_to_display;
-    std::vector<Card> all_cards_available;
+
 private slots:
     void LoadButtonClicked();
     void OnSeriePick();

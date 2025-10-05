@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS UiTools)
+
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/cards)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/utils)
@@ -39,11 +41,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources.qrc
         utils/io.cpp
         utils/io.h
-        utils/data.h utils/data.cpp
+
         utils/tinyxml2.cpp
         utils/tinyxml2.h
         hoverlabel.h hoverlabel.cpp
         utils/HTTPRequest.hpp utils/json.hpp
+        cardlist.ui
+        deckvisualization.ui
+        mainwindow_copy.ui
+        dataloader.h dataloader.cpp
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SimuDeckParser APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -64,6 +71,7 @@ else()
 endif()
 
 target_link_libraries(SimuDeckParser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(SimuDeckParser PRIVATE Qt6::UiTools)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

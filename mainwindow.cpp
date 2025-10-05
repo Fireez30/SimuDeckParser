@@ -8,6 +8,7 @@
 #include "io.h"
 #include <QCheckBox>
 #include "hoverlabel.h"
+#include <QUiLoader>
 #include "data.h"
 #include <QComboBox>
 #include <QFile>
@@ -17,7 +18,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -25,17 +26,17 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 
 
     //data
-    this->series = {};
     this->currentCardsImages={};
     this->current_cards_to_display = {};
-    this->all_cards_available = {};
-    this->choosen_serie = nullptr;
-    this->choosen_sets = {};
-    this->grid_height = grid_height;
-    this->grid_width = grid_width;
+
     this->current_cards_index = 0;
     this->cards_items = {};
-    this->decks = {};
+    this->available_level_filters = {}; // This will be loaded when laoding a set cards
+    this->available_cost_filters = {};
+    this->available_color_filters = {};
+    this->available_trait_filters = {};
+    this->available_type_filters = {};
+    this->all_cards_available = {};
     this->UnlockCardPanel();
     this->picked_deck = "";
     this->ui->cardGridWidget_2->setViewMode(QListView::ListMode);
@@ -43,16 +44,13 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
     this->ui->cardGridWidget_2->setIconSize(QSize(280, 391));
     //orders and filters
     this->current_orders = {Orders::KEYCODE_ASCENDING}; // Order with the first, if equals, order with the next, etc ...
-    this->available_level_filters = {}; // This will be loaded when laoding a set cards
-    this->available_cost_filters = {};
-    this->available_color_filters = {};
+
     this->current_level_filters = {};
     this->current_cost_filters = {};
     this->current_color_filters = {};
-    this->available_type_filters = {};
     this->current_type_filters = {};
 
-    this->available_trait_filters = {};
+
     this->current_trait_filters = {};
 
     //display state
@@ -113,6 +111,17 @@ MainWindow::MainWindow(QWidget *parent,int grid_width,int grid_height)
 }
 
 
+void MainWindow::switchToUi(const QString &uiFilePath)
+{
+    QUiLoader loader = QUiLoader(this);
+    QFile file(uiFilePath);
+    if (file.open(QFile::ReadOnly)) {
+        QWidget *newWidget = loader.load(&file, this);
+        file.close();
+        setCentralWidget(newWidget);
+    }
+}
+
 void MainWindow::DisplayImportPanel(){
     this->ui->backgroundImportWidget->setVisible(true);
     this->ui->EncoreDeckLinkField->clear();
@@ -148,6 +157,8 @@ void MainWindow::SwitchToCardList(){
     this->display_main_menu = false;
     this->display_card_list = true;
     this->display_deck_editor =false;
+    this->switchToUi(QString(":/forms/cardlist.ui"));
+    this->ui = new Ui::cardlist;
     this->ui->seriePickBox->setVisible(true);
     this->ui->setPickBox->setVisible(true);
     this->ui->serieAndSetWidget->setVisible(true);
@@ -155,6 +166,7 @@ void MainWindow::SwitchToCardList(){
     this->display_pick_set = false;
     this->display_cards = false;
     this->UnlockCardPanel();
+
     this->UpdateUi();
 }
 

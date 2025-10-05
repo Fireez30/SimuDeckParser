@@ -1,8 +1,396 @@
 #include <string>
 #include "algorithms.h"
+#include "set.h"
+#include "serie.h"
 #include <QFile>
 #include <algorithm>
 namespace fs = std::filesystem;
+
+std::string base64_encode(const std::string& input) {
+    static const char encoding_table[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    std::string output;
+    int val = 0;
+    int valb = -6;
+
+    for (unsigned char c : input) {
+        val = (val << 8) + c;
+        valb += 8;
+
+        while (valb >= 0) {
+            output.push_back(encoding_table[(val >> valb) & 0x3F]);
+            valb -= 6;
+        }
+    }
+
+    if (valb > -6) {
+        output.push_back(encoding_table[((val << 8) >> (valb + 8)) & 0x3F]);
+    }
+
+    while (output.size() % 4) {
+        output.push_back('=');
+    }
+
+    return output;
+}
+
+std::string base64_decode(const std::string &in) {
+
+    std::string out;
+
+    std::vector<int> T(256,-1);
+    for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
+
+    int val=0, valb=-8;
+    for (uchar c : in) {
+        if (T[c] == -1) break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(char((val>>valb)&0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+
+std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
+    std::vector<std::string> final_card_list = {};
+    std::vector<std::string> existing_card_codes = {};
+
+    for (Serie* s : series){ // Do not keep this in final release , too slow.
+        //std::cout << "is it in serie " << s.getName() << std::endl;
+        for (Set set : s->getAllSets()){
+            //std::cout << "is it in set " << set.getName() << std::endl;
+            std::map<std::string,Card>::iterator it;
+            for (it = set.getCards().begin(); it != set.getCards().end(); it++){
+                std::string code = (*it).first;
+                existing_card_codes.push_back(code);
+            }
+        }
+    }
+
+    // NON FOIL CARD
+    //std::string new_code = removeTrailingAlphas(code);
+    for (std::string card_key : card_keys){
+        bool found = false;
+        std::string sub_raw_str;
+        std::string sub_str = card_key;
+        if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+            final_card_list.push_back(sub_str);
+            found = true;
+        }
+
+        if (!found){
+            sub_str = card_key; // check if to lower
+            sub_raw_str = card_key;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-","-E");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-E","-");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-","-E");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-E","-");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-T","-TE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-TE","-T");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-T","-TE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-TE","-T");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-P","-PE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-PE","-P");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-P","-PE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            replace_in_string(sub_str,"-PE","-P");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-P","-PE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-PE","-P");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-P","-PE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-PE","-P");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-","-E");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-E","-");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-","-E");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-E","-");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-T","-TE");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-TE","-T");
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-T","-TE");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-TE","-T");
+            sub_raw_str = sub_str;
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
+                final_card_list.push_back(sub_raw_str);
+                found = true;
+            }
+        }
+
+
+        if (!found){
+            final_card_list.push_back(card_key);
+        }
+
+
+    }
+
+    return final_card_list;
+}
+
 
 std::string trim(const std::string &s)
 {

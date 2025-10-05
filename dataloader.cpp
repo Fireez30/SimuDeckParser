@@ -1,595 +1,20 @@
-#include "io.h"
-#include "data.h"
-#include <string>
-#include <vector>
-#include <stdexcept>
+#include "dataloader.h"
 #include <iostream>
 #include "algorithms.h"
-#include "tinyxml2.h"
-#include "set.h"
-#include <fstream>
-#include <QFile>
-#include <filesystem>
-#include "serie.h"
-#include <algorithm>
 #include <unistd.h>
+#include <fstream>
+#include <filesystem>
 #include <sys/types.h>
+#include "tinyxml2.h"
 #include <pwd.h>
-#include "deck.h"
+#include "io.h"
+#include <filesystem>
 #include "HTTPRequest.hpp"
 #include "json.hpp"
 #include <ctime>
-std::string card_to_print = "KS/W49-E073";
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-std::map<std::string,std::string> common_effects = {};
-std::string base64_encode(const std::string& input) {
-    static const char encoding_table[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    std::string output;
-    int val = 0;
-    int valb = -6;
-
-    for (unsigned char c : input) {
-        val = (val << 8) + c;
-        valb += 8;
-
-        while (valb >= 0) {
-            output.push_back(encoding_table[(val >> valb) & 0x3F]);
-            valb -= 6;
-        }
-    }
-
-    if (valb > -6) {
-        output.push_back(encoding_table[((val << 8) >> (valb + 8)) & 0x3F]);
-    }
-
-    while (output.size() % 4) {
-        output.push_back('=');
-    }
-
-    return output;
-}
-
-static std::string base64_decode(const std::string &in) {
-
-    std::string out;
-
-    std::vector<int> T(256,-1);
-    for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
-
-    int val=0, valb=-8;
-    for (uchar c : in) {
-        if (T[c] == -1) break;
-        val = (val << 6) + T[c];
-        valb += 6;
-        if (valb >= 0) {
-            out.push_back(char((val>>valb)&0xFF));
-            valb -= 8;
-        }
-    }
-    return out;
-}
-
-std::vector<std::string> TransformToExistingCardKey(std::vector<Serie> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
-    std::vector<std::string> final_card_list = {};
-    std::vector<std::string> existing_card_codes = {};
-
-    for (Serie s : series){ // Do not keep this in final release , too slow.
-        //std::cout << "is it in serie " << s.getName() << std::endl;
-        for (Set set : s.getAllSets()){
-            //std::cout << "is it in set " << set.getName() << std::endl;
-            std::map<std::string,Card>::iterator it;
-            for (it = set.getCards().begin(); it != set.getCards().end(); it++){
-                std::string code = (*it).first;
-                existing_card_codes.push_back(code);
-            }
-        }
-    }
-
-    // NON FOIL CARD
-    //std::string new_code = removeTrailingAlphas(code);
-    for (std::string card_key : card_keys){
-        bool found = false;
-        std::string sub_raw_str;
-        std::string sub_str = card_key;
-        if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-            final_card_list.push_back(sub_str);
-            found = true;
-        }
-
-        if (!found){
-            sub_str = card_key; // check if to lower
-            sub_raw_str = card_key;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-","-E");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-E","-");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-","-E");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-E","-");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-T","-TE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-TE","-T");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-T","-TE");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-TE","-T");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-P","-PE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-PE","-P");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-P","-PE");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            replace_in_string(sub_str,"-PE","-P");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-P","-PE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-PE","-P");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-P","-PE");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-PE","-P");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-","-E");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-E","-");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-","-E");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-E","-");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-T","-TE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-TE","-T");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-T","-TE");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-TE","-T");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
-
-
-        if (!found){
-            final_card_list.push_back(card_key);
-        }
-
-
-    }
-
-    return final_card_list;
-}
-
-bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list,std::string pref_file_path, std::string pref_backup_path){
-    bool added = false;
-    std::string encoded_date = base64_encode(date);
-    std::string decklist_formated = "";
-    for (std::string card : card_list){
-        decklist_formated += card+"|";
-    }
-    std::string decklist_encoded = base64_encode(decklist_formated);
-    std::string initial_backup = pref_file_path;
-    replace_in_string(initial_backup,"prefs","initial_prefs");
-    if (!fs::exists(initial_backup)){ // First ever backup
-        fs::copy_file(pref_file_path, initial_backup, fs::copy_options::overwrite_existing);
-    }
-    // backup file to backup name
-    try // If you want to avoid exception handling, then use the error code overload of the following functions.
-    {
-         fs::copy_file(pref_file_path, pref_backup_path, fs::copy_options::overwrite_existing);
-    }
-    catch (std::exception& e) // Not using fs::filesystem_error since std::bad_alloc can throw too.
-    {
-        std::cout << "Error during backup " << std::endl;
-        std::cout << e.what();
-        return false;
-    }
-
-    if (fs::exists(pref_file_path)){
-        //std::cout << "Found pref file : "<< std::endl;
-        tinyxml2::XMLDocument doc;
-        doc.LoadFile(pref_file_path.c_str());
-        tinyxml2::XMLElement* rootnode = doc.RootElement();
-        //std::cout << "Root node : " << rootnode->Name() << std::endl;
-        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
-        while (firstchild != nullptr){
-            //std::cout << "found child : " << std::endl;
-            if (firstchild->FindAttribute("name") != nullptr){
-                //std::cout << firstchild->FindAttribute("name")->Value() << std::endl;
-                std::string name_elem = firstchild->FindAttribute("name")->Value();
-                if (name_elem.substr(0,9) == "DeckNames"){
-                    //std::cout << "found deck " << std::endl;
-                    //std::cout << "found date name " << std::endl;
-                    //std::cout << "found deck : " << deck_name << std::endl;
-                    // tinyxml2::XMLText* textNode = firstchild->ToText();
-                    //std::cout << "found textNode " << std::endl;
-
-                    ///std::cout << "after while" << std::endl;
-                    std::string base64_deckslist = firstchild->GetText();
-                    //std::cout << "found base64_decklist " << std::endl;
-                    std::string deck_list = base64_decode(base64_deckslist);
-                    deck_list += name + "|";
-                    std::string encoded_finaldeck_list = base64_encode(deck_list);
-
-                    firstchild->SetText(encoded_finaldeck_list.c_str());
-
-                }
-            }
-            firstchild = firstchild->NextSiblingElement();
-        }
-
-        tinyxml2::XMLElement* date_element = rootnode->InsertNewChildElement("pref");
-        date_element->SetAttribute("name",("Date_"+name).c_str());
-        date_element->SetAttribute("type","string");
-        date_element->SetText(encoded_date.c_str());
-
-        tinyxml2::XMLElement* cards_element = rootnode->InsertNewChildElement("pref");
-        cards_element->SetAttribute("name",("Deck_"+name).c_str());
-        cards_element->SetAttribute("type","string");
-        cards_element->SetText(decklist_encoded.c_str());
-
-        std::vector<tinyxml2::XMLElement*> children;
-        for (tinyxml2::XMLElement* child = rootnode->FirstChildElement(); child != nullptr; child = child->NextSiblingElement()) {
-            children.push_back(child);
-        }
-
-        std::sort(children.begin(), children.end(), [](tinyxml2::XMLElement* a, tinyxml2::XMLElement* b) {
-            const char* nameA = a->Attribute("name");
-            const char* nameB = b->Attribute("name");
-            return std::string(nameA ? nameA : "") < std::string(nameB ? nameB : "");
-        });
-
-        for (tinyxml2::XMLElement* child : children) {
-            rootnode->InsertEndChild(child); // Ok not to remove before, because it's moved if already found
-        }
-
-        doc.SaveFile(pref_file_path.c_str());
-
-        added = true;
-
-    }
-
-    // order nodes by attribute name
-
-    return added;
-}
-
-void ParseDeckFromJson(json deck_json,std::map<std::string,Deck> &decks,std::vector<Serie> &series,bool print){
-    if (print){
-        std::cout << " Parse deck from JSON" << std::endl;
-        //std::cout << deck_json << std::endl;
-        //for (json::iterator it = deck_json.begin(); it != deck_json.end(); ++it) {
-        //    std::cout << it.key()  << "\n";
-        //}
-
-    }
-    struct passwd *pw = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
-    std::string homedirstr = homedir;
-    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
-    std::string prefsfile_backup =  homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs_backedup";
-    std::string deck_name;
-    std::string deck_date;
-    if (deck_json.contains("name")){
-        deck_name = trim(deck_json["name"]);
-    }
-    else {
-        std::cout << "name not found" << std::endl;
-    }
-
-    if (deck_json.contains("datecreated")){
-        deck_date = trim(deck_json["datecreated"]);
-    }
-    else {
-        std::cout << "datecreated not found" << std::endl;
-        if (deck_json.contains("datemodified")){
-            deck_date = trim(deck_json["datemodified"]);
-        }
-    }
-    std::string final_date = "";
-    //
-    //  transform date
-    //
-    std::string trimmed = deck_date.substr(0, 19); // "2025-09-30T22:20:36"
-
-    std::tm tm = {};
-    std::istringstream ss(trimmed);
-    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
-
-    if (ss.fail()) {
-        std::cerr << "Failed to parse time\n";
-    } else {
-        std::time_t time = std::mktime(&tm);
-        //std::cout << "Parsed time: " << std::ctime(&time);
-
-        std::ostringstream oss;
-        oss << std::put_time(&tm, "%H:%M  %m/%d/%Y");
-
-        final_date = oss.str();        //15:26  09/22/2025
-        std::cout << final_date << std::endl;
-    }
-
-    std::vector<std::string> deck_list = {};
-    int ncards = deck_json["cards"].size();
-    for(auto ct=deck_json["cards"].begin();ct!=deck_json["cards"].end();++ct){
-        json card_json = ct.value();
-        if (print)
-            std::cout << card_json << "\n";
-        std::string card_code = trim(card_json["cardcode"]);
-        deck_list.push_back(card_code);
-
-        //
-        // write in prefs file
-        //
-    }
-    std::vector<std::string> new_deck_list = TransformToExistingCardKey(series,deck_list);
-
-    std::cout << deck_name << std::endl;
-    std::cout << final_date << std::endl;
-    std::cout << "Deck list found " << new_deck_list.size() << " cards" << std::endl;
-    for (std::string card : new_deck_list){
-        std::cout << card << std::endl;
-    }
-
-
-    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list,prefsfile,prefsfile_backup);
-    if (added){
-        decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
-        LoadDeckFromList(decks,series,new_deck_list,deck_name);
-    }
-    else {
-        std::cout << "ERROR ADDING TO SIMULATOR" << std::endl;
-        // transfer backuped file to prefs file to reset changes
-    }
-}
-
+std::string card_to_print = "KS/W49-E073";
 
 json SendRequest(std::string url){
 
@@ -602,50 +27,6 @@ json SendRequest(std::string url){
     std::string resp =  std::string{response.body.begin(), response.body.end()};
     json j1 = json::parse(resp);
     return j1;
-
-}
-
-void ParseDeckById(std::string deck_code,std::map<std::string,Deck> &decks,std::vector<Serie> &series){
-    std::cout << "parsing deck " << deck_code << std::endl;
-    json deckobject = SendRequest("http://www.encoredecks.com/api/deck/"+trim(deck_code));
-    ParseDeckFromJson(deckobject,decks,series,false);
-}
-
-
-
-void ParseCommonEffects(std::string simulator_path) {
-    std::string common_effect_path = simulator_path+"StreamingAssets"+separator()+"CommonEffects(copy).txt";
-    if (fs::exists(common_effect_path)){
-        std::ifstream file(common_effect_path);
-        std::string line;
-        std::string key;
-        std::string value;
-        bool found_key = false;
-        bool reading_value = false;
-        while (std::getline(file, line))
-        {
-            if (line != "" && line.substr(0,2) != "//" && trim(line) != "Quick"){
-                if (trim(line).substr(0,7) == "Define:"){
-                    if (key != "" && value != ""){
-                        common_effects[key] = value;
-                        key = "";
-                        value = "";
-                        found_key = false;
-                        reading_value = false;
-                    }
-                    key = trim(line.substr(8,std::string::npos));
-                    found_key = true;
-                }
-                else if(found_key && trim(line).substr(0,5) == "Text "){
-                    reading_value = true;
-                    value = trim(line.substr(5,std::string::npos));
-                }
-                else if (found_key && reading_value && !(trim(line).substr(0,4) == "Tag " || trim(line).substr(0,4) == "Act:" || trim(line).substr(0,5) == "Auto:" || trim(line).substr(0,5) == "Cont:")){
-                    value += trim(line);
-                }
-            }
-        }
-    }
 
 }
 
@@ -917,7 +298,183 @@ std::string retrieveCardPath(const std::string set_path,const std::string card_k
 
     return ":/images/emptycard.jpg";
 }
-void ParseCards(Set& set,std::string alternate_cards_folder){
+
+
+void DataLoader::ParseCommonEffects(std::string simulator_path) {
+    std::string common_effect_path = simulator_path+"StreamingAssets"+separator()+"CommonEffects(copy).txt";
+    if (fs::exists(common_effect_path)){
+        std::ifstream file(common_effect_path);
+        std::string line;
+        std::string key;
+        std::string value;
+        bool found_key = false;
+        bool reading_value = false;
+        while (std::getline(file, line))
+        {
+            if (line != "" && line.substr(0,2) != "//" && trim(line) != "Quick"){
+                if (trim(line).substr(0,7) == "Define:"){
+                    if (key != "" && value != ""){
+                        common_effects[key] = value;
+                        key = "";
+                        value = "";
+                        found_key = false;
+                        reading_value = false;
+                    }
+                    key = trim(line.substr(8,std::string::npos));
+                    found_key = true;
+                }
+                else if(found_key && trim(line).substr(0,5) == "Text "){
+                    reading_value = true;
+                    value = trim(line.substr(5,std::string::npos));
+                }
+                else if (found_key && reading_value && !(trim(line).substr(0,4) == "Tag " || trim(line).substr(0,4) == "Act:" || trim(line).substr(0,5) == "Auto:" || trim(line).substr(0,5) == "Cont:")){
+                    value += trim(line);
+                }
+            }
+        }
+    }
+
+}
+
+DataLoader::DataLoader(){
+    if(dataloader_==nullptr){
+        dataloader_ = new DataLoader();
+        dataloader_->series = {};
+
+        dataloader_->decks = {};
+
+    }
+}
+DataLoader* DataLoader::dataloader_= nullptr;;
+
+
+DataLoader *DataLoader::GetInstance()
+{
+    if(dataloader_==nullptr){
+        dataloader_ = new DataLoader();
+    }
+    return dataloader_;
+}
+
+std::vector<Serie*>* DataLoader::getSeries(){
+    return &(dataloader_->series);
+}
+
+std::map<std::string,Deck*>* DataLoader::getDecks(){
+    return &(dataloader_->decks);
+}
+
+Deck* DataLoader::LoadDeckFromList(std::vector<std::string> card_list,std::string deck_name){
+    std::map<std::string,Deck*>::iterator itdeck;
+    std::map<std::string,Deck*>* decks = dataloader_->getDecks();
+    itdeck = decks->find (deck_name);
+    //std::cout << "after declaration of iterator" << std::endl;
+    std::vector<std::string> found_codes =  TransformToExistingCardKey((*dataloader_->getSeries()),card_list);
+    if (itdeck != decks->end()){
+        std::cout << "card codes length : " << card_list.size()  << std::endl;
+        //std::cout << "after getting codes" << std::endl;
+        for (std::string card : found_codes){
+            bool found = false;
+            //std::cout << "card " << card << std::endl;
+            if (trim(card) != ""){
+                for (Serie* s : series){ // Do not keep this in final release , too slow.
+                    //std::cout << "is it in serie " << s.getName() << std::endl;
+                    if (!found){
+                        for (Set set : s->getAllSets()){
+                            //std::cout << "is it in set " << set.getName() << std::endl;
+                            if (!found && set.containsCard(card)){
+                                Card* c = set.getCard(card);
+                                //std::cout << "retrieved card" << std::endl;
+                                (*itdeck).second->AddCard(*c);
+                                //std::cout << "added card" << std::endl;
+                                found = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!found){
+                std::cout << " Didn't find anything related to : " << card << std::endl;
+            }
+        }
+        return (*itdeck).second;
+    }
+    return nullptr;
+}
+
+Deck* DataLoader::LoadDeck(std::string target_deck_name)
+{
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    //std::cout << "pref file : " << prefsfile << std::endl;
+    if (fs::exists(prefsfile)){
+        //std::cout << "Found pref file : "<< std::endl;
+        tinyxml2::XMLDocument doc;
+        doc.LoadFile(prefsfile.c_str());
+        tinyxml2::XMLElement* rootnode = doc.RootElement();
+        //std::cout << "Root node : " << rootnode->Name() << std::endl;
+        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
+        while (firstchild != nullptr){
+            //std::cout << "found child : " << std::endl;
+            if (firstchild->FindAttribute("name") != nullptr){
+                //std::cout << firstchild->FindAttribute("name")->Value() << std::endl;
+                std::string name = firstchild->FindAttribute("name")->Value();
+                if (name.substr(0,5) == "Deck_"){
+                    //std::cout << "found deck " << std::endl;
+                    std::string deck_name = name.substr(5,std::string::npos);
+                    if (deck_name == target_deck_name){
+                        //std::cout << "found date name " << std::endl;
+                        //std::cout << "found deck : " << deck_name << std::endl;
+                        // tinyxml2::XMLText* textNode = firstchild->ToText();
+                        //std::cout << "found textNode " << std::endl;
+
+                        ///std::cout << "after while" << std::endl;
+                        std::string base64_decklist = firstchild->GetText();
+                        //std::cout << "found base64_decklist " << std::endl;
+                        std::string deck_list = trim(base64_decode(base64_decklist));
+                        //std::cout <<  " list : " << deck_list << std::endl;
+                        std::vector<std::string> card_codes  = split(deck_list,'|');
+                        return LoadDeckFromList(card_codes,deck_name);
+
+                    }
+                }
+            }
+            firstchild = firstchild->NextSiblingElement();
+        }
+    }
+    return nullptr;
+}
+
+std::map<std::string,Deck*>* DataLoader::ParseDecks(){
+    std::map<std::string,Deck*>* decks = dataloader_->getDecks();
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    if (fs::exists(prefsfile)){
+        tinyxml2::XMLDocument doc;
+        doc.LoadFile(prefsfile.c_str());
+        tinyxml2::XMLElement* rootnode = doc.RootElement();
+        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
+        while (firstchild != nullptr){
+            if (firstchild->FindAttribute("name") != nullptr){
+                std::string name = firstchild->FindAttribute("name")->Value();
+                if (name.substr(0,5) == "Date_"){
+                    std::string deck_name = trim(name.substr(5,std::string::npos));
+                    std::string base64_date = firstchild->GetText();
+                    std::string deck_date = trim(base64_decode(base64_date));
+                    decks->insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+                }
+            }
+            firstchild = firstchild->NextSiblingElement();
+        }
+    }
+    return dataloader_->getDecks();
+}
+
+void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
     std::map<std::string,Card>& cards = set.getCards();
     std::string set_path = set.getPath();
     std::string card_data = set_path+separator()+"CardData.txt";
@@ -1100,8 +657,8 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         trait3 = found_trait;
                     }
                     if (key == card_to_print){std::cout << "Found trait1 " << trait1 << " for key " << card_to_print << std::endl;}
-                        if (key == card_to_print){std::cout << "Found trait2 " << trait2 << " for key " << card_to_print << std::endl;}
-                        if (key == card_to_print){std::cout << "Found trait3 " << trait3 << " for key " << card_to_print << std::endl;}
+                    if (key == card_to_print){std::cout << "Found trait2 " << trait2 << " for key " << card_to_print << std::endl;}
+                    if (key == card_to_print){std::cout << "Found trait3 " << trait3 << " for key " << card_to_print << std::endl;}
                 }
                 else if (type == CardType::CLIMAX && str.substr(0,1) == "*"){ // THIS IS ONLY FOR DETERMINING CLIMAX TRIGGERS AND COLORS. MANDATORY
                     //todo
@@ -1246,8 +803,8 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                     }
 
                     if (key == card_to_print){std::cout << "Found triggr1 " << GetTriggerString(trigger1) << " for key " << card_to_print << std::endl;}
-                        if (key == card_to_print){std::cout << "Found trait2 " << GetTriggerString(trigger2) << " for key " << card_to_print << std::endl;}
-                        if (key == card_to_print){std::cout << "Found color " << GetColorString(color) << " for key " << card_to_print << std::endl;}
+                    if (key == card_to_print){std::cout << "Found trait2 " << GetTriggerString(trigger2) << " for key " << card_to_print << std::endl;}
+                    if (key == card_to_print){std::cout << "Found color " << GetColorString(color) << " for key " << card_to_print << std::endl;}
                 }
                 else if (str.substr(0,1) == "*"){
                     std::string effect_parsed = trim(str.substr(1,std::string::npos));
@@ -1339,7 +896,7 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
                         text += trim(str.substr(5,std::string::npos)) + "\n";
                     }
                     else {
-                            if (key == card_to_print){std::cout << "Append to text " << trim(str) << " for key " << card_to_print << std::endl;}
+                        if (key == card_to_print){std::cout << "Append to text " << trim(str) << " for key " << card_to_print << std::endl;}
 
                         text += trim(str) + "\n" ;
                     }
@@ -1383,12 +940,13 @@ void ParseCards(Set& set,std::string alternate_cards_folder){
     }
 
 }
-void ParseSets(Serie& serie,std::string card_path){
+
+void DataLoader::ParseSets(Serie* serie,std::string card_path){
 
     std::string alternate_artwork_path = card_path;
     replace_in_string(alternate_artwork_path,"Cards","AlternateArtwork");
-    std::string serie_path = serie.getPath();
-    std::vector<Set>& sets = serie.getAllSets();
+    std::string serie_path = serie->getPath();
+    std::vector<Set>& sets = serie->getAllSets();
     std::string single_card_data = serie_path+separator()+"SingleSetData.txt";
     if (fs::exists(single_card_data)){
         std::ifstream file(single_card_data);
@@ -1432,18 +990,19 @@ void ParseSets(Serie& serie,std::string card_path){
     }
 }
 
-std::vector<Serie> ParseSeries(std::string cards_path){
+
+std::vector<Serie*>* DataLoader::ParseSeries(std::string cards_path){
     // list all subfolders
     std::vector<std::string> series_found = ListFoldersInFolder(std::string_view {cards_path});
     std::sort(series_found.begin(), series_found.end());
-    std::vector<Serie> series {};
+    std::vector<Serie*>* series = dataloader_->getSeries();
     for (std::string serie_path : series_found){
         // retrieve name of the subfolder as serie name
         std::string serie_name = GetLastName(serie_path);
         // Serie objects will remain along all the execution!
-        Serie s = Serie(serie_name,serie_path);
+        Serie* s = new Serie(serie_name,serie_path);
         ParseSets(s,cards_path);
-        series.push_back(s);
+        series->push_back(s);
 
     }
 
@@ -1451,80 +1010,131 @@ std::vector<Serie> ParseSeries(std::string cards_path){
     return series;
 }
 
+void DataLoader::ParseDeckFromJson(json deck_json,bool print){
+    if (print){
+        std::cout << " Parse deck from JSON" << std::endl;
+        //std::cout << deck_json << std::endl;
+        //for (json::iterator it = deck_json.begin(); it != deck_json.end(); ++it) {
+        //    std::cout << it.key()  << "\n";
+        //}
 
-
-void ParseDecks(std::map<std::string,Deck> &decks){
+    }
     struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     std::string homedirstr = homedir;
     std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
-    if (fs::exists(prefsfile)){
-        tinyxml2::XMLDocument doc;
-        doc.LoadFile(prefsfile.c_str());
-        tinyxml2::XMLElement* rootnode = doc.RootElement();
-        tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
-        while (firstchild != nullptr){
-            if (firstchild->FindAttribute("name") != nullptr){
-            std::string name = firstchild->FindAttribute("name")->Value();
-                if (name.substr(0,5) == "Date_"){
-                    std::string deck_name = trim(name.substr(5,std::string::npos));
-                    std::string base64_date = firstchild->GetText();
-                    std::string deck_date = trim(base64_decode(base64_date));
-                    decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
-                }
-            }
-            firstchild = firstchild->NextSiblingElement();
+    std::string prefsfile_backup =  homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs_backedup";
+    std::string deck_name;
+    std::string deck_date;
+    if (deck_json.contains("name")){
+        deck_name = trim(deck_json["name"]);
+    }
+    else {
+        std::cout << "name not found" << std::endl;
+    }
+
+    if (deck_json.contains("datecreated")){
+        deck_date = trim(deck_json["datecreated"]);
+    }
+    else {
+        std::cout << "datecreated not found" << std::endl;
+        if (deck_json.contains("datemodified")){
+            deck_date = trim(deck_json["datemodified"]);
         }
     }
-}
-void LoadDeckFromList(std::map<std::string,Deck> &decks,std::vector<Serie> &series,std::vector<std::string> card_list,std::string deck_name){
-    std::map<std::string,Deck>::iterator itdeck;
-    itdeck = decks.find (deck_name);
-    //std::cout << "after declaration of iterator" << std::endl;
-    std::vector<std::string> found_codes =  TransformToExistingCardKey(series,card_list);
-    if (itdeck != decks.end()){
-        std::cout << "card codes length : " << card_list.size()  << std::endl;
-        //std::cout << "after getting codes" << std::endl;
-        for (std::string card : found_codes){
-            bool found = false;
-            //std::cout << "card " << card << std::endl;
-            if (trim(card) != ""){
-                for (Serie s : series){ // Do not keep this in final release , too slow.
-                    //std::cout << "is it in serie " << s.getName() << std::endl;
-                    if (!found){
-                        for (Set set : s.getAllSets()){
-                            //std::cout << "is it in set " << set.getName() << std::endl;
-                            if (!found && set.containsCard(card)){
-                                Card* c = set.getCard(card);
-                                //std::cout << "retrieved card" << std::endl;
-                                (*itdeck).second.AddCard(*c);
-                                //std::cout << "added card" << std::endl;
-                                found = true;
-                            }
-                        }
-                    }
-                }
-            }
-            if (!found){
-                std::cout << " Didn't find anything related to : " << card << std::endl;
-            }
-        }
+    std::string final_date = "";
+    //
+    //  transform date
+    //
+    std::string trimmed = deck_date.substr(0, 19); // "2025-09-30T22:20:36"
 
+    std::tm tm = {};
+    std::istringstream ss(trimmed);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.fail()) {
+        std::cerr << "Failed to parse time\n";
+    } else {
+        std::time_t time = std::mktime(&tm);
+        //std::cout << "Parsed time: " << std::ctime(&time);
+
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%H:%M  %m/%d/%Y");
+
+        final_date = oss.str();        //15:26  09/22/2025
+        std::cout << final_date << std::endl;
     }
-    std::cout << "finished loading deck , loaded : " << (*itdeck).second.getCardList().size() << " card " << std::endl;
-}
-void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,std::vector<Serie> &series)
-{
 
-    struct passwd *pw = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
-    std::string homedirstr = homedir;
-    std::string prefsfile = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
-    //std::cout << "pref file : " << prefsfile << std::endl;
-    if (fs::exists(prefsfile)){
+    std::vector<std::string> deck_list = {};
+    int ncards = deck_json["cards"].size();
+    for(auto ct=deck_json["cards"].begin();ct!=deck_json["cards"].end();++ct){
+        json card_json = ct.value();
+        if (print)
+            std::cout << card_json << "\n";
+        std::string card_code = trim(card_json["cardcode"]);
+        deck_list.push_back(card_code);
+
+        //
+        // write in prefs file
+        //
+    }
+    std::vector<std::string> new_deck_list = TransformToExistingCardKey(*(dataloader_->getSeries()),deck_list);
+
+    std::cout << deck_name << std::endl;
+    std::cout << final_date << std::endl;
+    std::cout << "Deck list found " << new_deck_list.size() << " cards" << std::endl;
+    for (std::string card : new_deck_list){
+        std::cout << card << std::endl;
+    }
+
+
+    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list,prefsfile,prefsfile_backup);
+    if (added){
+        decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+        LoadDeckFromList(new_deck_list,deck_name);
+    }
+    else {
+        std::cout << "ERROR ADDING TO SIMULATOR" << std::endl;
+        // transfer backuped file to prefs file to reset changes
+    }
+}
+
+void DataLoader::ParseDeckById(std::string deck_code){
+    std::cout << "parsing deck " << deck_code << std::endl;
+    json deckobject = SendRequest("http://www.encoredecks.com/api/deck/"+trim(deck_code));
+    ParseDeckFromJson(deckobject,false);
+}
+
+
+bool DataLoader::AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list,std::string pref_file_path, std::string pref_backup_path){
+    bool added = false;
+    std::string encoded_date = base64_encode(date);
+    std::string decklist_formated = "";
+    for (std::string card : card_list){
+        decklist_formated += card+"|";
+    }
+    std::string decklist_encoded = base64_encode(decklist_formated);
+    std::string initial_backup = pref_file_path;
+    replace_in_string(initial_backup,"prefs","initial_prefs");
+    if (!fs::exists(initial_backup)){ // First ever backup
+        fs::copy_file(pref_file_path, initial_backup, fs::copy_options::overwrite_existing);
+    }
+    // backup file to backup name
+    try // If you want to avoid exception handling, then use the error code overload of the following functions.
+    {
+        fs::copy_file(pref_file_path, pref_backup_path, fs::copy_options::overwrite_existing);
+    }
+    catch (std::exception& e) // Not using fs::filesystem_error since std::bad_alloc can throw too.
+    {
+        std::cout << "Error during backup " << std::endl;
+        std::cout << e.what();
+        return false;
+    }
+
+    if (fs::exists(pref_file_path)){
         //std::cout << "Found pref file : "<< std::endl;
         tinyxml2::XMLDocument doc;
-        doc.LoadFile(prefsfile.c_str());
+        doc.LoadFile(pref_file_path.c_str());
         tinyxml2::XMLElement* rootnode = doc.RootElement();
         //std::cout << "Root node : " << rootnode->Name() << std::endl;
         tinyxml2::XMLElement* firstchild = rootnode->FirstChildElement();
@@ -1532,30 +1142,60 @@ void LoadDeck(std::map<std::string,Deck> &decks, std::string target_deck_name,st
             //std::cout << "found child : " << std::endl;
             if (firstchild->FindAttribute("name") != nullptr){
                 //std::cout << firstchild->FindAttribute("name")->Value() << std::endl;
-                std::string name = firstchild->FindAttribute("name")->Value();
-                if (name.substr(0,5) == "Deck_"){
+                std::string name_elem = firstchild->FindAttribute("name")->Value();
+                if (name_elem.substr(0,9) == "DeckNames"){
                     //std::cout << "found deck " << std::endl;
-                    std::string deck_name = name.substr(5,std::string::npos);
-                    if (deck_name == target_deck_name){
-                        //std::cout << "found date name " << std::endl;
-                        //std::cout << "found deck : " << deck_name << std::endl;
-                        // tinyxml2::XMLText* textNode = firstchild->ToText();
-                        //std::cout << "found textNode " << std::endl;
+                    //std::cout << "found date name " << std::endl;
+                    //std::cout << "found deck : " << deck_name << std::endl;
+                    // tinyxml2::XMLText* textNode = firstchild->ToText();
+                    //std::cout << "found textNode " << std::endl;
 
-                        ///std::cout << "after while" << std::endl;
-                        std::string base64_decklist = firstchild->GetText();
-                        //std::cout << "found base64_decklist " << std::endl;
-                        std::string deck_list = trim(base64_decode(base64_decklist));
-                        //std::cout <<  " list : " << deck_list << std::endl;
-                        std::vector<std::string> card_codes  = split(deck_list,'|');
-                        LoadDeckFromList(decks,series,card_codes,deck_name);
+                    ///std::cout << "after while" << std::endl;
+                    std::string base64_deckslist = firstchild->GetText();
+                    //std::cout << "found base64_decklist " << std::endl;
+                    std::string deck_list = base64_decode(base64_deckslist);
+                    deck_list += name + "|";
+                    std::string encoded_finaldeck_list = base64_encode(deck_list);
 
-                    }
+                    firstchild->SetText(encoded_finaldeck_list.c_str());
+
                 }
             }
             firstchild = firstchild->NextSiblingElement();
         }
+
+        tinyxml2::XMLElement* date_element = rootnode->InsertNewChildElement("pref");
+        date_element->SetAttribute("name",("Date_"+name).c_str());
+        date_element->SetAttribute("type","string");
+        date_element->SetText(encoded_date.c_str());
+
+        tinyxml2::XMLElement* cards_element = rootnode->InsertNewChildElement("pref");
+        cards_element->SetAttribute("name",("Deck_"+name).c_str());
+        cards_element->SetAttribute("type","string");
+        cards_element->SetText(decklist_encoded.c_str());
+
+        std::vector<tinyxml2::XMLElement*> children;
+        for (tinyxml2::XMLElement* child = rootnode->FirstChildElement(); child != nullptr; child = child->NextSiblingElement()) {
+            children.push_back(child);
+        }
+
+        std::sort(children.begin(), children.end(), [](tinyxml2::XMLElement* a, tinyxml2::XMLElement* b) {
+            const char* nameA = a->Attribute("name");
+            const char* nameB = b->Attribute("name");
+            return std::string(nameA ? nameA : "") < std::string(nameB ? nameB : "");
+        });
+
+        for (tinyxml2::XMLElement* child : children) {
+            rootnode->InsertEndChild(child); // Ok not to remove before, because it's moved if already found
+        }
+
+        doc.SaveFile(pref_file_path.c_str());
+
+        added = true;
+
     }
 
-}
+    // order nodes by attribute name
 
+    return added;
+}
