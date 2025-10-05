@@ -57,6 +57,34 @@ std::string base64_decode(const std::string &in) {
     return out;
 }
 
+QColor GetQColorFromCardColor(Color c){
+    if (c == Color::GREEN){
+        return QColorConstants::Svg::green;
+    }
+
+    if (c == Color::BLUE){
+        return QColorConstants::Svg::blue;
+    }
+
+    if (c == Color::PURPLE){
+        return QColorConstants::Svg::purple;
+    }
+
+    if (c == Color::RED){
+        return QColorConstants::Svg::red;
+    }
+
+    if (c == Color::YELLOW)
+    {
+        return QColorConstants::Svg::yellow;
+    }
+
+    return QColorConstants::Svg::white;
+}
+
+
+
+
 void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order){
     std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card a, Card b) { // lambda func
         if (order.size() > 0){

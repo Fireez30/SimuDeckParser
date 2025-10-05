@@ -2,7 +2,7 @@
 #define IMPORTDECK_H
 
 #include <QWidget>
-
+#include <QMainWindow>
 namespace Ui {
 class importdeck;
 }
@@ -14,9 +14,14 @@ class importdeck : public QWidget
 public:
     explicit importdeck(QWidget *parent = nullptr);
     ~importdeck();
+    void switchToUi(const QString &uiFilePath);
 
 private:
     Ui::importdeck *ui;
+    QMainWindow parent;
+private slots:
+    void ImportLink();
+    void SwitchToMainMenu();
 };
 
 #endif // IMPORTDECK_H

@@ -59,6 +59,7 @@ std::string GetTriggerPath(Trigger t);
 //Determine pass separator using OS
 std::string base64_encode(const std::string& input);
 std::string base64_decode(const std::string &in);
+QColor GetQColorFromCardColor(Color c);
 char separator();
 bool endsWith(const std::string& s, const std::string& suffix);
 std::string trim(const std::string &s);

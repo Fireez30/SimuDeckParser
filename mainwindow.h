@@ -1,7 +1,5 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "serie.h"
-#include "algorithms.h"
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QPushButton>
@@ -9,7 +7,6 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
-#include "deck.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -23,76 +20,15 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    void UpdateUi();
-    int getGridCount();
-    int current_cards_index;
-    void FillFiltersUsingSet();
-    void FillCards();
-    void UnloadData(bool unload_set_wiget=true);
-    void ApplyFilter();
     void LoadSimulator(std::string simulator_path);
-    void RemoveFilter(std::string filter);
-    void AddFilter(std::string filter);
-    void RemoveOrder(std::string order);
-    void AddOrder(std::string order);
-    void RedisplayAfterFilter();
-    void DisplayFilteredCards();
-    std::vector<QLabel*> currentCardsImages;
-    void DestroyDisplayedCards();
-    void ClearCardsWidget(bool clear_filters=true);
     void switchToUi(const QString &uiFilePath);
 private:
     Ui::MainWindow *ui;
-    Serie* choosen_serie;
-    std::vector<Set*> choosen_sets;
-    bool display_main_menu;
-    bool display_card_list;
-    bool display_deck_editor;
-    bool display_load_series;
-    bool display_pick_set;
-    bool display_cards;
-    bool lock_card_panel;
-
-    std::vector<Card> all_cards_available;
-    std::vector<CardType> available_type_filters;
-    std::vector<int> available_level_filters;
-    std::vector<std::string> available_trait_filters;
-    std::vector<int> available_cost_filters;
-    std::vector<Color> available_color_filters;
-    std::vector<int> current_level_filters;
-    std::vector<int> current_cost_filters;
-    std::vector<Color> current_color_filters;
-    std::vector<std::string> current_trait_filters;
-    std::vector<CardType> current_type_filters;
-    std::vector<QListWidgetItem*> cards_items;
-    std::vector<Orders> current_orders;
-
-    std::vector<Card> current_cards_to_display;
-
 private slots:
     void LoadButtonClicked();
-    void OnSeriePick();
-    void OnSerieCardsPick();
-    void OnSetPick();
     void OnExit();
     void OnUnloadSimulator();
-    void TestFiltersAndSorts();
-    void AddLevelFilter(bool active,int level);
-    void AddTraitFilter(bool active,std::string trait);
-    void AddCostFilter(bool active, int cost);
-    void AddColorFilter(bool active,Color color);
-    void AddTypeFilter(bool active, CardType type);
-    void ApplyFilters();
-    void SwitchToMainMenu();
     void SwitchToCardList();
     void SwitchToDeckEditor();
-    void PickDeck();
-    void ShowCardToSidePanel(Card c);
-    void ImportLink();
-    void DisplayImportPanel();
-    void HideImportPanel();
-    void LockCardPanel(Card c);
-    void UnlockCardPanel();
 };
 #endif // MAINWINDOW_H

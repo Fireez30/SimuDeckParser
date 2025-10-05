@@ -3,16 +3,18 @@
 #include "dataloader.h"
 #include "hoverlabel.h"
 #include "algorithms.h"
+#include <QUiLoader>
 #include <QFile>
 deckvisualization::deckvisualization(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::deckvisualization)
+    , ui(new Ui::deckvisualization) , parent(parent)
 {
     ui->setupUi(this);
     this->picked_deck = "";
     this->ui->cardImage->setScaledContents( true );
     this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
     this->ui->cardImage->clear();
+    this->UnlockCardPanel();
 
     this->ui->cardText->clear();
     this->ui->cardText->setWordWrap(true);
@@ -20,7 +22,19 @@ deckvisualization::deckvisualization(QWidget *parent)
     this->ui->cardText->setTextFormat(Qt::RichText);
     this->ui->cardText->setMaximumWidth(1300);
     this->ui->cardText->setAlignment(Qt::AlignLeft);
+
+    this->ui->deckPixBox->clear();
+    std::map<std::string,Deck*>* decks = DataLoader::GetInstance()->getDecks();
+    std::map<std::string,Deck*>::iterator it;
+    for (it = decks->begin(); it != decks->end(); it++){
+        std::string deck_key = (*it).first;
+        Deck *deck = (*it).second;
+        this->ui->deckPixBox->addItem(QString::fromStdString(deck->getName()));
+    }
+
     connect(this->ui->backButton_2, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
+    connect(this->ui->pickDeckButton, SIGNAL (clicked(bool)),this, SLOT (PickDeck()));
+
 }
 
 
@@ -31,7 +45,7 @@ deckvisualization::~deckvisualization()
 
 void deckvisualization::SwitchToMainMenu(){
     this->ClearDeckWidget();
-    this->UnlockCardPanel();
+    this->switchToUi(QString(":/forms/mainwindow.ui"));
 }
 
 void deckvisualization::ClearDeckWidget(){
@@ -50,6 +64,19 @@ void deckvisualization::ClearDeckWidget(){
     this->ui->cardText->setAlignment(Qt::AlignLeft);
 
     //this->ui->deckPixBox->clear();
+}
+
+
+
+void deckvisualization::switchToUi(const QString &uiFilePath)
+{
+    QUiLoader loader;
+    QFile file(uiFilePath);
+    if (file.open(QFile::ReadOnly)) {
+        QWidget *newWidget = loader.load(&file, this);
+        file.close();
+        parent.setCentralWidget(newWidget);
+    }
 }
 
 

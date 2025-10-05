@@ -477,7 +477,7 @@ std::map<std::string,Deck*>* DataLoader::ParseDecks(){
                     std::string deck_name = trim(name.substr(5,std::string::npos));
                     std::string base64_date = firstchild->GetText();
                     std::string deck_date = trim(base64_decode(base64_date));
-                    decks->insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+                    decks->insert_or_assign(deck_name, new Deck(deck_name,deck_date));
                 }
             }
             firstchild = firstchild->NextSiblingElement();
@@ -1102,7 +1102,7 @@ void DataLoader::ParseDeckFromJson(json deck_json,bool print){
 
     bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list,prefsfile,prefsfile_backup);
     if (added){
-        decks.insert_or_assign(deck_name, *(new Deck(deck_name,deck_date)));
+        decks.insert_or_assign(deck_name, new Deck(deck_name,deck_date));
         LoadDeckFromList(new_deck_list,deck_name);
     }
     else {

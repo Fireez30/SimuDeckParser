@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "algorithms.h"
-
+#include <QMainWindow>
 namespace Ui {
 class deckvisualization;
 }
@@ -15,20 +15,22 @@ class deckvisualization : public QWidget
 public:
     explicit deckvisualization(QWidget *parent = nullptr);
     ~deckvisualization();
-    void PickDeck();
     void ClearDeckWidget();
-    void UnlockCardPanel();
-    void LockCardPanel(Card c);
-    void ShowCardToSidePanel(Card c);
     void DisplayPickedDeck();
+    void switchToUi(const QString &uiFilePath);
 
 private:
+    QMainWindow parent;
     Ui::deckvisualization *ui;
     std::string picked_deck;
     bool lock_card_panel;
 
 public slots:
     void SwitchToMainMenu();
+    void PickDeck();
+    void ShowCardToSidePanel(Card c);
+    void LockCardPanel(Card c);
+    void UnlockCardPanel();
 
 };
 
