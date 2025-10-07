@@ -1019,7 +1019,7 @@ std::vector<Serie*>* DataLoader::ParseSeries(std::string cards_path){
     return series;
 }
 
-void DataLoader::ParseDeckFromJson(json deck_json,bool print){
+std::vector<std::string> DataLoader::ParseDeckFromJson(json deck_json,bool print){
     if (print){
         std::cout << " Parse deck from JSON" << std::endl;
         //std::cout << deck_json << std::endl;
@@ -1087,35 +1087,31 @@ void DataLoader::ParseDeckFromJson(json deck_json,bool print){
         // write in prefs file
         //
     }
+
+    deck_list.push_back(final_date);
+    deck_list.push_back(deck_name);
+    return deck_list;
+
+}
+
+std::vector<std::string> DataLoader::AdaptDeckList(std::vector<std::string> deck_list){
     std::vector<std::string> new_deck_list = TransformToExistingCardKey(*(dataloader_->getSeries()),deck_list);
 
-    std::cout << deck_name << std::endl;
-    std::cout << final_date << std::endl;
-    std::cout << "Deck list found " << new_deck_list.size() << " cards" << std::endl;
-    for (std::string card : new_deck_list){
-        std::cout << card << std::endl;
-    }
-
-
-    bool added = AddDeckToSimulator(deck_name,final_date,new_deck_list,prefsfile,prefsfile_backup);
-    if (added){
-        decks.insert_or_assign(deck_name, new Deck(deck_name,deck_date));
-        LoadDeckFromList(new_deck_list,deck_name);
-    }
-    else {
-        std::cout << "ERROR ADDING TO SIMULATOR" << std::endl;
-        // transfer backuped file to prefs file to reset changes
-    }
+    return new_deck_list;
 }
-
-void DataLoader::ParseDeckById(std::string deck_code){
+std::vector<std::string> DataLoader::ParseDeckById(std::string deck_code){
     std::cout << "parsing deck " << deck_code << std::endl;
     json deckobject = SendRequest("http://www.encoredecks.com/api/deck/"+trim(deck_code));
-    ParseDeckFromJson(deckobject,false);
+    return ParseDeckFromJson(deckobject,false);
 }
 
 
-bool DataLoader::AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list,std::string pref_file_path, std::string pref_backup_path){
+bool DataLoader::AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list){
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    std::string homedirstr = homedir;
+    std::string pref_file_path = homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs";
+    std::string pref_backup_path =  homedirstr+separator()+".config"+separator()+"unity3d"+separator()+"Blake Thoennes"+separator()+"Weiss Schwarz"+separator()+"prefs_backedup";
     bool added = false;
     std::string encoded_date = base64_encode(date);
     std::string decklist_formated = "";

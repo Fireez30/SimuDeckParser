@@ -16,9 +16,14 @@ public:
 
 private:
     Ui::importdeck *ui;
+    std::string deck_name;
+    std::string deck_date;
+    std::vector<std::string> deck_init_card_list;
+    std::vector<std::string> deck_final_card_list;
 private slots:
     void ImportLink();
     void SwitchToMainMenu();
+    void AddToSimu();
 };
 
 #endif // IMPORTDECK_H

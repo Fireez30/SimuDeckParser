@@ -39,6 +39,7 @@ MainMenu::MainMenu(QWidget *parent)
     connect(this->ui->loadSimulatorButton, SIGNAL (clicked(bool)), this, SLOT (LoadButtonClicked()));
     connect(this->ui->MainMenuCardListButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToCardList()));
     connect(this->ui->MainMenuDeckEditorButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToDeckEditor()));
+    connect(this->ui->OpenImportWidgetButton, SIGNAL (clicked(bool)), this, SLOT( SwitchToImportDeck()));
     connect(this->ui->MainMenuQuitButton, SIGNAL (clicked(bool)),this, SLOT (OnExit()));
     connect(this->ui->unloadButton, SIGNAL (clicked(bool)),this, SLOT (OnUnloadSimulator()));
 }
@@ -63,14 +64,16 @@ void MainMenu::SwitchToDeckEditor(){
     mw->SwitchToDeckEditor();
 }
 
-void MainMenu::OnExit(){
-    QApplication::quit();
-}
-
 void MainMenu::SwitchToImportDeck(){
     MainWindow* mw = getMainWindow();
     mw->SwitchToImportDeck();
 }
+
+
+void MainMenu::OnExit(){
+    QApplication::quit();
+}
+
 
 
 void MainMenu::OnUnloadSimulator(){

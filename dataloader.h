@@ -30,9 +30,10 @@ public:
     std::vector<Serie*>* ParseSeries(std::string cards_path);
     void ParseSets(Serie* serie,std::string card_path);
     void ParseCommonEffects(std::string simulator_path);
-    void ParseDeckById(std::string deck_code);
-    void ParseDeckFromJson(json deck_json,bool print);
-    bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list,std::string pref_file_path, std::string pref_backup_path);
+    std::vector<std::string> ParseDeckById(std::string deck_code);
+    std::vector<std::string> ParseDeckFromJson(json deck_json,bool print);
+    std::vector<std::string> AdaptDeckList(std::vector<std::string> deck_list);
+    bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list);
 };
 
 #endif // DATALOADER_H
