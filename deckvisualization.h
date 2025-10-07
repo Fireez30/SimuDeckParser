@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include "algorithms.h"
-#include "mainwindow.h"
 namespace Ui {
 class deckvisualization;
 }
@@ -17,10 +16,8 @@ public:
     ~deckvisualization();
     void ClearDeckWidget();
     void DisplayPickedDeck();
-    void switchToUi(const QString &uiFilePath);
 
 private:
-    MainWindow parent;
     Ui::deckvisualization *ui;
     std::string picked_deck;
     bool lock_card_panel;

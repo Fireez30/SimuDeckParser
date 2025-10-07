@@ -3,7 +3,6 @@
 #include "card.h"
 #include <QListWidgetItem>
 #include <QWidget>
-#include "mainwindow.h"
 #include <QLabel>
 #include "set.h"
 namespace Ui {
@@ -32,7 +31,6 @@ public:
     void ApplyFilter();
     void UpdateUi();
 private:
-    MainWindow parent;
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
     bool display_load_series;

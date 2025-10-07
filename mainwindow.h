@@ -7,6 +7,12 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
+
+
+class cardlist;
+class MainMenu;
+class deckvisualization;
+class importdeck;
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -26,5 +32,9 @@ public:
     void SwitchToImportDeck();
 private:
     Ui::MainWindow *ui;
+    MainMenu* mm;
+    cardlist *cl;
+    deckvisualization* dv;
+    importdeck* id;
 };
 #endif // MAINWINDOW_H

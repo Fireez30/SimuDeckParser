@@ -21,38 +21,38 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
     //binding signals
-    MainMenu* mm = new MainMenu(this);
-    cardlist *cl = new cardlist(this);
-    deckvisualization* dv = new deckvisualization(this);
-    importdeck* id = new importdeck(this);
-    //this->ui->stackedWidget->removeWidget(this->ui->stackedWidget->widget(0));
-    //this->ui->stackedWidget->removeWidget(this->ui->stackedWidget->widget(1));
+    this->mm = new MainMenu(this);
+    this->cl = new cardlist(this);
+    this->dv = new deckvisualization(this);
+    this->id = new importdeck(this);
+
     this->ui->stackedWidget->addWidget(mm);
     this->ui->stackedWidget->addWidget(cl);
     this->ui->stackedWidget->addWidget(dv);
     this->ui->stackedWidget->addWidget(id);
-    this->ui->stackedWidget->setCurrentIndex(0);
+    this->SwitchToMainMenu();
+
+    //binding signals
     //
 }
 
 
 void MainWindow::SwitchToMainMenu(){
-    this->ui->stackedWidget->setCurrentIndex(0);
+    this->ui->stackedWidget->setCurrentWidget(this->mm);
 }
 
 void MainWindow::SwitchToCardList(){
-    this->ui->stackedWidget->setCurrentIndex(1);
+    this->ui->stackedWidget->setCurrentWidget(this->cl);
 }
 
 void MainWindow::SwitchToDeckEditor(){
-    this->ui->stackedWidget->setCurrentIndex(2);
+    this->ui->stackedWidget->setCurrentWidget(this->dv);
 }
 
 void MainWindow::SwitchToImportDeck(){
-    this->ui->stackedWidget->setCurrentIndex(3);
+    this->ui->stackedWidget->setCurrentWidget(this->id);
 }
 
 

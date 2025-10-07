@@ -23,25 +23,8 @@
       <height>1081</height>
      </rect>
     </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="page">
-     <property name="minimumSize">
-      <size>
-       <width>1921</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="QWidget" name="page_2">
-     <property name="minimumSize">
-      <size>
-       <width>1921</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
+    <widget class="QWidget" name="page"/>
+    <widget class="QWidget" name="page_2"/>
    </widget>
   </widget>
   <action name="actionUnload_simulator">

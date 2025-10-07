@@ -6,7 +6,18 @@
 #include <QWidget>
 #include <algorithm>
 #include <QLayout>
+#include "../mainwindow.h"
+#include <qapplication.h>
 namespace fs = std::filesystem;
+
+
+MainWindow* getMainWindow()
+{
+    foreach (QWidget *w, qApp->topLevelWidgets())
+    if (MainWindow* mainWin = qobject_cast<MainWindow*>(w))
+        return mainWin;
+    return nullptr;
+}
 
 std::string base64_encode(const std::string& input) {
     static const char encoding_table[] =

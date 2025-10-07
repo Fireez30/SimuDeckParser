@@ -7,7 +7,7 @@
 #include <QFile>
 deckvisualization::deckvisualization(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::deckvisualization) , parent(parent)
+    , ui(new Ui::deckvisualization)
 {
     ui->setupUi(this);
     this->picked_deck = "";
@@ -44,7 +44,8 @@ deckvisualization::~deckvisualization()
 }
 
 void deckvisualization::SwitchToMainMenu(){
-    this->parent.SwitchToMainMenu();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToMainMenu();
 }
 
 void deckvisualization::ClearDeckWidget(){
@@ -66,17 +67,6 @@ void deckvisualization::ClearDeckWidget(){
 }
 
 
-
-void deckvisualization::switchToUi(const QString &uiFilePath)
-{
-    QUiLoader loader;
-    QFile file(uiFilePath);
-    if (file.open(QFile::ReadOnly)) {
-        QWidget *newWidget = loader.load(&file, this);
-        file.close();
-        parent.setCentralWidget(newWidget);
-    }
-}
 
 
 void deckvisualization::DisplayPickedDeck(){

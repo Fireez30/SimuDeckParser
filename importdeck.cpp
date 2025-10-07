@@ -2,10 +2,11 @@
 #include "ui_importdeck.h"
 #include <QUiLoader>
 #include <QFile>
-
+#include "algorithms.h"
+#include "mainwindow.h"
 importdeck::importdeck(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::importdeck) , parent(parent)
+    , ui(new Ui::importdeck)
 {
     ui->setupUi(this);
     this->ui->EncoreDeckLinkField->clear();
@@ -33,17 +34,8 @@ void importdeck::ImportLink(){
 
 
 void importdeck::SwitchToMainMenu(){
-    this->parent.SwitchToMainMenu();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToMainMenu();
 }
 
 
-void importdeck::switchToUi(const QString &uiFilePath)
-{
-    QUiLoader loader;
-    QFile file(uiFilePath);
-    if (file.open(QFile::ReadOnly)) {
-        QWidget *newWidget = loader.load(&file, this);
-        file.close();
-        parent.setCentralWidget(newWidget);
-    }
-}

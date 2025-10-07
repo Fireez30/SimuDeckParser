@@ -1,8 +1,6 @@
 #ifndef MAINMENU_H
 #define MAINMENU_H
-
 #include <QWidget>
-#include "mainwindow.h"
 namespace Ui {
 class MainMenu;
 }
@@ -15,7 +13,6 @@ public:
     explicit MainMenu(QWidget *parent = nullptr);
     ~MainMenu();
     void LoadSimulator(std::string simulator_path);
-    MainWindow parent;
 
 private:
     Ui::MainMenu *ui;

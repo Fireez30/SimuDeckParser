@@ -2,6 +2,7 @@
 #define ALGORITHMS_H
 #include<string>
 #include<vector>
+#include "../mainwindow.h"
 #include <QLayout>
 class Card;
 class Serie;
@@ -54,7 +55,7 @@ std::string GetColorString(Color c);
 std::string GetCardTypeString(CardType t);
 std::string GetTriggerString(Trigger t);
 std::string GetTriggerPath(Trigger t);
-
+MainWindow* getMainWindow();
 
 //Determine pass separator using OS
 std::string base64_encode(const std::string& input);

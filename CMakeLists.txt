@@ -61,6 +61,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         deckvisualization.h deckvisualization.cpp
         mainmenu.h
         mainmenu.cpp
+        forms/mainmenu.ui
 
 
 

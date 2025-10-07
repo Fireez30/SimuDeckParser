@@ -22,7 +22,6 @@ namespace fs = std::filesystem;
 MainMenu::MainMenu(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::MainMenu)
-    , parent(parent)
 {
     ui->setupUi(this);
     this->ui->simulatorWidget->setVisible(true);
@@ -50,15 +49,18 @@ MainMenu::~MainMenu()
 }
 
 void MainMenu::SwitchToMainMenu(){
-    this->parent.SwitchToMainMenu();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToMainMenu();
 }
 
 void MainMenu::SwitchToCardList(){
-    this->parent.SwitchToCardList();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToCardList();
 }
 
 void MainMenu::SwitchToDeckEditor(){
-    this->parent.SwitchToDeckEditor();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToDeckEditor();
 }
 
 void MainMenu::OnExit(){
@@ -66,7 +68,8 @@ void MainMenu::OnExit(){
 }
 
 void MainMenu::SwitchToImportDeck(){
-    this->parent.SwitchToImportDeck();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToImportDeck();
 }
 
 

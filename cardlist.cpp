@@ -8,7 +8,6 @@
 cardlist::cardlist(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::cardlist)
-    , parent(parent)
 {
     ui->setupUi(this);
     std::vector<Serie*>* series = DataLoader::GetInstance()->getSeries();
@@ -160,8 +159,10 @@ void cardlist::RedisplayAfterFilter(){
     this->DisplayFilteredCards();
 }
 
+
 void cardlist::SwitchToMainMenu(){
-    this->parent.SwitchToMainMenu();
+    MainWindow* mw = getMainWindow();
+    mw->SwitchToMainMenu();
 }
 
 
