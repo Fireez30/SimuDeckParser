@@ -49,7 +49,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         utils/tinyxml2.cpp
         utils/tinyxml2.h
-        hoverlabel.h hoverlabel.cpp
+        hoverlabel.h
         utils/HTTPRequest.hpp utils/json.hpp
 
 

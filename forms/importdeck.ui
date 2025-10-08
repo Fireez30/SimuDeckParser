@@ -32,9 +32,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>90</y>
+      <y>80</y>
       <width>1921</width>
-      <height>951</height>
+      <height>991</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="ImportTextLayout">
@@ -44,7 +44,7 @@
         <property name="geometry">
          <rect>
           <x>120</x>
-          <y>10</y>
+          <y>0</y>
           <width>570</width>
           <height>30</height>
          </rect>
@@ -65,9 +65,9 @@
         <property name="geometry">
          <rect>
           <x>120</x>
-          <y>40</y>
+          <y>30</y>
           <width>571</width>
-          <height>841</height>
+          <height>881</height>
          </rect>
         </property>
        </widget>
@@ -75,19 +75,6 @@
      </item>
      <item>
       <widget class="QWidget" name="simulatorListWidget" native="true">
-       <widget class="QPushButton" name="startImport">
-        <property name="geometry">
-         <rect>
-          <x>430</x>
-          <y>890</y>
-          <width>201</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Import</string>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
@@ -99,11 +86,11 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Card list that will be loaded in the simulator</string>
+         <string>Card list that will be loaded in the simulator (manual modification possible in the field)</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -115,10 +102,26 @@
           <x>230</x>
           <y>40</y>
           <width>571</width>
-          <height>841</height>
+          <height>881</height>
          </rect>
         </property>
        </widget>
+       <widget class="QPushButton" name="startImport">
+        <property name="geometry">
+         <rect>
+          <x>410</x>
+          <y>930</y>
+          <width>221</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+       <zorder>encoreDecksList_2</zorder>
+       <zorder>label_2</zorder>
+       <zorder>startImport</zorder>
       </widget>
      </item>
     </layout>
@@ -129,7 +132,7 @@
       <x>0</x>
       <y>-1</y>
       <width>1921</width>
-      <height>91</height>
+      <height>80</height>
      </rect>
     </property>
     <widget class="QPushButton" name="closeImportPanelButton">
@@ -201,7 +204,7 @@
      <property name="geometry">
       <rect>
        <x>1190</x>
-       <y>10</y>
+       <y>0</y>
        <width>571</width>
        <height>41</height>
       </rect>
@@ -222,7 +225,7 @@
      <property name="geometry">
       <rect>
        <x>1190</x>
-       <y>50</y>
+       <y>40</y>
        <width>571</width>
        <height>41</height>
       </rect>
@@ -241,8 +244,6 @@
      </property>
     </widget>
    </widget>
-   <zorder>topWidget</zorder>
-   <zorder>horizontalWidget</zorder>
   </widget>
  </widget>
  <resources/>

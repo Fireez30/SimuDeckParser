@@ -92,6 +92,7 @@ void MainMenu::LoadSimulator(std::string simulator_path){
         std::string cards_folder = simulator_path+"StreamingAssets"+separator()+"Cards";
         // parsing all series
         DataLoader::GetInstance()->ParseSeries(cards_folder);
+        DataLoader::GetInstance()->ParseDecks(),
 
         this->ui->simulatorWidget->setVisible(false);
         this->ui->simulatorWidget->setAttribute(Qt::WA_TransparentForMouseEvents,true);

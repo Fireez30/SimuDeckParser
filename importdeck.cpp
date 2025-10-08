@@ -41,7 +41,7 @@ void importdeck::ImportLink(){
         deck_data.pop_back();
         this->deck_init_card_list = deck_data;
     }
-    this->ui->deckDateLabel->setText(QString().fromStdString(this->deck_date));
+    this->ui->deckDateLabel->setText(QString().fromStdString("Creation date : "+this->deck_date));
     this->ui->deckNameLabel->setText(QString().fromStdString(this->deck_name));
     std::string base_deck_to_display = "";
     for (std::string card : this->deck_init_card_list){

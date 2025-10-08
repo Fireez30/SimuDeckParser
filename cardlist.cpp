@@ -17,8 +17,11 @@ cardlist::cardlist(QWidget *parent)
         this->ui->seriePickBox->addItem(QString::fromStdString(sa->getName()));
     }
     this->ui->seriePickBox->setVisible(true);
-    this->ui->setPickBox->setVisible(true);
+    this->ui->setPickBox->setVisible(false);
+    this->ui->setLoadButton->setVisible(false);
+    this->ui->searchWidget->setVisible(false);
     this->ui->serieAndSetWidget->setVisible(true);
+    this->ui->CardWholeAreaWidget_2->setVisible(false);
     connect(this->ui->serieLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSeriePick()));
     connect(this->ui->setLoadButton, SIGNAL (clicked(bool)), this, SLOT (OnSetPick()));
     connect(this->ui->serieLoadCardsButton,SIGNAL (clicked(bool)),this, SLOT (OnSerieCardsPick()));
@@ -74,6 +77,7 @@ void cardlist::UpdateUi(){
     this->ui->setWidget_2->setVisible(this->display_pick_set);
     this->ui->CardWholeAreaWidget_2->setVisible(this->display_pick_set);
     this->ui->searchWidget->setVisible(this->display_pick_set);
+    this->ui->setLoadButton->setVisible(this->display_pick_set);
 
     this->ui->seriePickBox->setVisible(true);
     this->ui->setPickBox->setVisible(true);
