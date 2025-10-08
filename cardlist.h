@@ -30,6 +30,7 @@ public:
     void UnloadData(bool unload_set_wiget=true);
     void ApplyFilter();
     void UpdateUi();
+
 private:
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
@@ -57,12 +58,13 @@ private slots:
     void OnSerieCardsPick();
     void OnSetPick();
     void AddLevelFilter(bool active,int level);
-    void AddTraitFilter(bool active,std::string trait);
+    void AddTraitFilter(bool active,QStringList checked_traits);
     void AddCostFilter(bool active, int cost);
     void AddColorFilter(bool active,Color color);
     void AddTypeFilter(bool active, CardType type);
     void ApplyFilters();
     void SwitchToMainMenu();
+    void ResetTraitComboBox();
 };
 
 #endif // CARDLIST_H

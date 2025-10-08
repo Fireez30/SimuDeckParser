@@ -3,8 +3,11 @@
 #include "dataloader.h"
 #include <QUiLoader>
 #include <QFile>
+#include <QStandardItemModel>
+#include <QStandardItem>
 #include <iostream>
 #include <QCheckBox>
+#include <QStringList>
 cardlist::cardlist(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::cardlist)
@@ -28,7 +31,7 @@ cardlist::cardlist(QWidget *parent)
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->backButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
-
+    connect(this->ui->resetTraits, SIGNAL (clicked(bool)),this, SLOT(ResetTraitComboBox()));
     this->picked_serie = false;
     this->picked_sets = false;
 
@@ -91,7 +94,7 @@ void cardlist::ClearCardsWidget(bool clear_filters){
         clearLayout(this->ui->costFilterLayout_2);
         clearLayout(this->ui->colorFilterLayout_2);
         clearLayout(this->ui->typeFilterLayout);
-        clearLayout(this->ui->traitFilterLayout);
+        //clearLayout(this->ui->traitFilterLayout);
         clearLayout(this->ui->levelFilterLayout_2);
     }
 
@@ -240,24 +243,48 @@ void cardlist::AddColorFilter(bool active,Color color){
 
 }
 
-void cardlist::AddTraitFilter(bool active,std::string trait){
-    if (active){
-        // add to filter
-        if(std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(),trait) == this->current_trait_filters.end()){
-            this->current_trait_filters.push_back(trait);
+void cardlist::AddTraitFilter(bool active,QStringList checked_traits){
+    this->current_trait_filters = {};
+    for (QString trait : checked_traits){
+        if(std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(),trait.toStdString()) == this->current_trait_filters.end()){
+            this->current_trait_filters.push_back(trait.toStdString());
 
         }
     }
-    else
+}
+
+QStringList getCheckedItems(QStandardItemModel *model) {
+    QStringList selected;
+    for (int i = 0; i < model->rowCount(); ++i) {
+        QStandardItem *item = model->item(i);
+        if (item->checkState() == Qt::Checked) {
+            selected << item->text();
+        }
+    }
+    return selected;
+}
+
+void cardlist::ResetTraitComboBox(){
+    QListView *listView = new QListView(this->ui->traitComboBox);
+    this->ui->traitComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->traitComboBox);
+    this->ui->traitComboBox->setModel(model);
+    for (int i = 0; i < this->available_trait_filters.size(); i++)
     {
-        if(std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(),trait) != this->current_trait_filters.end()){
-            this->current_trait_filters.erase(std::remove(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait), this->current_trait_filters.end());
-
-        }
-        // remove from filter
-
-
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(this->available_trait_filters[i]));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData(Qt::Checked, Qt::CheckStateRole);
+        model->appendRow(item);
     }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddTraitFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddTraitFilter(true,checked);
 }
 
 void cardlist::FillFiltersUsingSet(){
@@ -346,8 +373,13 @@ void cardlist::FillFiltersUsingSet(){
     std::cout << std::endl;
 
 
+
+    this->ResetTraitComboBox();
+    //this->ui->traitComboBox->setModel(model);
+    //this->ui->traitComboBox->setModel(model);
+
     std::cout << "Available trait filters"  << std::endl;
-    for (std::string l : this->available_trait_filters){
+    /*for (std::string l : this->available_trait_filters){
         QCheckBox* checkbox = new QCheckBox(QString::fromStdString(l));
         this->ui->traitFilterLayout->addWidget(checkbox);
         checkbox->setChecked(true);
@@ -358,7 +390,7 @@ void cardlist::FillFiltersUsingSet(){
         });
         std::cout << l << " , ";
     }
-    this->ui->groupBox_5->setLayout(this->ui->traitFilterLayout);
+    this->ui->groupBox_5->setLayout(this->ui->traitFilterLayout);*/
 
     std::cout << std::endl;
 

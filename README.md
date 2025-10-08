@@ -87,9 +87,21 @@ PS : during import, if a card is not is not found by the tool, it will search fo
 
 Soon : 
 
+ - UI updates (alignemnts, better design, responsiveness ?)
+ - Import from encore decks : only display cards that changed
+ - add a feedback when imported a deck (did the import run well or failed ?)
+ - add a button in card list, to display all cards that are in synergy with the card (either ccx / resonate, etc)
+ 		-> should replace (") and (') with nothing
+ 		-> a quick, efficient way to search could be first to plug to the text search box automatically
+ - adding the possibility to create a compact deck list, with only 1 image of each card + the count as a text
+ - add a filter on trigger 
+ - add a filter on soul count
+ - transform the trait filter panel into a dropdown of checkboxes
+ - add a panel in deck editor , to display deck stats (color, cost, traits if possible, triggers, type , level , soul count)
+ - add a menu that allows to tag cards in a deck, to create group that will be saved in the settings
  - setup CI/CD
  - support for windows
- - UI updates (alignemnts, better design, responsiveness ?)
+
 
 Longer : 
 
