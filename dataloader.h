@@ -34,6 +34,7 @@ public:
     std::vector<std::string> ParseDeckFromJson(json deck_json,bool print);
     std::vector<std::string> AdaptDeckList(std::vector<std::string> deck_list);
     bool AddDeckToSimulator(std::string name,std::string date, std::vector<std::string> card_list);
+    std::string GetCardToPrint();
 };
 
 #endif // DATALOADER_H

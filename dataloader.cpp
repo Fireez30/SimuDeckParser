@@ -14,7 +14,7 @@
 #include <ctime>
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-std::string card_to_print = "KS/W49-E073";
+std::string card_to_print = "AW/S43-E027";
 
 json SendRequest(std::string url){
 
@@ -454,6 +454,10 @@ Deck* DataLoader::LoadDeck(std::string target_deck_name)
         }
     }
     return nullptr;
+}
+
+std::string DataLoader::GetCardToPrint(){
+    return card_to_print;
 }
 
 std::map<std::string,Deck*>* DataLoader::ParseDecks(){

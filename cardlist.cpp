@@ -445,6 +445,7 @@ void cardlist::FillCards(){
 
 void cardlist::ApplyFilter(){
     this->current_cards_to_display = {};
+    std::string card_to_print = DataLoader::GetInstance()->GetCardToPrint();
     for (Card c : this->all_cards_available){
         // apply filter by not adding filtered cards
         if (this->ui->searchFilterEdit->toPlainText() != ""){
@@ -466,9 +467,14 @@ void cardlist::ApplyFilter(){
                  std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
         {
             bool include_due_to_traits = false;
-            for (std::string trait : c.getTraits()){
-                if (std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait) != this->current_trait_filters.end()){
-                    include_due_to_traits = true;
+            if (this->current_trait_filters.size() == this->available_trait_filters.size()){
+                include_due_to_traits = true;
+            }
+            else {
+                for (std::string trait : c.getTraits()){
+                    if (std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait) != this->current_trait_filters.end()){
+                        include_due_to_traits = true;
+                    }
                 }
             }
 
