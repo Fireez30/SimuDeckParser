@@ -551,6 +551,15 @@ void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
                     if (key == card_to_print){std::cout << "Found name " << name << " for key " << card_to_print << std::endl;}
                 }
 
+                else if (str.substr(0,5) == "Name "){
+                    name= trim(str.substr(5,std::string::npos));
+                    if (key == card_to_print){std::cout << "Found name " << name << " for key " << card_to_print << std::endl;}
+                }
+
+                else if (trim(str) == "Army"){
+                    text += "Cont: You can have any number of cards with the same name as this card in your Deck. \n";
+                }
+
                 else if (str.substr(0,6) == "Color "){
 
                     std::string temp_color = trim(str.substr(6,std::string::npos));
@@ -915,7 +924,7 @@ void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
                 else if (str.substr(0,7) == "EndCard"){
                     path = retrieveCardPath(set_path,key,alternate_cards_folder);
                     //std::cout << "found path for card " << key << " = " << path << std::endl;
-                    if (type == CardType::CLIMAX){
+                    if (type == CardType::CLIMAX || type == CardType::EVENT){
                         soul_count = 0;
                     }
                     cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //

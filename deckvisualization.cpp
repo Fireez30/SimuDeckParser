@@ -112,7 +112,7 @@ void deckvisualization::DisplayPickedDeck(){
                 //connect (signalmapper , SIGNAL(mapped(Card)), this, SLOT(ShowCardToSidePanel(Card)));
                 //connect(imgLabel, SIGNAL(clicked()),this,[this,value](){this->ShowCardToSidePanel(value);});
                 //imgLabel->setPixmap(pix.scaled(220, 310,Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                imgLabel->setFixedSize(154, 213); // add padding around thumbnail
+                imgLabel->setFixedSize(146, 202); // add padding around thumbnail
                 this->ui->cardGrid->addWidget(imgLabel,row,col);
                 if (++col >= columns) {
                     col = 0;
