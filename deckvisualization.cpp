@@ -77,7 +77,7 @@ void deckvisualization::DisplayPickedDeck(){
     const int columns = 10;
     Deck* de = DataLoader::GetInstance()->getDeck(this->picked_deck);
     if (de != nullptr){
-        std::vector<Orders> deck_orders = {Orders::TYPE_ASCENDING,Orders::LEVEL_ASCENDING,Orders::COST_ASCENDING,Orders::POWER_ASCENDING,Orders::COLOR};
+        std::vector<Orders> deck_orders = {Orders::TYPE_ASCENDING,Orders::LEVEL_ASCENDING,Orders::COST_ASCENDING,Orders::COLOR};
         std::vector<Card> card_list = de->getCardList();
         SortFilteredCards(&card_list,deck_orders);
         for (Card value : card_list){
