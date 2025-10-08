@@ -13,7 +13,6 @@ class importdeck : public QWidget
 public:
     explicit importdeck(QWidget *parent = nullptr);
     ~importdeck();
-
 private:
     Ui::importdeck *ui;
     std::string deck_name;

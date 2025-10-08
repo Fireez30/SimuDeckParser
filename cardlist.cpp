@@ -29,9 +29,8 @@ cardlist::cardlist(QWidget *parent)
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->backButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
 
-    this->display_load_series = true;
-    this->display_pick_set = false;
-    this->display_cards = false;
+    this->picked_serie = false;
+    this->picked_sets = false;
 
     this->currentCardsImages={};
     this->current_cards_to_display = {};
@@ -55,14 +54,8 @@ cardlist::cardlist(QWidget *parent)
     this->current_cost_filters = {};
     this->current_color_filters = {};
     this->current_type_filters = {};
-
-
     this->current_trait_filters = {};
 
-    //display state
-    this->display_load_series = true;
-    this->display_pick_set = false;
-    this->display_cards = false;
 }
 
 
@@ -74,13 +67,13 @@ cardlist::~cardlist()
 void cardlist::UpdateUi(){
     this->ui->serieAndSetWidget->setVisible(true);
     this->ui->serieWidget_2->setVisible(true);
-    this->ui->setWidget_2->setVisible(this->display_pick_set);
-    this->ui->CardWholeAreaWidget_2->setVisible(this->display_pick_set);
-    this->ui->searchWidget->setVisible(this->display_pick_set);
-    this->ui->setLoadButton->setVisible(this->display_pick_set);
-
+    this->ui->setWidget_2->setVisible(this->picked_serie);
+    this->ui->CardWholeAreaWidget_2->setVisible(this->picked_sets);
+    this->ui->searchWidget->setVisible(this->picked_sets);
+    this->ui->setLoadButton->setVisible(this->picked_serie);
+    this->ui->ApplyFiltersButton->setVisible(this->picked_sets);
     this->ui->seriePickBox->setVisible(true);
-    this->ui->setPickBox->setVisible(true);
+    this->ui->setPickBox->setVisible(this->picked_serie);
     this->ui->serieAndSetWidget->setVisible(true);
 }
 
@@ -141,9 +134,8 @@ void cardlist::UnloadData(bool unload_set_widget){
     if (unload_set_widget){
         this->choosen_serie = nullptr;
         this->choosen_sets  = {};
-        this->display_load_series = true;
-        this->display_pick_set = false;
-        this->display_cards = false;
+        this->picked_serie = false;
+        this->picked_sets = false;
 
         this->ui->seriePickBox->clear();
         this->ui->setPickBox->clear();
@@ -492,7 +484,9 @@ void cardlist::OnSeriePick(){
     std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
     //QMessageBox::information(this, "Item Selection",
     //                         this->m_series_dropdown->currentText());
-    this->display_pick_set = true;
+
+    this->picked_serie = true;
+    this->picked_sets = false;
     this->UpdateUi();
     this->ui->setPickBox->clear();
     std::vector<Serie*>* series = DataLoader::GetInstance()->getSeries();
@@ -520,7 +514,8 @@ void cardlist::OnSetPick(){
     this->UnloadData(false);
 
     std::string choosen_set_name = this->ui->setPickBox->currentText().toStdString();
-    this->display_cards = true;
+    this->picked_serie = true;
+    this->picked_sets = true;
     this->UpdateUi();
     this->choosen_sets.clear();
     if (this->choosen_serie != nullptr){
@@ -545,8 +540,9 @@ void cardlist::OnSerieCardsPick(){
     std::string choosen_serie_name = this->ui->seriePickBox->currentText().toStdString();
     //QMessageBox::information(this, "Item Selection",
     //                         this->m_series_dropdown->currentText());
-    this->display_pick_set = true;
-    this->display_cards = true;
+
+    this->picked_serie = true;
+    this->picked_sets = true;
     this->UpdateUi();
     this->ui->setPickBox->clear();
     this->choosen_sets.clear();

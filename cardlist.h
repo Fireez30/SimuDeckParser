@@ -33,9 +33,8 @@ public:
 private:
     Serie* choosen_serie;
     std::vector<Set*> choosen_sets;
-    bool display_load_series;
-    bool display_pick_set;
-    bool display_cards;
+    bool picked_serie;
+    bool picked_sets;
     Ui::cardlist *ui;
     std::vector<Card> all_cards_available;
     std::vector<CardType> available_type_filters;

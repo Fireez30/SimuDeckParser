@@ -43,6 +43,8 @@ deckvisualization::~deckvisualization()
     delete ui;
 }
 
+
+
 void deckvisualization::SwitchToMainMenu(){
     MainWindow* mw = getMainWindow();
     mw->SwitchToMainMenu();
@@ -101,17 +103,6 @@ void deckvisualization::DisplayPickedDeck(){
                 connect(imgLabel,&HoverLabel::mouseDoubleClicked, [this]() {
                     this->UnlockCardPanel();
                 });
-                //QObject::connect(mapper,SIGNAL(mapped(QWidget *)),this,SLOT(mySlot(QWidget *)));
-
-                //QObject::connect(imgLabel, SIGNAL(clicked()),mapper,SLOT(ShowCardToSidePanel(value)));
-                //mapper->setMapping(imgLabel, imgLabel);
-
-                //QSignalMapper* signalmapper = new QSignalMapper();
-                //connect (imgLabel, SIGNAL(triggered()), signalmapper, SLOT(map())) ;
-                //signalmapper ->setMapping (imgLabel, value);
-                //connect (signalmapper , SIGNAL(mapped(Card)), this, SLOT(ShowCardToSidePanel(Card)));
-                //connect(imgLabel, SIGNAL(clicked()),this,[this,value](){this->ShowCardToSidePanel(value);});
-                //imgLabel->setPixmap(pix.scaled(220, 310,Qt::KeepAspectRatio, Qt::SmoothTransformation));
                 imgLabel->setFixedSize(146, 202); // add padding around thumbnail
                 this->ui->cardGrid->addWidget(imgLabel,row,col);
                 if (++col >= columns) {

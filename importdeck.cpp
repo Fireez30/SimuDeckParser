@@ -25,6 +25,7 @@ importdeck::~importdeck()
 }
 
 
+
 void importdeck::ImportLink(){
     this->ui->horizontalWidget->setVisible(true);
     std::vector<std::string> deck_data = {};
