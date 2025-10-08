@@ -57,14 +57,18 @@ private slots:
     void OnSeriePick();
     void OnSerieCardsPick();
     void OnSetPick();
-    void AddLevelFilter(bool active,int level);
+    void AddLevelFilter(bool active,QStringList checked_levels);
     void AddTraitFilter(bool active,QStringList checked_traits);
-    void AddCostFilter(bool active, int cost);
-    void AddColorFilter(bool active,Color color);
-    void AddTypeFilter(bool active, CardType type);
+    void AddCostFilter(bool active,QStringList checked_costs);
+    void AddColorFilter(bool active,QStringList checked_colors);
+    void AddTypeFilter(bool active,QStringList checked_types);
     void ApplyFilters();
     void SwitchToMainMenu();
-    void ResetTraitComboBox();
+    void ResetCostComboBox(bool select=true);
+    void ResetTraitComboBox(bool select=true);
+    void ResetLevelComboBox(bool select=true);
+    void ResetColorComboBox(bool select=true);
+    void ResetTypeComboBox(bool select=true);
 };
 
 #endif // CARDLIST_H

@@ -553,6 +553,33 @@ std::string GetColorString(Color c){
     }
 }
 
+Color GetStringColor(std::string c){
+    if (c == "Yellow"){
+        return Color::YELLOW;
+    }
+
+    if (c == "Blue"){
+        return Color::BLUE;
+    }
+
+    if (c == "Red"){
+        return Color::RED;
+    }
+
+    if (c == "Green"){
+        return Color::GREEN;
+    }
+
+    if (c == "Purple"){
+        return Color::PURPLE;
+    }
+
+    if (c == "All"){
+        return Color::ALL;
+    }
+    else return Color::NONE;
+}
+
 void replace_in_string(std::string &str, const std::string &a, const std::string &b) {
     size_t pos = 0;
     while ((pos = str.find(a, pos)) != std::string::npos) {
@@ -626,6 +653,18 @@ std::string GetCardTypeString(CardType t){
     }
 }
 
+CardType GetStringCardType(std::string t){
+    if (t == "Character"){
+        return CardType::CHARACTER;
+    }
+
+    if (t == "Event"){
+        return CardType::EVENT;
+    }
+
+    return CardType::CLIMAX;
+
+}
 
 
 

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <QCheckBox>
 #include <QStringList>
+#include <QPushButton>
 cardlist::cardlist(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::cardlist)
@@ -31,7 +32,16 @@ cardlist::cardlist(QWidget *parent)
     connect(this->ui->ApplyFiltersButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->searchButton, SIGNAL (clicked(bool)),this, SLOT (ApplyFilters()));
     connect(this->ui->backButton, SIGNAL (clicked(bool)),this, SLOT (SwitchToMainMenu()));
-    connect(this->ui->resetTraits, SIGNAL (clicked(bool)),this, SLOT(ResetTraitComboBox()));
+    connect(this->ui->selectAllTrait, &QPushButton::clicked,this, [this]() {this->ResetTraitComboBox(true);});
+    connect(this->ui->unselectAllTrait, &QPushButton::clicked,this, [this]() {this->ResetTraitComboBox(false);});
+    connect(this->ui->selectAllCost, &QPushButton::clicked,this, [this]() {this->ResetCostComboBox(true);});
+    connect(this->ui->unselectAllCost, &QPushButton::clicked,this, [this]() {this->ResetCostComboBox(false);});
+    connect(this->ui->selectAllLevel, &QPushButton::clicked,this, [this]() {this->ResetLevelComboBox(true);});
+    connect(this->ui->unselectAllLevel, &QPushButton::clicked,this, [this]() {this->ResetLevelComboBox(false);});
+    connect(this->ui->selectAllType, &QPushButton::clicked,this, [this]() {this->ResetTypeComboBox(true);});
+    connect(this->ui->unselectAllType, &QPushButton::clicked,this, [this]() {this->ResetTypeComboBox(false);});
+    connect(this->ui->selectAllColor, &QPushButton::clicked,this, [this]() {this->ResetColorComboBox(true);});
+    connect(this->ui->unselectAllColor, &QPushButton::clicked,this, [this]() {this->ResetColorComboBox(false);});
     this->picked_serie = false;
     this->picked_sets = false;
 
@@ -89,16 +99,8 @@ void cardlist::ClearCardsWidget(bool clear_filters){
         }
         delete item;  // Delete the item itself
     }
+
     this->ui->cardGridWidget_2->clear();
-    if (clear_filters){
-        clearLayout(this->ui->costFilterLayout_2);
-        clearLayout(this->ui->colorFilterLayout_2);
-        clearLayout(this->ui->typeFilterLayout);
-        //clearLayout(this->ui->traitFilterLayout);
-        clearLayout(this->ui->levelFilterLayout_2);
-    }
-
-
     this->cards_items = {};
 }
 
@@ -170,78 +172,49 @@ void cardlist::ApplyFilters(){
 }
 
 
-void cardlist::AddCostFilter(bool active,int level){
-    if (active){
-        // add to filter
-        if(std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(),level) == this->current_cost_filters.end()){
-            this->current_cost_filters.push_back(level);
+void cardlist::AddCostFilter(bool active,QStringList checked_costs){
+    this->current_cost_filters = {};
+    for (QString cost : checked_costs){
+        if(std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(),std::stoi(cost.toStdString())) == this->current_cost_filters.end()){
+            this->current_cost_filters.push_back(std::stoi(cost.toStdString()));
 
         }
-    }
-    else
-    {
-        if(std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(),level) != this->current_cost_filters.end()){
-            this->current_cost_filters.erase(std::remove(this->current_cost_filters.begin(), this->current_cost_filters.end(), level), this->current_cost_filters.end());
-        }
-        // remove from filter
     }
 }
 
-void cardlist::AddLevelFilter(bool active,int level){
-    if (active){
-        // add to filter
-        if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) == this->current_level_filters.end()){
-            this->current_level_filters.push_back(level);
+void cardlist::AddLevelFilter(bool active,QStringList checked_levels){
+    this->current_level_filters = {};
+    for (QString lvl : checked_levels){
+        if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),std::stoi(lvl.toStdString())) == this->current_level_filters.end()){
+            this->current_level_filters.push_back(std::stoi(lvl.toStdString()));
 
         }
-    }
-    else
-    {
-        if(std::find(this->current_level_filters.begin(), this->current_level_filters.end(),level) != this->current_level_filters.end()){
-            this->current_level_filters.erase(std::remove(this->current_level_filters.begin(), this->current_level_filters.end(), level), this->current_level_filters.end());
-
-        }
-        // remove from filter
-
-
     }
 }
 
-void cardlist::AddTypeFilter(bool active, CardType type){
-    if (active){
-        // add to filter
-        if(std::find(this->current_type_filters.begin(), this->current_type_filters.end(),type) == this->current_type_filters.end()){
-            this->current_type_filters.push_back(type);
-        }
-    }
-    else
-    {
-        if(std::find(this->current_type_filters.begin(), this->current_type_filters.end(),type) != this->current_type_filters.end()){
-            this->current_type_filters.erase(std::remove(this->current_type_filters.begin(), this->current_type_filters.end(), type), this->current_type_filters.end());
-        }
-        // remove from filter
+void cardlist::AddColorFilter(bool active,QStringList checked_colors){
+    this->current_color_filters = {};
+    for (QString lvl : checked_colors){
+        if(std::find(this->current_color_filters.begin(), this->current_color_filters.end(),GetStringColor(lvl.toStdString())) == this->current_color_filters.end()){
+            this->current_color_filters.push_back(GetStringColor(lvl.toStdString()));
 
-
+        }
     }
 }
-void cardlist::AddColorFilter(bool active,Color color){
-    if (active){
-        // add to filter
-        if(std::find(this->current_color_filters.begin(), this->current_color_filters.end(),color) == this->current_color_filters.end()){
-            this->current_color_filters.push_back(color);
+
+
+void cardlist::AddTypeFilter(bool active,QStringList checked_types){
+    this->current_type_filters = {};
+    for (QString lvl : checked_types){
+        if(std::find(this->current_type_filters.begin(), this->current_type_filters.end(),GetStringCardType(lvl.toStdString())) == this->current_type_filters.end()){
+            this->current_type_filters.push_back(GetStringCardType(lvl.toStdString()));
+
         }
     }
-    else
-    {
-        if(std::find(this->current_color_filters.begin(), this->current_color_filters.end(),color) != this->current_color_filters.end()){
-            this->current_color_filters.erase(std::remove(this->current_color_filters.begin(), this->current_color_filters.end(), color), this->current_color_filters.end());
-        }
-        // remove from filter
-
-
-    }
-
 }
+
+
+
 
 void cardlist::AddTraitFilter(bool active,QStringList checked_traits){
     this->current_trait_filters = {};
@@ -264,7 +237,99 @@ QStringList getCheckedItems(QStandardItemModel *model) {
     return selected;
 }
 
-void cardlist::ResetTraitComboBox(){
+void cardlist::ResetTypeComboBox(bool select){
+    QListView *listView = new QListView(this->ui->typeComboBox);
+    this->ui->typeComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->typeComboBox);
+    this->ui->typeComboBox->setModel(model);
+    for (int i = 0; i < this->available_type_filters.size(); i++)
+    {
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(GetCardTypeString(this->available_type_filters[i])));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
+        model->appendRow(item);
+    }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddTypeFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddTypeFilter(true,(select)?checked:QStringList());
+}
+
+void cardlist::ResetColorComboBox(bool select){
+    QListView *listView = new QListView(this->ui->colorComboBox);
+    this->ui->colorComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->colorComboBox);
+    this->ui->colorComboBox->setModel(model);
+    for (int i = 0; i < this->available_color_filters.size(); i++)
+    {
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(GetColorString(this->available_color_filters[i])));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
+        model->appendRow(item);
+    }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddColorFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddColorFilter(true,(select)?checked:QStringList());
+}
+
+void cardlist::ResetLevelComboBox(bool select){
+    QListView *listView = new QListView(this->ui->levelComboBox);
+    this->ui->levelComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->levelComboBox);
+    this->ui->levelComboBox->setModel(model);
+    for (int i = 0; i < this->available_level_filters.size(); i++)
+    {
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(std::to_string(this->available_level_filters[i])));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
+        model->appendRow(item);
+    }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddLevelFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddLevelFilter(true,(select)?checked:QStringList());
+}
+
+void cardlist::ResetCostComboBox(bool select){
+    QListView *listView = new QListView(this->ui->costComboBox);
+    this->ui->costComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->costComboBox);
+    this->ui->costComboBox->setModel(model);
+    for (int i = 0; i < this->available_cost_filters.size(); i++)
+    {
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(std::to_string(this->available_cost_filters[i])));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
+        model->appendRow(item);
+    }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddCostFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddCostFilter(true,(select)?checked:QStringList());
+}
+
+void cardlist::ResetTraitComboBox(bool select){
     QListView *listView = new QListView(this->ui->traitComboBox);
     this->ui->traitComboBox->setView(listView);
 
@@ -274,7 +339,7 @@ void cardlist::ResetTraitComboBox(){
     {
         QStandardItem *item = new QStandardItem(QString("").fromStdString(this->available_trait_filters[i]));
         item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Checked, Qt::CheckStateRole);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
         model->appendRow(item);
     }
 
@@ -284,7 +349,7 @@ void cardlist::ResetTraitComboBox(){
     });
 
     QStringList checked = getCheckedItems(model);
-    AddTraitFilter(true,checked);
+    AddTraitFilter(true,(select)?checked:QStringList());
 }
 
 void cardlist::FillFiltersUsingSet(){
@@ -356,109 +421,11 @@ void cardlist::FillFiltersUsingSet(){
     std::sort(this->available_trait_filters.begin(),this->available_trait_filters.end());
     std::sort(this->current_trait_filters.begin(),this->current_trait_filters.end());
 
-    std::cout << "Available level filters"  << std::endl;
-    for (int l : this->available_level_filters){
-        QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
-        this->ui->levelFilterLayout_2->addWidget(checkbox);
-        checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
-            bool checked = (state == Qt::Checked);
-            // Call your function with the checked state and the value
-            this->AddLevelFilter(checked, l);
-        });
-        std::cout << l << " , ";
-    }
-    this->ui->groupBox_2->setLayout(this->ui->levelFilterLayout_2);
-
-    std::cout << std::endl;
-
-
-
+    this->ResetLevelComboBox();
     this->ResetTraitComboBox();
-    //this->ui->traitComboBox->setModel(model);
-    //this->ui->traitComboBox->setModel(model);
-
-    std::cout << "Available trait filters"  << std::endl;
-    /*for (std::string l : this->available_trait_filters){
-        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(l));
-        this->ui->traitFilterLayout->addWidget(checkbox);
-        checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
-            bool checked = (state == Qt::Checked);
-            // Call your function with the checked state and the value
-            this->AddTraitFilter(checked, l);
-        });
-        std::cout << l << " , ";
-    }
-    this->ui->groupBox_5->setLayout(this->ui->traitFilterLayout);*/
-
-    std::cout << std::endl;
-
-
-    std::cout << "Available type filters"  << std::endl;
-    for (CardType l : this->available_type_filters){
-        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(GetCardTypeString(l)));
-        this->ui->typeFilterLayout->addWidget(checkbox);
-        checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
-            bool checked = (state == Qt::Checked);
-            // Call your function with the checked state and the value
-            this->AddTypeFilter(checked, l);
-        });
-        std::cout << GetCardTypeString(l) << " , ";
-    }
-    this->ui->groupBox_4->setLayout(this->ui->typeFilterLayout);
-    std::cout << std::endl;
-
-
-    std::cout << "Available color filters"  << std::endl;
-    for (Color l : this->available_color_filters){
-        QCheckBox* checkbox = new QCheckBox(QString::fromStdString(GetColorString(l)));
-        this->ui->colorFilterLayout_2->addWidget(checkbox);
-        checkbox->setChecked(true);
-        QPalette p = checkbox->palette();
-        p.setColor(QPalette::Active, QPalette::WindowText, GetQColorFromCardColor(l));
-        checkbox->setPalette(p);
-        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
-            bool checked = (state == Qt::Checked);
-            // Call your function with the checked state and the value
-            this->AddColorFilter(checked, l);
-        });
-        std::cout << GetColorString(l) << " , ";
-    }
-    this->ui->groupBox_3->setLayout(this->ui->colorFilterLayout_2);
-    std::cout << std::endl;
-
-    std::cout << "Current color filters"  << std::endl;
-    for (Color l : this->current_color_filters){
-        std::cout <<  GetColorString(l) << " , ";
-    }
-    std::cout << std::endl;
-
-
-    std::cout << "Available cost filters"  << std::endl;
-
-    for (int l : this->available_cost_filters){
-        QCheckBox* checkbox = new QCheckBox(QString("%1").arg(l));
-        this->ui->costFilterLayout_2->addWidget(checkbox);
-        checkbox->setChecked(true);
-        QObject::connect(checkbox, &QCheckBox::checkStateChanged, [l,this](int state) {
-            bool checked = (state == Qt::Checked);
-            // Call your function with the checked state and the value
-            this->AddCostFilter(checked, l);
-        });
-        std::cout << l << " , ";
-    }
-    this->ui->groupBox->setLayout(this->ui->costFilterLayout_2);
-    std::cout << std::endl;
-
-    std::cout << "Current cost filters"  << std::endl;
-    for (int l : this->current_cost_filters){
-        std::cout << l << " , ";
-    }
-    std::cout << std::endl;
-
-
+    this->ResetColorComboBox();
+    this->ResetCostComboBox();
+    this->ResetTypeComboBox();
 }
 
 

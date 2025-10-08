@@ -52,7 +52,9 @@ enum class Orders {
 
 
 std::string GetColorString(Color c);
+Color GetStringColor(std::string c);
 std::string GetCardTypeString(CardType t);
+CardType GetStringCardType(std::string t);
 std::string GetTriggerString(Trigger t);
 std::string GetTriggerPath(Trigger t);
 MainWindow* getMainWindow();
