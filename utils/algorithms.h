@@ -7,6 +7,12 @@
 class Card;
 class Serie;
 
+struct ParsedDeck{
+    std::string name;
+    std::string date;
+    std::vector<std::string> cards;
+};
+
 enum class Color {
     YELLOW,
     BLUE,
@@ -56,6 +62,7 @@ Color GetStringColor(std::string c);
 std::string GetCardTypeString(CardType t);
 CardType GetStringCardType(std::string t);
 std::string GetTriggerString(Trigger t);
+Trigger GetStringTrigger(std::string t);
 std::string GetTriggerPath(Trigger t);
 MainWindow* getMainWindow();
 
@@ -70,7 +77,7 @@ void replace_in_string(std::string &str, const std::string &a, const std::string
 std::vector<std::string> split(const std::string &s, char delimiter);
 bool findSubstringIgnoreCase(const std::string& X, const std::string& Y);
 std::string removeTrailingAlphas(const std::string& input);
-std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys);
+std::vector<Card*> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys);
 void clearLayout(QLayout* layout);
-void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order);
+void SortFilteredCards(std::vector<Card*>* cards_to_sort,std::vector<Orders> order);
 #endif // ALGORITHMS_H

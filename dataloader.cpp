@@ -14,7 +14,7 @@
 #include <ctime>
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-std::string card_to_print = "AW/S43-E027";
+std::string card_to_print = "none";
 
 json SendRequest(std::string url){
 
@@ -378,31 +378,14 @@ Deck* DataLoader::LoadDeckFromList(std::vector<std::string> card_list,std::strin
     std::map<std::string,Deck*>* decks = dataloader_->getDecks();
     itdeck = decks->find (deck_name);
     //std::cout << "after declaration of iterator" << std::endl;
-    std::vector<std::string> found_codes =  TransformToExistingCardKey((*dataloader_->getSeries()),card_list);
+    std::vector<Card*> found_cards =  TransformToExistingCardKey((*dataloader_->getSeries()),card_list);
     if (itdeck != decks->end()){
-        std::cout << "card codes length : " << card_list.size()  << std::endl;
         //std::cout << "after getting codes" << std::endl;
-        for (std::string card : found_codes){
-            bool found = false;
-            //std::cout << "card " << card << std::endl;
-            if (trim(card) != ""){
-                for (Serie* s : series){ // Do not keep this in final release , too slow.
-                    //std::cout << "is it in serie " << s.getName() << std::endl;
-                    if (!found){
-                        for (Set set : s->getAllSets()){
-                            //std::cout << "is it in set " << set.getName() << std::endl;
-                            if (!found && set.containsCard(card)){
-                                Card* c = set.getCard(card);
-                                //std::cout << "retrieved card" << std::endl;
-                                (*itdeck).second->AddCard(*c);
-                                //std::cout << "added card" << std::endl;
-                                found = true;
-                            }
-                        }
-                    }
-                }
+        for (Card* card : found_cards){
+            if (card != nullptr){
+                (*itdeck).second->AddCard(card);
             }
-            if (!found){
+            else {
                 std::cout << " Didn't find anything related to : " << card << std::endl;
             }
         }
@@ -487,9 +470,9 @@ std::map<std::string,Deck*>* DataLoader::ParseDecks(){
     return dataloader_->getDecks();
 }
 
-void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
-    std::map<std::string,Card>& cards = set.getCards();
-    std::string set_path = set.getPath();
+void DataLoader::ParseCards(Set* set,std::string alternate_cards_folder){
+    std::map<std::string,Card*>* cards = set->getCards();
+    std::string set_path = set->getPath();
     std::string card_data = set_path+separator()+"CardData.txt";
     if (fs::exists(card_data)){
         std::ifstream file(card_data);
@@ -600,32 +583,32 @@ void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
                     if (key == card_to_print){std::cout << "Found clone " << cloned_card_name << " for key " << card_to_print << std::endl;}
 
                     //std::cout << key << " cloned from " << cloned_card_name << std::endl;
-                    std::map<std::string,Card>::iterator it;
-                    for (it = cards.begin(); it != cards.end(); it++){
+                    std::map<std::string,Card*>::iterator it;
+                    for (it = cards->begin(); it != cards->end(); it++){
                         std::string code = (*it).first;
-                        Card c  = (*it).second;
-                        if (c.getKey() == cloned_card_name){
+                        Card* c  = (*it).second;
+                        if (c->getKey() == cloned_card_name){
                             //std::cout << "found cloned card" << c.getKey() << std::endl;
-                            type=c.getCardType();
-                            name = c.getName();
-                            path = c.getImagePath();
-                            color = c.getColor();
-                            level = c.getLevel();
-                            cost = c.getCost();
-                            power = c.getPower();
+                            type=c->getCardType();
+                            name = c->getName();
+                            path = c->getImagePath();
+                            color = c->getColor();
+                            level = c->getLevel();
+                            cost = c->getCost();
+                            power = c->getPower();
                             trigger1 = Trigger::NONE;
-                            if (c.getTriggers().size()>0){
-                                trigger1 = c.getTriggers().at(0);
+                            if (c->getTriggers().size()>0){
+                                trigger1 = c->getTriggers().at(0);
                             }
                             trigger2 = Trigger::NONE;
-                            if (c.getTriggers().size()>1){
-                                trigger2 = c.getTriggers().at(1);
+                            if (c->getTriggers().size()>1){
+                                trigger2 = c->getTriggers().at(1);
                             }
 
-                            soul_count = c.getSoulCount();
-                            code = c.getSimulatorCode();
-                            text = c.getText();
-                            for (std::string trait : c.getTraits()){
+                            soul_count = c->getSoulCount();
+                            code = c->getSimulatorCode();
+                            text = c->getText();
+                            for (std::string trait : c->getTraits()){
                                 if (trait1 == ""){
                                     trait1 = trait;
                                 }
@@ -931,9 +914,9 @@ void DataLoader::ParseCards(Set& set,std::string alternate_cards_folder){
                     if (type == CardType::CLIMAX || type == CardType::EVENT){
                         soul_count = 0;
                     }
-                    cards[key] = Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3); //
+                    cards->insert_or_assign(key,new Card(key,type,name,path,color,level,cost,power,trigger1,trigger2,soul_count,code,text,trait1,trait2,trait3)); //
                     if (key == card_to_print){
-                        cards[key].print();
+                        cards->at(key)->print();
                     }
                     key = "";
                     type=CardType::CHARACTER;
@@ -968,7 +951,7 @@ void DataLoader::ParseSets(Serie* serie,std::string card_path){
     std::string alternate_artwork_path = card_path;
     replace_in_string(alternate_artwork_path,"Cards","AlternateArtwork");
     std::string serie_path = serie->getPath();
-    std::vector<Set>& sets = serie->getAllSets();
+    std::vector<Set*>* sets = serie->getAllSets();
     std::string single_card_data = serie_path+separator()+"SingleSetData.txt";
     if (fs::exists(single_card_data)){
         std::ifstream file(single_card_data);
@@ -996,15 +979,12 @@ void DataLoader::ParseSets(Serie* serie,std::string card_path){
 
                 else if (str.substr(0,8) == "SetName:"){
                     std::string name=trim(str.substr(8,std::string::npos));
-                    //std::cout << "found name : " << name << std::endl;
                     set_name = name;
 
 
-                    //std::cout << "found serie" << std::endl;
                     if (set_name != ""){
-                        Set found = Set(set_key,set_name,set_folder);
-                        ParseCards(found,alternate_artwork_path);
-                        sets.push_back(found);
+                        sets->push_back(new Set(set_key,set_name,set_folder));
+                        ParseCards(sets->back(),alternate_artwork_path);
                     }
                 }
             }
@@ -1021,9 +1001,12 @@ std::vector<Serie*>* DataLoader::ParseSeries(std::string cards_path){
     for (std::string serie_path : series_found){
         // retrieve name of the subfolder as serie name
         std::string serie_name = GetLastName(serie_path);
+
         // Serie objects will remain along all the execution!
         Serie* s = new Serie(serie_name,serie_path);
+
         ParseSets(s,cards_path);
+        std::vector<Set*>* sets = s->getAllSets();
         series->push_back(s);
 
     }
@@ -1032,7 +1015,9 @@ std::vector<Serie*>* DataLoader::ParseSeries(std::string cards_path){
     return series;
 }
 
-std::vector<std::string> DataLoader::ParseDeckFromJson(json deck_json,bool print){
+
+
+ParsedDeck DataLoader::ParseDeckFromJson(json deck_json,bool print){
     if (print){
         std::cout << " Parse deck from JSON" << std::endl;
         //std::cout << deck_json << std::endl;
@@ -1100,19 +1085,18 @@ std::vector<std::string> DataLoader::ParseDeckFromJson(json deck_json,bool print
         // write in prefs file
         //
     }
-
-    deck_list.push_back(final_date);
-    deck_list.push_back(deck_name);
-    return deck_list;
+    ParsedDeck parsed;
+    parsed.name = deck_name;
+    parsed.date = final_date;
+    parsed.cards = deck_list;
+    return parsed;
 
 }
 
-std::vector<std::string> DataLoader::AdaptDeckList(std::vector<std::string> deck_list){
-    std::vector<std::string> new_deck_list = TransformToExistingCardKey(*(dataloader_->getSeries()),deck_list);
-
-    return new_deck_list;
+std::vector<Card*> DataLoader::AdaptDeckList(std::vector<std::string> deck_list){
+    return TransformToExistingCardKey(*(dataloader_->getSeries()),deck_list);
 }
-std::vector<std::string> DataLoader::ParseDeckById(std::string deck_code){
+ParsedDeck DataLoader::ParseDeckById(std::string deck_code){
     std::cout << "parsing deck " << deck_code << std::endl;
     json deckobject = SendRequest("http://www.encoredecks.com/api/deck/"+trim(deck_code));
     return ParseDeckFromJson(deckobject,false);

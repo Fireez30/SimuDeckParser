@@ -32,14 +32,14 @@ void Set::setPath(std::string path){
     this->path = path;
 }
 
-std::map<std::string,Card> &Set::getCards(){
-    return this->cards;
+std::map<std::string,Card*>* Set::getCards(){
+    return &(this->cards);
 }
 
 
 
 bool Set::containsCard(std::string code){
-    std::map<std::string,Card>::iterator it;
+    std::map<std::string,Card*>::iterator it;
     it = this->cards.find(code);
     // BUG HERE ! IF CARD CODE ENDS WITH A LETTER (IF THERE IS 4 or 5 CHARACTER), AND IT NOT FOUND, VERIFY IF REMOVING LAST CHARACTER
     if (it == this->cards.end()){
@@ -51,10 +51,10 @@ bool Set::containsCard(std::string code){
 }
 
 Card* Set::getCard(std::string code){
-    std::map<std::string,Card>::iterator it;
+    std::map<std::string,Card*>::iterator it;
     it = this->cards.find(code);
     if (it != this->cards.end()){
-        return &((*it).second);
+        return ((*it).second);
     }
     else {
         if (it == this->cards.end()){
@@ -63,7 +63,7 @@ Card* Set::getCard(std::string code){
 
                 it = this->cards.find(new_code);
                 if (it != this->cards.end()){
-                    return &((*it).second);
+                    return ((*it).second);
                 }
             }
         }

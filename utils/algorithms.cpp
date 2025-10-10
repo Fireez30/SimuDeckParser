@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <algorithm>
 #include <QLayout>
+#include <iostream>
 #include "../mainwindow.h"
 #include <qapplication.h>
 namespace fs = std::filesystem;
@@ -96,72 +97,72 @@ QColor GetQColorFromCardColor(Color c){
 
 
 
-void SortFilteredCards(std::vector<Card>* cards_to_sort,std::vector<Orders> order){
-    std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card a, Card b) { // lambda func
+void SortFilteredCards(std::vector<Card*>* cards_to_sort,std::vector<Orders> order){
+    std::sort(cards_to_sort->begin(), cards_to_sort->end(), [order](Card* a, Card* b) { // lambda func
         if (order.size() > 0){
             for (Orders o : order){
                 if (o == Orders::TYPE_ASCENDING){
-                    if (a.getCardType() != b.getCardType()){
-                        return a.getCardType() < b.getCardType();
+                    if (a->getCardType() != b->getCardType()){
+                        return a->getCardType() < b->getCardType();
                     }
                 }
                 else if (o == Orders::COLOR){
-                    if (a.getColor() != b.getColor()){
-                        return a.getColor() < b.getColor();
+                    if (a->getColor() != b->getColor()){
+                        return a->getColor() < b->getColor();
                     }
                 }
                 else
                 {
-                    if (a.getCardType() != b.getCardType()){
-                        return a.getCardType() < b.getCardType();
+                    if (a->getCardType() != b->getCardType()){
+                        return a->getCardType() < b->getCardType();
                     }
                 }
 
                 if (o == Orders::LEVEL_ASCENDING){
-                    if (a.getLevel() != b.getLevel()){
-                        return a.getLevel() < b.getLevel();
+                    if (a->getLevel() != b->getLevel()){
+                        return a->getLevel() < b->getLevel();
                     }
                 }
                 else if (o == Orders::LEVEL_DESCENDING){
-                    if (a.getLevel() != b.getLevel()){
-                        return a.getLevel() > b.getLevel();
+                    if (a->getLevel() != b->getLevel()){
+                        return a->getLevel() > b->getLevel();
                     }
                 }
 
                 else if (o == Orders::COST_ASCENDING){
-                    if (a.getCost() != b.getCost()){
-                        return a.getCost() < b.getCost();
+                    if (a->getCost() != b->getCost()){
+                        return a->getCost() < b->getCost();
                     }
                 }
                 else if (o == Orders::COST_DESCENDING){
-                    if (a.getCost() != b.getCost()){
-                        return a.getCost() > b.getCost();
+                    if (a->getCost() != b->getCost()){
+                        return a->getCost() > b->getCost();
                     }
                 }
 
                 else if (o == Orders::POWER_ASCENDING){
-                    if (a.getPower() != b.getPower()){
-                        return a.getPower() < b.getPower();
+                    if (a->getPower() != b->getPower()){
+                        return a->getPower() < b->getPower();
                     }
                 }
                 else if (o == Orders::POWER_DESCENDING){
-                    if (a.getPower() != b.getPower()){
-                        return a.getPower() > b.getPower();
+                    if (a->getPower() != b->getPower()){
+                        return a->getPower() > b->getPower();
                     }
                 }
                 else if (o == Orders::KEYCODE_ASCENDING){
-                    if (a.getKey() != b.getKey()){
-                        return a.getKey() < b.getKey();
+                    if (a->getKey() != b->getKey()){
+                        return a->getKey() < b->getKey();
                     }
                 }
 
             }
         }
-        if (a.getLevel() != b.getLevel()){ // default is level > power
-            return a.getLevel() < b.getLevel();
+        if (a->getLevel() != b->getLevel()){ // default is level > power
+            return a->getLevel() < b->getLevel();
         }
         else {
-            return a.getPower() > b.getPower(); // default is power but should not happen
+            return a->getPower() > b->getPower(); // default is power but should not happen
         }
     });
 }
@@ -183,21 +184,24 @@ void clearLayout(QLayout* layout) {
     }
 }
 
-std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
-    std::vector<std::string> final_card_list = {};
-    std::vector<std::string> existing_card_codes = {};
+typedef std::map<std::string,Card*> CardPointerMap;
 
+std::vector<Card*> TransformToExistingCardKey(std::vector<Serie*> &series,const std::vector<std::string> card_keys){ // OPTIMIZE THIS LATER , WANT TO DO SOME TESTS
+    std::vector<Card*> final_card_list = {};
+    CardPointerMap existing_card_codes = {};
     for (Serie* s : series){ // Do not keep this in final release , too slow.
         //std::cout << "is it in serie " << s.getName() << std::endl;
-        for (Set set : s->getAllSets()){
+        for (Set* set : *s->getAllSets()){
             //std::cout << "is it in set " << set.getName() << std::endl;
-            std::map<std::string,Card>::iterator it;
-            for (it = set.getCards().begin(); it != set.getCards().end(); it++){
+            std::map<std::string,Card*>::iterator it;
+            for (it = set->getCards()->begin(); it != set->getCards()->end(); it++){
                 std::string code = (*it).first;
-                existing_card_codes.push_back(code);
+                Card* c = (*it).second;
+                existing_card_codes.insert_or_assign(code,c);
             }
         }
     }
+
 
     // NON FOIL CARD
     //std::string new_code = removeTrailingAlphas(code);
@@ -205,211 +209,251 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,
         bool found = false;
         std::string sub_raw_str;
         std::string sub_str = card_key;
-        if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-            final_card_list.push_back(sub_str);
+        CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+        if (pos != existing_card_codes.end()) {
+            Card* c = pos->second;
+            final_card_list.push_back(c);
             found = true;
         }
 
+
         if (!found){
             sub_str = card_key; // check if to lower
-            sub_raw_str = card_key;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-","-E");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-E","-");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-","-E");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-E","-");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+            CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-T","-TE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-TE","-T");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-T","-TE");
-            sub_raw_str = sub_str;
+
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-TE","-T");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-P","-PE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-PE","-P");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+            CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-P","-PE");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             replace_in_string(sub_str,"-PE","-P");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
-        }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
 
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-P","-PE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
-        }
-
-        if (!found){
-            sub_str = card_key;
-            sub_str = removeTrailingAlphas(sub_str);
-            replace_in_string(sub_str,"-PE","-P");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-P","-PE");
-            sub_raw_str = sub_str;
-            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
-                      ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-PE","-P");
-            sub_raw_str = sub_str;
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-P","-PE");
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
+        }
+
+        if (!found){
+            sub_str = card_key;
+            sub_str = removeTrailingAlphas(sub_str);
+            replace_in_string(sub_str,"-PE","-P");
+            transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
+                      ::tolower);
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
 
@@ -418,46 +462,52 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-","-E");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-E","-");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-","-E");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-E","-");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
 
@@ -465,56 +515,68 @@ std::vector<std::string> TransformToExistingCardKey(std::vector<Serie*> &series,
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-T","-TE");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-TE","-T");
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-T","-TE");
-            sub_raw_str = sub_str;
+
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
         if (!found){
             sub_str = card_key;
             sub_str = removeTrailingAlphas(sub_str);
             replace_in_string(sub_str,"-TE","-T");
-            sub_raw_str = sub_str;
             transform(sub_str.begin(), sub_str.end(), sub_str.begin(),
                       ::tolower);
-            if (std::find(existing_card_codes.begin(), existing_card_codes.end(), sub_str) != existing_card_codes.end()) {
-                final_card_list.push_back(sub_raw_str);
-                found = true;
-            }
+                CardPointerMap::const_iterator pos = existing_card_codes.find(sub_str);
+                if (pos != existing_card_codes.end()) {
+                    Card* c = pos->second;
+                    final_card_list.push_back(c);
+                    found = true;
+                }
         }
 
 
         if (!found){
-            final_card_list.push_back(card_key);
+            CardPointerMap::const_iterator pos = existing_card_codes.find(card_key);
+            if (pos != existing_card_codes.end()) {
+                Card* c = pos->second;
+                final_card_list.push_back(c);
+            }
+
         }
 
 
     }
-
+    std::cout << "Final card list size : " << final_card_list.size() << std::endl;
     return final_card_list;
 }
 
@@ -613,6 +675,50 @@ std::string GetTriggerString(Trigger t){
         default:
             return "None";
     }
+}
+
+Trigger GetStringTrigger(std::string t){
+    if (t == "Goldbag"){
+        return Trigger::BAG;
+    }
+
+    if (t == "Goldbar"){
+        return Trigger::BAR;
+    }
+
+    if (t == "Book"){
+        return Trigger::BOOK;
+    }
+
+    if (t == "Burn"){
+        return Trigger::BURN;
+    }
+
+    if (t == "Choice"){
+        return Trigger::CHOICE;
+    }
+
+    if (t == "Pant"){
+        return Trigger::PANT;
+    }
+
+    if (t == "Salvage"){
+        return Trigger::SALVAGE;
+    }
+
+    if (t == "Soul"){
+        return Trigger::SOUL;
+    }
+
+    if (t == "Standby"){
+        return Trigger::STANDBY;
+    }
+
+    if (t == "Wind"){
+        return Trigger::WIND;
+    }
+
+    return Trigger::NONE;
 }
 
 std::string GetTriggerPath(Trigger t){

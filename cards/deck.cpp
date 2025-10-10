@@ -9,7 +9,7 @@ Deck::Deck(std::string name,std::string date) {
     this->card_list = {};
 }
 
-void Deck::AddCard(Card card_ptr){
+void Deck::AddCard(Card* card_ptr){
     this->card_list.push_back(card_ptr);
 }
 
@@ -23,11 +23,11 @@ std::string Deck::getDate(){
 void Deck::Print(){
     std::cout << this->name << " ( " << this->date << " ) " << std::endl;
     std::cout << this->card_list.size() << std::endl;
-    for (Card card : this->card_list) {
-        std::cout << card.getKey() << std::endl;
+    for (Card* card : this->card_list) {
+        std::cout << card->getKey() << std::endl;
     }
 }
 
-std::vector<Card> Deck::getCardList(){
-    return this->card_list;
+std::vector<Card*>* Deck::getCardList(){
+    return &this->card_list;
 }

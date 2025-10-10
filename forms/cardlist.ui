@@ -195,34 +195,37 @@
      <enum>Qt::LayoutDirection::LeftToRight</enum>
     </property>
     <layout class="QHBoxLayout" name="CardWholeAreaWidget">
+     <property name="spacing">
+      <number>1</number>
+     </property>
      <property name="leftMargin">
       <number>2</number>
      </property>
      <property name="topMargin">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
-      <number>2</number>
+      <number>0</number>
      </property>
      <item>
       <layout class="QVBoxLayout" name="leftLayout">
        <property name="spacing">
-        <number>6</number>
+        <number>20</number>
        </property>
        <property name="leftMargin">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="topMargin">
-        <number>2</number>
+        <number>3</number>
        </property>
        <property name="rightMargin">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>2</number>
+        <number>0</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox_3">
@@ -255,7 +258,7 @@
            <rect>
             <x>0</x>
             <y>20</y>
-            <width>261</width>
+            <width>271</width>
             <height>25</height>
            </rect>
           </property>
@@ -311,12 +314,15 @@
          <property name="title">
           <string>Type</string>
          </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
          <widget class="QComboBox" name="typeComboBox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>20</y>
-            <width>261</width>
+            <width>271</width>
             <height>25</height>
            </rect>
           </property>
@@ -380,7 +386,7 @@
            <rect>
             <x>0</x>
             <y>20</y>
-            <width>261</width>
+            <width>271</width>
             <height>25</height>
            </rect>
           </property>
@@ -444,7 +450,7 @@
            <rect>
             <x>0</x>
             <y>20</y>
-            <width>261</width>
+            <width>271</width>
             <height>25</height>
            </rect>
           </property>
@@ -499,7 +505,7 @@
            <rect>
             <x>0</x>
             <y>20</y>
-            <width>261</width>
+            <width>271</width>
             <height>25</height>
            </rect>
           </property>
@@ -533,7 +539,74 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Triggers</string>
+         </property>
+         <widget class="QComboBox" name="triggersComboBox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>20</y>
+            <width>271</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="selectAllTrigger">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>50</y>
+            <width>81</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Select all</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="unselectAllTrigger">
+          <property name="geometry">
+           <rect>
+            <x>150</x>
+            <y>50</y>
+            <width>81</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Unselect all</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="ApplyFiltersButton">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Apply filters</string>
          </property>
@@ -556,15 +629,15 @@
         <widget class="QWidget" name="searchWidget" native="true">
          <property name="minimumSize">
           <size>
-           <width>320</width>
+           <width>270</width>
            <height>130</height>
           </size>
          </property>
          <widget class="QPushButton" name="searchButton">
           <property name="geometry">
            <rect>
-            <x>110</x>
-            <y>100</y>
+            <x>90</x>
+            <y>90</y>
             <width>81</width>
             <height>25</height>
            </rect>
@@ -578,7 +651,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>311</width>
+            <width>261</width>
             <height>20</height>
            </rect>
           </property>
@@ -592,9 +665,9 @@
          <widget class="QTextEdit" name="searchFilterEdit">
           <property name="geometry">
            <rect>
-            <x>30</x>
+            <x>0</x>
             <y>30</y>
-            <width>251</width>
+            <width>261</width>
             <height>60</height>
            </rect>
           </property>
@@ -635,8 +708,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>1555</width>
-          <height>994</height>
+          <width>1614</width>
+          <height>998</height>
          </rect>
         </property>
         <widget class="QListWidget" name="cardGridWidget_2">

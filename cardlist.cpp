@@ -42,6 +42,9 @@ cardlist::cardlist(QWidget *parent)
     connect(this->ui->unselectAllType, &QPushButton::clicked,this, [this]() {this->ResetTypeComboBox(false);});
     connect(this->ui->selectAllColor, &QPushButton::clicked,this, [this]() {this->ResetColorComboBox(true);});
     connect(this->ui->unselectAllColor, &QPushButton::clicked,this, [this]() {this->ResetColorComboBox(false);});
+
+    connect(this->ui->selectAllTrigger, &QPushButton::clicked,this, [this]() {this->ResetTriggerComboBox(true);});
+    connect(this->ui->unselectAllTrigger, &QPushButton::clicked,this, [this]() {this->ResetTriggerComboBox(false);});
     this->picked_serie = false;
     this->picked_sets = false;
 
@@ -54,6 +57,7 @@ cardlist::cardlist(QWidget *parent)
     this->available_color_filters = {};
     this->available_trait_filters = {};
     this->available_type_filters = {};
+    this->available_trigger_filters = {};
     this->all_cards_available = {};
 
 
@@ -68,6 +72,7 @@ cardlist::cardlist(QWidget *parent)
     this->current_color_filters = {};
     this->current_type_filters = {};
     this->current_trait_filters = {};
+    this->current_trigger_filters = {};
 
 }
 
@@ -182,6 +187,16 @@ void cardlist::AddCostFilter(bool active,QStringList checked_costs){
     }
 }
 
+void cardlist::AddTriggerFilter(bool active,QStringList checked_triggers){
+    this->current_trigger_filters = {};
+    for (QString cost : checked_triggers){
+        if(std::find(this->current_trigger_filters.begin(), this->current_trigger_filters.end(),GetStringTrigger(cost.toStdString())) == this->current_trigger_filters.end()){
+            this->current_trigger_filters.push_back(GetStringTrigger(cost.toStdString()));
+
+        }
+    }
+}
+
 void cardlist::AddLevelFilter(bool active,QStringList checked_levels){
     this->current_level_filters = {};
     for (QString lvl : checked_levels){
@@ -235,6 +250,29 @@ QStringList getCheckedItems(QStandardItemModel *model) {
         }
     }
     return selected;
+}
+
+void cardlist::ResetTriggerComboBox(bool select){
+    QListView *listView = new QListView(this->ui->triggersComboBox);
+    this->ui->triggersComboBox->setView(listView);
+
+    QStandardItemModel *model = new QStandardItemModel(this->ui->triggersComboBox);
+    this->ui->triggersComboBox->setModel(model);
+    for (int i = 0; i < this->available_trigger_filters.size(); i++)
+    {
+        QStandardItem *item = new QStandardItem(QString("").fromStdString(GetTriggerString(this->available_trigger_filters[i])));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData((select)?Qt::Checked:Qt::Unchecked, Qt::CheckStateRole);
+        model->appendRow(item);
+    }
+
+    connect(model, &QStandardItemModel::itemChanged, this, [=]() {
+        QStringList checked = getCheckedItems(model);
+        AddTriggerFilter(true,checked);
+    });
+
+    QStringList checked = getCheckedItems(model);
+    AddTriggerFilter(true,(select)?checked:QStringList());
 }
 
 void cardlist::ResetTypeComboBox(bool select){
@@ -361,6 +399,8 @@ void cardlist::FillFiltersUsingSet(){
 
     this->available_level_filters = {}; // This will be loaded when laoding a set cards
     this->available_cost_filters = {};
+    this->available_trigger_filters = {};
+    this->current_trigger_filters = {};
     this->available_color_filters = {};
     this->current_level_filters = {};
     this->current_cost_filters = {};
@@ -373,41 +413,58 @@ void cardlist::FillFiltersUsingSet(){
 
     for (int i {0}; i < this->choosen_sets.size(); ++i){
 
-        std::map<std::string,Card>::iterator it;
-        for (it = this->choosen_sets.at(i)->getCards().begin(); it != this->choosen_sets.at(i)->getCards().end(); it++){
+        std::map<std::string,Card*>::iterator it;
+        for (it = this->choosen_sets.at(i)->getCards()->begin(); it != this->choosen_sets.at(i)->getCards()->end(); it++){
             std::string code = (*it).first;
-            Card c  = (*it).second;
-            if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c.getLevel()) == this->available_level_filters.end()) {
-                this->available_level_filters.push_back(c.getLevel());
-                this->current_level_filters.push_back(c.getLevel());
+            Card* c  = (*it).second;
+            if(std::find(this->available_level_filters.begin(), this->available_level_filters.end(), c->getLevel()) == this->available_level_filters.end()) {
+                this->available_level_filters.push_back(c->getLevel());
+                this->current_level_filters.push_back(c->getLevel());
             }
 
-            if(std::find(this->available_color_filters.begin(), this->available_color_filters.end(), c.getColor()) == this->available_color_filters.end()) {
-                this->available_color_filters.push_back(c.getColor());
-                this->current_color_filters.push_back(c.getColor());
+            for (Trigger t : c->getTriggers()){
+                if(std::find(this->available_trigger_filters.begin(), this->available_trigger_filters.end(), t) == this->available_trigger_filters.end()) {
+                    this->available_trigger_filters.push_back(t);
+                    this->current_trigger_filters.push_back(t);
+                }
             }
 
-            if(std::find(this->available_cost_filters.begin(), this->available_cost_filters.end(), c.getCost()) == this->available_cost_filters.end()) {
-                this->available_cost_filters.push_back(c.getCost());
-                this->current_cost_filters.push_back(c.getCost());
+            if(std::find(this->available_color_filters.begin(), this->available_color_filters.end(), c->getColor()) == this->available_color_filters.end()) {
+                this->available_color_filters.push_back(c->getColor());
+                this->current_color_filters.push_back(c->getColor());
             }
 
-            if(std::find(this->available_type_filters.begin(), this->available_type_filters.end(), c.getCardType()) == this->available_type_filters.end()) {
-                this->available_type_filters.push_back(c.getCardType());
-                this->current_type_filters.push_back(c.getCardType());
+            if(std::find(this->available_cost_filters.begin(), this->available_cost_filters.end(), c->getCost()) == this->available_cost_filters.end()) {
+                this->available_cost_filters.push_back(c->getCost());
+                this->current_cost_filters.push_back(c->getCost());
             }
-            for (std::string trait : c.getTraits()){
+
+            if(std::find(this->available_type_filters.begin(), this->available_type_filters.end(), c->getCardType()) == this->available_type_filters.end()) {
+                this->available_type_filters.push_back(c->getCardType());
+                this->current_type_filters.push_back(c->getCardType());
+            }
+            for (std::string trait : c->getTraits()){
                 if(std::find(this->available_trait_filters.begin(), this->available_trait_filters.end(), trait) == this->available_trait_filters.end()) {
                     this->available_trait_filters.push_back(trait);
                     this->current_trait_filters.push_back(trait);
                 }
             }
-            if (c.getColor() == Color::NONE){
-                c.print();
+            if (c->getColor() == Color::NONE){
+                c->print();
                 return;
             }
         }
     }
+
+    for (int i {0} ; i < this->available_trigger_filters.size() ; ++i){
+        std::cout << GetTriggerString(this->available_trigger_filters.at(i)) << std::endl;
+    }
+
+    std::cout << " -------" << std::endl;
+    for (int i {0} ; i < this->current_trigger_filters.size() ; ++i){
+        std::cout << GetTriggerString(this->current_trigger_filters.at(i)) << std::endl;
+    }
+
 
 
     std::sort(this->available_level_filters.begin(),this->available_level_filters.end());
@@ -420,9 +477,12 @@ void cardlist::FillFiltersUsingSet(){
     std::sort(this->current_type_filters.begin(),this->current_type_filters.end());
     std::sort(this->available_trait_filters.begin(),this->available_trait_filters.end());
     std::sort(this->current_trait_filters.begin(),this->current_trait_filters.end());
+    std::sort(this->available_trigger_filters.begin(),this->available_trigger_filters.end());
+    std::sort(this->current_trigger_filters.begin(),this->current_trigger_filters.end());
 
     this->ResetLevelComboBox();
     this->ResetTraitComboBox();
+    this->ResetTriggerComboBox();
     this->ResetColorComboBox();
     this->ResetCostComboBox();
     this->ResetTypeComboBox();
@@ -432,10 +492,10 @@ void cardlist::FillFiltersUsingSet(){
 void cardlist::FillCards(){
     this->all_cards_available = {};
     for (int i {0}; i < this->choosen_sets.size(); ++i){
-        std::map<std::string,Card>::iterator it;
-        for (it = this->choosen_sets.at(i)->getCards().begin(); it != this->choosen_sets.at(i)->getCards().end(); it++){
+        std::map<std::string,Card*>::iterator it;
+        for (it = this->choosen_sets.at(i)->getCards()->begin(); it != this->choosen_sets.at(i)->getCards()->end(); it++){
             std::string code = (*it).first;
-            Card c  = (*it).second;
+            Card* c  = (*it).second;
             this->all_cards_available.push_back(c);
         }
     }
@@ -445,39 +505,55 @@ void cardlist::FillCards(){
 void cardlist::ApplyFilter(){
     this->current_cards_to_display = {};
     std::string card_to_print = DataLoader::GetInstance()->GetCardToPrint();
-    for (Card c : this->all_cards_available){
+    for (Card* c : this->all_cards_available){
         // apply filter by not adding filtered cards
         if (this->ui->searchFilterEdit->toPlainText() != ""){
-            if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getName())){
+            if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c->getName())){
                 this->current_cards_to_display.push_back(c);
             }
-            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getKey()))
+            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c->getKey()))
             {
                 this->current_cards_to_display.push_back(c);
             }
-            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c.getText()))
+            else if (findSubstringIgnoreCase(this->ui->searchFilterEdit->toPlainText().toStdString(),c->getText()))
             {
                 this->current_cards_to_display.push_back(c);
             }
         }
-        else if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c.getLevel()) != this->current_level_filters.end() &&
-                 std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c.getCost()) != this->current_cost_filters.end() &&
-                 std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c.getColor()) != this->current_color_filters.end() &&
-                 std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c.getCardType()) != this->current_type_filters.end())
+        else if (std::find(this->current_level_filters.begin(), this->current_level_filters.end(), c->getLevel()) != this->current_level_filters.end() &&
+                 std::find(this->current_cost_filters.begin(), this->current_cost_filters.end(), c->getCost()) != this->current_cost_filters.end() &&
+                 std::find(this->current_color_filters.begin(), this->current_color_filters.end(), c->getColor()) != this->current_color_filters.end() &&
+                 std::find(this->current_type_filters.begin(), this->current_type_filters.end(), c->getCardType()) != this->current_type_filters.end())
         {
             bool include_due_to_traits = false;
             if (this->current_trait_filters.size() == this->available_trait_filters.size()){
                 include_due_to_traits = true;
             }
             else {
-                for (std::string trait : c.getTraits()){
+                for (std::string trait : c->getTraits()){
                     if (std::find(this->current_trait_filters.begin(), this->current_trait_filters.end(), trait) != this->current_trait_filters.end()){
                         include_due_to_traits = true;
                     }
                 }
             }
 
-            if (include_due_to_traits || this->available_trait_filters.size() == 0){
+            bool include_due_to_triggers = false;
+            if (this->current_trigger_filters.size() == this->available_trigger_filters.size()){
+                include_due_to_triggers = true;
+            }
+            else if (this->current_trigger_filters.size() == 0 && c->getTriggers().size() == 0) {
+                include_due_to_triggers = true;
+            }
+            else {
+                for (Trigger t : c->getTriggers()){
+                    if (std::find(this->current_trigger_filters.begin(), this->current_trigger_filters.end(), t) != this->current_trigger_filters.end()){
+                        include_due_to_triggers = true;
+                    }
+                }
+            }
+
+
+            if ((include_due_to_traits || this->available_trait_filters.size() == 0) && (include_due_to_triggers || this->available_trigger_filters.size() == 0)){
                 this->current_cards_to_display.push_back(c);
             }
         }
@@ -503,8 +579,8 @@ void cardlist::OnSeriePick(){
     }
 
     if (this->choosen_serie != nullptr){
-        for (Set se : this->choosen_serie->getAllSets()){
-            this->ui->setPickBox->addItem(QString::fromStdString(se.getName()));
+        for (Set* se : *(this->choosen_serie->getAllSets())){
+            this->ui->setPickBox->addItem(QString::fromStdString(se->getName()));
         }
     }
     else{
@@ -524,9 +600,9 @@ void cardlist::OnSetPick(){
     this->UpdateUi();
     this->choosen_sets.clear();
     if (this->choosen_serie != nullptr){
-        for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
-            if (this->choosen_serie->getAllSets().at(i).getName() ==  choosen_set_name){
-                this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
+        for (int i {0}; i < this->choosen_serie->getAllSets()->size(); ++i){
+            if (this->choosen_serie->getAllSets()->at(i)->getName() ==  choosen_set_name){
+                this->choosen_sets.push_back(this->choosen_serie->getAllSets()->at(i));
             }
 
         }
@@ -560,8 +636,8 @@ void cardlist::OnSerieCardsPick(){
     }
 
     if (this->choosen_serie != nullptr){
-        for (Set se : this->choosen_serie->getAllSets()){
-            this->ui->setPickBox->addItem(QString::fromStdString(se.getName()));
+        for (Set* se : *(this->choosen_serie->getAllSets())){
+            this->ui->setPickBox->addItem(QString::fromStdString(se->getName()));
         }
     }
     else{
@@ -569,8 +645,8 @@ void cardlist::OnSerieCardsPick(){
     }
 
     if (this->choosen_serie != nullptr){
-        for (int i {0}; i < this->choosen_serie->getAllSets().size(); ++i){
-            this->choosen_sets.push_back(&this->choosen_serie->getAllSets().at(i));
+        for (int i {0}; i < this->choosen_serie->getAllSets()->size(); ++i){
+            this->choosen_sets.push_back(this->choosen_serie->getAllSets()->at(i));
         }
     }
 
@@ -587,17 +663,18 @@ void cardlist::DisplayFilteredCards(){
     this->ui->cardGridWidget_2->setWordWrap(true);
     this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    for (Card c : this->current_cards_to_display){
+    for (Card* c : this->current_cards_to_display){
         //std::cout << c.getImagePath() << std::endl;
-        if (c.getImagePath() != "" ){
-            std::string path_str = c.getImagePath();
+        if (c->getImagePath() != "" ){
+            std::string path_str = c->getImagePath();
             //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
             QString path_image = QString::fromStdString(path_str);
             QWidget* final_widget = new QWidget();
             QHBoxLayout* qblayout = new QHBoxLayout(final_widget);
+            qblayout->setContentsMargins(0,0,0,0);
             if (QFile::exists(path_image)) {
                 QPixmap pix(path_image);
-                QLabel* textLabel = new QLabel(QString::fromStdString(c.getCardHTML()));
+                QLabel* textLabel = new QLabel(QString::fromStdString(c->getCardHTML()));
                 QLabel* imgLabel = new QLabel();
                 textLabel->setWordWrap(true);
                 //textLabel->setIndent(224);

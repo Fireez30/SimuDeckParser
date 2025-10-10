@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS UiTools)
-
+find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/cards)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/utils)
@@ -62,6 +62,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         mainmenu.h
         mainmenu.cpp
         forms/mainmenu.ui
+        utils/filedownloader.h utils/filedownloader.cpp
 
 
 
@@ -87,7 +88,7 @@ endif()
 
 target_link_libraries(SimuDeckParser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(SimuDeckParser PRIVATE Qt6::UiTools)
-
+target_link_libraries(SimuDeckParser PRIVATE Qt6::Network)
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.

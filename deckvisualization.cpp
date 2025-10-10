@@ -78,11 +78,11 @@ void deckvisualization::DisplayPickedDeck(){
     Deck* de = DataLoader::GetInstance()->getDeck(this->picked_deck);
     if (de != nullptr){
         std::vector<Orders> deck_orders = {Orders::TYPE_ASCENDING,Orders::LEVEL_ASCENDING,Orders::COST_ASCENDING,Orders::COLOR};
-        std::vector<Card> card_list = de->getCardList();
-        SortFilteredCards(&card_list,deck_orders);
-        for (Card value : card_list){
+        std::vector<Card*>* card_list = de->getCardList();
+        SortFilteredCards(card_list,deck_orders);
+        for (Card* value : *card_list){
             //std::cout << "for loop card : " << value.getKey() << std::endl;
-            std::string path_str = value.getImagePath();
+            std::string path_str = value->getImagePath();
             //std::cout << "found image : " << value.getKey() << std::endl;
 
             //path_str.replace(path_str.find(" "),std::string(" ").size(),"\ ");
@@ -115,9 +115,9 @@ void deckvisualization::DisplayPickedDeck(){
     }
 }
 
-void deckvisualization::ShowCardToSidePanel(Card c){
+void deckvisualization::ShowCardToSidePanel(Card* c){
     if (!this->lock_card_panel){
-        std::string path_str = c.getImagePath();
+        std::string path_str = c->getImagePath();
         QString path_image = QString::fromStdString(path_str);
         if (QFile::exists(path_image)) {
             QPixmap pix(path_image);
@@ -125,7 +125,7 @@ void deckvisualization::ShowCardToSidePanel(Card c){
             this->ui->cardImage->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
             this->ui->cardImage->setPixmap(pix);
         }
-        this->ui->cardText->setText(QString::fromStdString(c.getCardHTML()));
+        this->ui->cardText->setText(QString::fromStdString(c->getCardHTML()));
     }
 }
 
@@ -135,7 +135,7 @@ void deckvisualization::UnlockCardPanel(){
 
 }
 
-void deckvisualization::LockCardPanel(Card c){
+void deckvisualization::LockCardPanel(Card* c){
     this->lock_card_panel = false;
     this->ShowCardToSidePanel(c);
     this->lock_card_panel = true;
@@ -150,7 +150,7 @@ void deckvisualization::PickDeck(){
     Deck* deck = DataLoader::GetInstance()->getDeck(deck_name);
     if (deck != nullptr){
         deck->Print();
-        if (deck->getCardList().size() == 0){
+        if (deck->getCardList()->size() == 0){
             DataLoader::GetInstance()->LoadDeck(deck_name);
         }
     }

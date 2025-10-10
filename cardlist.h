@@ -37,21 +37,23 @@ private:
     bool picked_serie;
     bool picked_sets;
     Ui::cardlist *ui;
-    std::vector<Card> all_cards_available;
+    std::vector<Card*> all_cards_available;
     std::vector<CardType> available_type_filters;
     std::vector<int> available_level_filters;
     std::vector<std::string> available_trait_filters;
     std::vector<int> available_cost_filters;
+    std::vector<Trigger> available_trigger_filters;
     std::vector<Color> available_color_filters;
     std::vector<int> current_level_filters;
     std::vector<int> current_cost_filters;
     std::vector<Color> current_color_filters;
     std::vector<std::string> current_trait_filters;
     std::vector<CardType> current_type_filters;
+    std::vector<Trigger> current_trigger_filters;
     std::vector<QListWidgetItem*> cards_items;
     std::vector<Orders> current_orders;
 
-    std::vector<Card> current_cards_to_display;
+    std::vector<Card*> current_cards_to_display;
 
 private slots:
     void OnSeriePick();
@@ -62,9 +64,12 @@ private slots:
     void AddCostFilter(bool active,QStringList checked_costs);
     void AddColorFilter(bool active,QStringList checked_colors);
     void AddTypeFilter(bool active,QStringList checked_types);
+    void AddTriggerFilter(bool active,QStringList checked_triggers);
+
     void ApplyFilters();
     void SwitchToMainMenu();
     void ResetCostComboBox(bool select=true);
+    void ResetTriggerComboBox(bool select=true);
     void ResetTraitComboBox(bool select=true);
     void ResetLevelComboBox(bool select=true);
     void ResetColorComboBox(bool select=true);

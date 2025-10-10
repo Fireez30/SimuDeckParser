@@ -28,104 +28,6 @@
    <property name="styleSheet">
     <string notr="true">background-color: rgb(38, 40, 47);</string>
    </property>
-   <widget class="QWidget" name="horizontalWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>80</y>
-      <width>1921</width>
-      <height>991</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="ImportTextLayout">
-     <item>
-      <widget class="QWidget" name="importDeckListWidget" native="true">
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>0</y>
-          <width>570</width>
-          <height>30</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Encore deck loaded list</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="encoreDecksList">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>30</y>
-          <width>571</width>
-          <height>881</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-     </item>
-     <item>
-      <widget class="QWidget" name="simulatorListWidget" native="true">
-       <widget class="QLabel" name="label_2">
-        <property name="geometry">
-         <rect>
-          <x>230</x>
-          <y>10</y>
-          <width>570</width>
-          <height>30</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Card list that will be loaded in the simulator (manual modification possible in the field)</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="encoreDecksList_2">
-        <property name="geometry">
-         <rect>
-          <x>230</x>
-          <y>40</y>
-          <width>571</width>
-          <height>881</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="startImport">
-        <property name="geometry">
-         <rect>
-          <x>410</x>
-          <y>930</y>
-          <width>221</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Import</string>
-        </property>
-       </widget>
-       <zorder>encoreDecksList_2</zorder>
-       <zorder>label_2</zorder>
-       <zorder>startImport</zorder>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QWidget" name="topWidget" native="true">
     <property name="geometry">
      <rect>
@@ -200,49 +102,155 @@
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="deckNameLabel">
+   </widget>
+   <widget class="QPushButton" name="startImport">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>980</y>
+      <width>171</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Import</string>
+    </property>
+   </widget>
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>1070</x>
+      <y>100</y>
+      <width>800</width>
+      <height>973</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
      <property name="geometry">
       <rect>
-       <x>1190</x>
+       <x>0</x>
        <y>0</y>
-       <width>571</width>
-       <height>41</height>
+       <width>798</width>
+       <height>971</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
+     <widget class="QListWidget" name="cardComparisonWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>781</width>
+        <height>931</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>781</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Swapped card list</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
-    <widget class="QLabel" name="deckDateLabel">
-     <property name="geometry">
-      <rect>
-       <x>1190</x>
-       <y>40</y>
-       <width>571</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-       <italic>true</italic>
-      </font>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
-    </widget>
+   </widget>
+   <widget class="QLabel" name="deckDateLabel">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>200</y>
+      <width>571</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <italic>true</italic>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="deckNameLabel">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>160</y>
+      <width>571</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="importStatusLabel">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>350</y>
+      <width>571</width>
+      <height>160</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <italic>true</italic>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
    </widget>
   </widget>
  </widget>

@@ -25,8 +25,8 @@ private:
 public slots:
     void SwitchToMainMenu();
     void PickDeck();
-    void ShowCardToSidePanel(Card c);
-    void LockCardPanel(Card c);
+    void ShowCardToSidePanel(Card* c);
+    void LockCardPanel(Card* c);
     void UnlockCardPanel();
 
 };
