@@ -25,7 +25,7 @@ private:
     int number_of_images_downloaded;
 private slots:
     void ImportLink();
-    void OnImageDownloaded(std::string init_card_code,QPixmap* buttonImage);
+    void OnImageDownloaded(std::string init_card_code,QPixmap* buttonImage,QByteArray& image);
     void SwitchToMainMenu();
     void AddToSimu();
 };

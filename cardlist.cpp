@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QStandardItemModel>
 #include <QStandardItem>
+#include <QScrollBar>
 #include <iostream>
 #include <QCheckBox>
 #include <QStringList>
@@ -662,7 +663,11 @@ void cardlist::DisplayFilteredCards(){
 
     this->ui->cardGridWidget_2->setWordWrap(true);
     this->ui->cardGridWidget_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    this->ui->cardGridWidget_2->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    //this->ui->scrollArea->setWidgetResizable(true);
+    //this->ui->scrollArea->setSizePolicy(QSizePolicy::Policy::Expanding,QSizePolicy::Policy::Expanding);
+    //this->ui->scrollArea->verticalScrollBar()->setSingleStep(20); // Adjust single step as needed
+    //this->ui->scrollArea->verticalScrollBar()->setSliderPosition(0);
+    //this->ui->scrollArea->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     for (Card* c : this->current_cards_to_display){
         //std::cout << c.getImagePath() << std::endl;
         if (c->getImagePath() != "" ){

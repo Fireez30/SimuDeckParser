@@ -426,9 +426,15 @@ Deck* DataLoader::LoadDeck(std::string target_deck_name)
                         std::string base64_decklist = firstchild->GetText();
                         //std::cout << "found base64_decklist " << std::endl;
                         std::string deck_list = trim(base64_decode(base64_decklist));
-                        //std::cout <<  " list : " << deck_list << std::endl;
+                        std::cout <<  " list : " << deck_list << std::endl;
                         std::vector<std::string> card_codes  = split(deck_list,'|');
-                        return LoadDeckFromList(card_codes,deck_name);
+                        std::vector<std::string> final_codes {};
+                        for (std::string card : card_codes){
+                            if (trim(card) != ""){
+                                final_codes.push_back(trim(card));
+                            }
+                        }
+                        return LoadDeckFromList(final_codes,deck_name);
 
                     }
                 }

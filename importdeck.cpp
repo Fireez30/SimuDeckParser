@@ -120,42 +120,138 @@ void importdeck::ImportLink(){
                             init_image_url += "/"+lang_folder+"/"+deck_code+"/"+cardnumber+".gif";
                         }
 
-                        if (this->image_cards.find(init_card_code) == this->image_cards.end()){
+                        if ( false && this->image_cards.find(init_card_code) == this->image_cards.end()){
                             // TODO
                             //std::cout<< "requesting image : " << init_image_url << std::endl;
-                            ImageDownloader* downloader;
+                            ImageDownloader downloader;
 
                             /*QUrl imageUrl(QString().fromStdString(init_image_url));
                             this->number_of_images_started += 1;
                             FileDownloader* m_pImgCtrl = new FileDownloader(imageUrl, this);*/
                             QPixmap* buttonImage  = new QPixmap();
-                            QObject::connect(downloader, &ImageDownloader::imageDownloaded,[this,init_card_code,buttonImage](const QByteArray &image){
+                            QObject::connect(&downloader, &ImageDownloader::imageDownloaded,[this,init_card_code,buttonImage](const QByteArray &image){
                                 buttonImage->loadFromData(image);
-                                this->OnImageDownloaded(init_card_code,buttonImage);});
-                            QTimer::singleShot(1000, [downloader,init_image_url]() {
-                                downloader->downloadImage(QUrl(QString().fromStdString(init_image_url)));
-                            });
+                                this->image_cards.insert_or_assign(init_card_code,buttonImage);
+                                this->number_of_images_downloaded += 1;
+                                if (this->number_of_images_downloaded >= this->number_of_images_started && this->number_of_images_started > 0){
+                                    std::cout << "found " << this->number_of_images_downloaded << std::endl;
+                                    std::string to_display = "";
+                                    if (this->match_changed_cards.size() == 0){
+                                        to_display = "All cards found in Encore decks have been found in the simulator. \n the deck can be imported in the simulator";
+                                    }
 
-                            /*buttonImage->loadFromData(m_pImgCtrl->downloadedData());
-                            connect(m_pImgCtrl, &FileDownloader::downloaded,this, [this,init_card_code,buttonImage]() {
-                                this->OnImageDownloaded(init_card_code,buttonImage);
-                            });*/
+                                    if (this->match_changed_cards.size() > 0){
+                                        to_display = "Some cards found in Encore decks are missing in the simulator. \n They have been swapped with another version of the same card.\n Please verify changes on the right before importing.";
+                                    }
+
+                                    if (this->match_changed_cards.size() == 50){
+                                        to_display = "WEIRD : All cards found in Encore decks are missing in the simulator. \n They have been swapped with another version of the same card. \n Verify the complete deck before importing.";
+                                    }
+                                    this->ui->importStatusLabel->setText(QString().fromStdString(to_display));
+                                    int card_width = 280;
+                                    int card_height = 400;
+                                    int text_height = 30;
+                                    this->ui->scrollArea->setVisible(true);
+                                    this->ui->cardComparisonWidget->setVisible(true);
+                                    this->ui->startImport->setVisible(true);
+                                    std::map<std::string,std::string>::iterator it;
+                                    for (it = this->match_changed_cards.begin(); it != this->match_changed_cards.end(); it++){
+                                        QWidget* final_widget = new QWidget();
+                                        QHBoxLayout* qblayout = new QHBoxLayout(final_widget);
+                                        qblayout->setContentsMargins(0,0,0,0);
+                                        QWidget* init_card_widget = new QWidget();
+                                        QVBoxLayout* init_card_layout = new QVBoxLayout(init_card_widget);
+                                        init_card_layout->setContentsMargins(0,0,0,0);
+                                        QWidget* final_card_widget = new QWidget();
+                                        QVBoxLayout* final_card_layout = new QVBoxLayout(final_card_widget);
+                                        final_card_layout->setContentsMargins(0,0,0,0);
+                                        std::string init_key = (*it).first;
+                                        std::string final_key = (*it).second;
+                                        QPixmap* initpixmap = this->image_cards.at(init_key);
+                                        QPixmap* finalpixmap = this->image_cards.at(final_key);
+                                        QLabel* textLabel = new QLabel(">");
+                                        textLabel->setFixedWidth(15);
+                                        QFont font = textLabel->font(); // Get current font
+                                        font.setPointSize(16);      // Set font size to 16
+                                        font.setBold(true);         // Make the font bold
+
+                                        // Apply the font to the label
+                                        textLabel->setFont(font);
+
+
+
+                                        QLabel* init_card_code_label = new QLabel(QString().fromStdString(init_key));
+                                        init_card_code_label->setFixedWidth(card_width);
+                                        init_card_code_label->setFixedHeight(text_height);
+                                        init_card_code_label->setAlignment(Qt::AlignCenter);
+                                        QLabel* final_card_code_label = new QLabel(QString().fromStdString(final_key));
+                                        final_card_code_label->setFixedWidth(card_width);
+                                        final_card_code_label->setFixedHeight(text_height);
+                                        final_card_code_label->setAlignment(Qt::AlignCenter);
+                                        QLabel* init_imgLabel = new QLabel();
+                                        init_imgLabel->setScaledContents( true );
+                                        init_imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+                                        init_imgLabel->setPixmap(*initpixmap);
+                                        init_imgLabel->setFixedSize(card_width, card_height);
+
+                                        QLabel* final_imgLabel = new QLabel();
+                                        final_imgLabel->setScaledContents( true );
+                                        final_imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+                                        final_imgLabel->setPixmap(*finalpixmap);
+                                        final_imgLabel->setFixedSize(card_width, card_height);
+
+                                        init_card_layout->addWidget(init_imgLabel);
+                                        init_card_layout->addWidget(init_card_code_label);
+
+                                        final_card_layout->addWidget(final_imgLabel);
+                                        final_card_layout->addWidget(final_card_code_label);
+
+
+
+                                        init_card_widget->setFixedHeight(card_height+text_height);
+                                        init_card_widget->setFixedWidth(card_width);
+                                        final_card_widget->setFixedHeight(card_height+text_height);
+                                        final_card_widget->setFixedWidth(card_width);
+
+                                        //qblayout->setAlignment(Qt::AlignCenter);
+                                        qblayout->addWidget(init_card_widget);
+                                        qblayout->addWidget(textLabel);
+                                        qblayout->addWidget(final_card_widget);
+                                        final_widget->setFixedHeight(card_height+text_height+10);
+                                        final_widget->setFixedWidth(this->ui->cardComparisonWidget->width());
+
+                                        QListWidgetItem *item = new QListWidgetItem();
+                                        this->ui->cardComparisonWidget->addItem(item);
+                                        this->ui->cardComparisonWidget->setItemWidget(item,final_widget);
+                                        item->setSizeHint( final_widget->sizeHint() );
+                                    }
+                                    //this->ui->encoreDecksList->setText(QString().fromStdString(base_deck_to_display));
+                                    //this->ui->encoreDecksList_2->setText(QString().fromStdString(base_deck_to_display_new));
+                                }});
+                                QTimer::singleShot(1000, [&downloader,init_image_url]() {
+                                    downloader.downloadImage(QUrl(QString().fromStdString(init_image_url)));
+                                });
+
+                                /*buttonImage->loadFromData(m_pImgCtrl->downloadedData());
+                                connect(m_pImgCtrl, &FileDownloader::downloaded,this, [this,init_card_code,buttonImage]() {
+                                    this->OnImageDownloaded(init_card_code,buttonImage);
+                                });*/
+
+                            }
+
+                            if (this->image_cards.find(final_cards.at(i)->getKey()) == this->image_cards.end()){
+                                // Load file and add to map
+                                QString path_image = QString::fromStdString(final_image_path);
+                                this->image_cards.insert_or_assign(final_cards.at(i)->getKey(),new QPixmap(path_image));
+                            }
+
+                            if (this->match_changed_cards.find(init_card_code) == this->match_changed_cards.end()){
+
+                                this->match_changed_cards.insert_or_assign(init_card_code,final_cards.at(i)->getKey());
+                            }
 
                         }
-
-                        if (this->image_cards.find(final_cards.at(i)->getKey()) == this->image_cards.end()){
-                            // Load file and add to map
-                            QString path_image = QString::fromStdString(final_image_path);
-                            this->image_cards.insert_or_assign(final_cards.at(i)->getKey(),new QPixmap(path_image));
-                        }
-
-                        if (this->match_changed_cards.find(init_card_code) == this->match_changed_cards.end()){
-
-                            this->match_changed_cards.insert_or_assign(init_card_code,final_cards.at(i)->getKey());
-                        }
-
                     }
-                }
 
                 // stored into : cardComparisonWidget
                 // loop over map changed cards.
@@ -166,104 +262,8 @@ void importdeck::ImportLink(){
     }
 }
 
-void importdeck::OnImageDownloaded(std::string init_card_code,QPixmap* buttonImage){
-    this->image_cards.insert_or_assign(init_card_code,buttonImage);
-    this->number_of_images_downloaded += 1;
-    if (this->number_of_images_downloaded >= this->number_of_images_started && this->number_of_images_started > 0){
-        std::cout << "found " << this->number_of_images_downloaded << std::endl;
-        std::string to_display = "";
-        if (this->match_changed_cards.size() == 0){
-            to_display = "All cards found in Encore decks have been found in the simulator. \n the deck can be imported in the simulator";
-        }
+void importdeck::OnImageDownloaded(std::string init_card_code,QPixmap* buttonImage,QByteArray& image){
 
-        if (this->match_changed_cards.size() > 0){
-            to_display = "Some cards found in Encore decks are missing in the simulator. \n They have been swapped with another version of the same card.\n Please verify changes on the right before importing.";
-        }
-
-        if (this->match_changed_cards.size() == 50){
-            to_display = "WEIRD : All cards found in Encore decks are missing in the simulator. \n They have been swapped with another version of the same card. \n Verify the complete deck before importing.";
-        }
-        this->ui->importStatusLabel->setText(QString().fromStdString(to_display));
-        int card_width = 280;
-        int card_height = 400;
-        int text_height = 30;
-        this->ui->scrollArea->setVisible(true);
-        this->ui->cardComparisonWidget->setVisible(true);
-        this->ui->startImport->setVisible(true);
-        std::map<std::string,std::string>::iterator it;
-        for (it = this->match_changed_cards.begin(); it != this->match_changed_cards.end(); it++){
-            QWidget* final_widget = new QWidget();
-            QHBoxLayout* qblayout = new QHBoxLayout(final_widget);
-            qblayout->setContentsMargins(0,0,0,0);
-            QWidget* init_card_widget = new QWidget();
-            QVBoxLayout* init_card_layout = new QVBoxLayout(init_card_widget);
-            init_card_layout->setContentsMargins(0,0,0,0);
-            QWidget* final_card_widget = new QWidget();
-            QVBoxLayout* final_card_layout = new QVBoxLayout(final_card_widget);
-            final_card_layout->setContentsMargins(0,0,0,0);
-            std::string init_key = (*it).first;
-            std::string final_key = (*it).second;
-            QPixmap* initpixmap = this->image_cards.at(init_key);
-            QPixmap* finalpixmap = this->image_cards.at(final_key);
-            QLabel* textLabel = new QLabel(">");
-            textLabel->setFixedWidth(15);
-            QFont font = textLabel->font(); // Get current font
-            font.setPointSize(16);      // Set font size to 16
-            font.setBold(true);         // Make the font bold
-
-            // Apply the font to the label
-            textLabel->setFont(font);
-
-
-
-            QLabel* init_card_code_label = new QLabel(QString().fromStdString(init_key));
-            init_card_code_label->setFixedWidth(card_width);
-            init_card_code_label->setFixedHeight(text_height);
-            init_card_code_label->setAlignment(Qt::AlignCenter);
-            QLabel* final_card_code_label = new QLabel(QString().fromStdString(final_key));
-            final_card_code_label->setFixedWidth(card_width);
-            final_card_code_label->setFixedHeight(text_height);
-            final_card_code_label->setAlignment(Qt::AlignCenter);
-            QLabel* init_imgLabel = new QLabel();
-            init_imgLabel->setScaledContents( true );
-            init_imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-            init_imgLabel->setPixmap(*initpixmap);
-            init_imgLabel->setFixedSize(card_width, card_height);
-
-            QLabel* final_imgLabel = new QLabel();
-            final_imgLabel->setScaledContents( true );
-            final_imgLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-            final_imgLabel->setPixmap(*finalpixmap);
-            final_imgLabel->setFixedSize(card_width, card_height);
-
-            init_card_layout->addWidget(init_imgLabel);
-            init_card_layout->addWidget(init_card_code_label);
-
-            final_card_layout->addWidget(final_imgLabel);
-            final_card_layout->addWidget(final_card_code_label);
-
-
-
-            init_card_widget->setFixedHeight(card_height+text_height);
-            init_card_widget->setFixedWidth(card_width);
-            final_card_widget->setFixedHeight(card_height+text_height);
-            final_card_widget->setFixedWidth(card_width);
-
-            //qblayout->setAlignment(Qt::AlignCenter);
-            qblayout->addWidget(init_card_widget);
-            qblayout->addWidget(textLabel);
-            qblayout->addWidget(final_card_widget);
-            final_widget->setFixedHeight(card_height+text_height+10);
-            final_widget->setFixedWidth(this->ui->cardComparisonWidget->width());
-
-            QListWidgetItem *item = new QListWidgetItem();
-            this->ui->cardComparisonWidget->addItem(item);
-            this->ui->cardComparisonWidget->setItemWidget(item,final_widget);
-            item->setSizeHint( final_widget->sizeHint() );
-        }
-        //this->ui->encoreDecksList->setText(QString().fromStdString(base_deck_to_display));
-        //this->ui->encoreDecksList_2->setText(QString().fromStdString(base_deck_to_display_new));
-    }
 }
 
 void importdeck::AddToSimu(){
