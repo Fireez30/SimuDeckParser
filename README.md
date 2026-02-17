@@ -1,3 +1,14 @@
+# PLEASE READ THIS :
+
+This project has been stopped and will not be developed anymore. 
+
+I developed this so I could handle my decks and stats from an interface I wanted, on Linux. 
+
+Loosing access to new versions of the simulator tool, this tool not useful for connecting encore decks and the simulator, which was my priority
+
+# Normal read me :
+
+
 This project has been developed for people using the Weiss Schwarz Simulator.
 
 It is currently only available for linux !
